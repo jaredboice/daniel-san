@@ -114,8 +114,8 @@ const danielSan = {
 
 **Special Operationss**
 
--   `type: 'NTH_WEEKDAYS_OF_MONTH'` \*(triger an operation process every 1st and 3rd Friday)\_
--   `type: 'WEEKDAY_ON_DATE'` \*(triger an operation process every Friday the 13th)\_
+-   `type: 'NTH_WEEKDAYS_OF_MONTH'` \_trigger an operation process every 1st and 3rd Friday)\_
+-   `type: 'WEEKDAY_ON_DATE'` \_trigger an operation process every Friday the 13th)\_
 
 _special operations do not utilize the frequency attribute, nor modulus/cycle/syncDate_
 
