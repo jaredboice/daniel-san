@@ -6,7 +6,6 @@ const {
     flagCashflowRuleForRetirement,
     retireCashflowRules
 } = require('../standardOperations/common');
-const appConstants = require('../constants');
 const {
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
@@ -22,7 +21,7 @@ const {
     THURSDAY_NUM,
     FRIDAY_NUM,
     SATURDAY_NUM
-} = appConstants;
+} = require('../constants');
 
 /*
     0 = Sunday

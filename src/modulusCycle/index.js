@@ -2,11 +2,10 @@ const moment = require('moment');
 const { streamForward, streamBackward } = require('../timeStream');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { getRelevantDateSegmentByFrequency } = require('../standardOperations/common');
-const appConstants = require('../constants');
 const {
     DATE_FORMAT_STRING,
     DAILY
-} = appConstants;
+} = require('../constants');
 
 const cycleModulusUpToDate = ({ cashflowRule, dateStartString }) => {
     // note: for when syncDate input is less than dateStartString

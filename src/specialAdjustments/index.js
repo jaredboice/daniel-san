@@ -6,7 +6,6 @@ const {
     flagCashflowRuleForRetirement,
     retireCashflowRules
 } = require('../standardOperations/common');
-const appConstants = require('../constants');
 const {
     DATE_DELIMITER,
     DATE_FORMAT_STRING,
@@ -17,7 +16,7 @@ const {
     ONCE,
     EXECUTING_RULE_ADJUSTMENT,
     MODIFIED
-} = appConstants;
+} = require('../constants');
 
 /*
     specialAdjustments: [

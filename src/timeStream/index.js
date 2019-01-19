@@ -1,8 +1,5 @@
 const moment = require('moment');
-const appConstants = require('../constants');
-const {
-    DATE_FORMAT_STRING
-} = appConstants;
+const { DATE_FORMAT_STRING } = require('../constants');
 
 const streamForward = (momentDate) => {
     return momentDate.add(1, 'day');
@@ -31,6 +28,6 @@ class TimeStream {
         const looperIsNotBeyondTheEdge = moment.min([this.looperDate, this.dateStart]) !== this.looperDate;
         return looperIsNotBeyondTheEdge;
     }
-};
+}
 
 module.exports = { TimeStream, streamForward, streamBackward };

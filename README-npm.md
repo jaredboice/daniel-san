@@ -23,8 +23,7 @@ get the [full documentation](https://github.com/jaredboice/daniel-san) at gitHub
 ```javascript
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
-const constants = require('daniel-san/constants');
-const { STANDARD_OPERATION, MONTHLY, WEEKLY, FRIDAY_NUM } = constants;
+const { STANDARD_OPERATION, MONTHLY, WEEKLY, FRIDAY_NUM } = require('daniel-san/constants');
 ```
 
 **Defining Accounts/Cashflow Rules**
@@ -48,7 +47,7 @@ const danielSan = {
             cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
         },
         { // cashflowRule 2
-            name: 'debauchery',
+            name: 'shenanigans',
             amount: -97.00,
             type: STANDARD_OPERATION, // see "Operation Types" - import from constants.js
             frequency: WEEKLY,

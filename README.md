@@ -21,8 +21,7 @@
 ```javascript
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
-const constants = require('daniel-san/constants');
-const { STANDARD_OPERATION, MONTHLY, WEEKLY, FRIDAY_NUM } = constants;
+const { STANDARD_OPERATION, MONTHLY, WEEKLY, FRIDAY_NUM } = require('daniel-san/constants');
 ```
 
 **Defining Accounts/Cashflow Rules**
@@ -46,7 +45,7 @@ const danielSan = {
             cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
         },
         { // cashflowRule 2
-            name: 'debauchery',
+            name: 'shenanigans',
             amount: -97.00,
             type: STANDARD_OPERATION, // see "Operation Types" - import from constants.js
             frequency: WEEKLY,
@@ -238,7 +237,7 @@ const danielSan = {
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the operation will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
-the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). Adding a syncDate attribute (as seen in the 'debauchery' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific date (either forwards or backwards).
+the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific date (either forwards or backwards).
 By syncing a cycle of 1 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 1/2 cycle to that date (cycling backward or forward depending on whether the syncDate is in the past or the future). This will keep that account/rule moduluating as you expect without any further adjustments.
 
 
@@ -261,7 +260,7 @@ const danielSan = {
             cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
         },
         { // cashflowRule 2
-            name: 'debauchery',
+            name: 'shenanigans',
             amount: -97.00,
             type: STANDARD_OPERATION, // see "Operation Types" - import from constants.js
             frequency: WEEKLY,
@@ -284,7 +283,6 @@ const danielSan = {
 ```javascript
 // passing error will log it to the console and bypass all other terminal functionality
 terminal({ danielSan, terminalOptions, error });
-);
 ```
 
 **Terminal Type Options**
@@ -306,7 +304,7 @@ Passing a criticalThreshold property will log snapshots to the command-line when
     const terminalOptions = {
         type: STANDARD_TERMINAL_OUTPUT,
         mode: CONCISE,
-        criticalThreshold: 500.00
+        criticalThreshold: 577.00
     };
 ```
 
@@ -334,8 +332,6 @@ if (operationResult.error) {
 **Constants Available For Import**
 
 ```javascript
-const constants = require('daniel-san/constants');
-
 const { 
     STANDARD_OPERATION,
     NTH_WEEKDAYS_OF_MONTH,
@@ -358,5 +354,5 @@ const {
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE
-} = constants;
+} = require('daniel-san/constants');
 ```

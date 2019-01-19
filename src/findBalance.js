@@ -14,7 +14,6 @@ const {
 } = require('./standardOperations/common');
 const { cycleModulusUpToDate, cycleModulusDownToDate, cycleModulusUp, isCycleAtModulus } = require('./modulusCycle');
 const { isUndefinedOrNull } = require('./utility/validation');
-const appConstants = require('./constants');
 const {
     DATE_DELIMITER,
     DATE_FORMAT_STRING,
@@ -44,7 +43,7 @@ const {
     EXECUTING_SPECIAL_ADJUSTMENT,
     MODIFIED,
     RETIRING_RULES
-} = appConstants;
+} = require('./constants');
 
 const buildCashflowOperations = ({ danielSan, cashflowRules, date }) => {
     let processPhase;

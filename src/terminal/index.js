@@ -1,6 +1,5 @@
 const { isUndefinedOrNull } = require('../utility/validation');
 
-const appConstants = require('../constants');
 const {
     DATE_FORMAT_STRING,
     ONCE,
@@ -13,7 +12,7 @@ const {
     CONCISE,
     BUILD_DATE_STRING,
     NOT_AVAILABLE
-} = appConstants;
+} = require('../constants');
 
 const terminalBoundary = (loops = 1) => {
     for (let looper = 0; looper < loops; looper++) {

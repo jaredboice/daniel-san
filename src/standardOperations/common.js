@@ -1,7 +1,6 @@
 const { isUndefinedOrNull } = require('../utility/validation');
 const errorDisc = require('../utility/errorHandling');
-const appConstants = require('../constants');
-const { DATE_FORMAT_STRING, ONCE, DAILY, WEEKLY, MONTHLY, ANNUALLY, DATE_DELIMITER } = appConstants;
+const { DATE_FORMAT_STRING, ONCE, DAILY, WEEKLY, MONTHLY, ANNUALLY, DATE_DELIMITER } = require('../constants');
 
 /*
     function: getRelevantDateSegmentByFrequency
@@ -60,7 +59,10 @@ const retireCashflowRules = ({ danielSan }) => {
             danielSan.cashflowRetiredRuleIndices = [];
         }
     } catch (err) {
-        throw errorDisc(err, 'error in retireCashflowRules()', { looper, cashflowRetiredRuleIndices: danielSan.cashflowRetiredRuleIndices });
+        throw errorDisc(err, 'error in retireCashflowRules()', {
+            looper,
+            cashflowRetiredRuleIndices: danielSan.cashflowRetiredRuleIndices
+        });
     }
 };
 

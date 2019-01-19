@@ -2,7 +2,6 @@ const moment = require('moment');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
 const { getRelevantDateSegmentByFrequency } = require('../standardOperations/common');
-const appConstants = require('../constants');
 const {
     DATE_DELIMITER,
     DATE_FORMAT_STRING,
@@ -28,7 +27,7 @@ const {
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
     MODIFIED
-} = appConstants;
+} = require('../constants');
 
 // eslint-disable-next-line max-len
 // _28DayCondition checks if processDate (such as 30th) is greater than the last day of the month (for example, february has only 28 days)
