@@ -161,8 +161,6 @@ const danielSan = {
 -   `type: 'MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_DATES'` _(delay processing after specific dates of the month)_
 -   `type: 'ADJUST_AMOUNT_ON_THESE_PARTICULAR_DATES'` _(add/subtract to/from the amount on a very specific date)_
 
-_includes all standard frequencies: 'ANNUALLY', 'MONTHLY', 'WEEKLY', 'DAILY', and 'ONCE'_
-
 ```javascript
 const danielSan = {
     beginBalance: 1618.03,
