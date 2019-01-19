@@ -14,6 +14,18 @@ const {
     NOT_AVAILABLE
 } = require('../constants');
 
+const TERMINAL_BOUNDARY_LIMIT = 55;
+
+const rightPadToBoundary = ({ leftSideOfHeading, character }) => {
+    let rightSideOfHeading = '';
+    const length = ((TERMINAL_BOUNDARY_LIMIT - leftSideOfHeading.length) < 0) ? 0 : TERMINAL_BOUNDARY_LIMIT - leftSideOfHeading.length;
+    for (let looper = 0; looper < length; looper++) {
+        rightSideOfHeading = `${rightSideOfHeading}${character}`;
+    }
+    const fullLineHeading = rightSideOfHeading ? `${leftSideOfHeading}${rightSideOfHeading}` : leftSideOfHeading;
+    return fullLineHeading;
+};
+
 const terminalBoundary = (loops = 1) => {
     for (let looper = 0; looper < loops; looper++) {
         console.log('*******************************************************');
@@ -22,12 +34,7 @@ const terminalBoundary = (loops = 1) => {
 
 const lineHeading = (heading) => {
     const leftSideOfHeading = `********${heading}`;
-    const length = leftSideOfHeading.length;
-    let rightSideOfHeading = '';
-    for (let looper = 0; looper < length; looper++) {
-        rightSideOfHeading = `${rightSideOfHeading}${rightSideOfHeading}`;
-    }
-    fullLineHeading = rightSideOfHeading ? `${leftSideOfHeading}${rightSideOfHeading}` : leftSideOfHeading;
+    const fullLineHeading = rightPadToBoundary({ leftSideOfHeading, character: '*' });
     console.log(fullLineHeading);
 };
 
