@@ -1,0 +1,25 @@
+# Ignore Mac Desktop Services files
+.DS_Store
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Output of 'npm pack'
+*.tgz
+build/
+dist/
+
+# Coverage directory used by tools like jest
+coverage/
+
+# Dependency directories
+node_modules/
+**/node_modules/
+
+# dotenv environment variables file
+.env
+
+# vscode configuration files
+.vscode

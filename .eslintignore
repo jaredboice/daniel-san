@@ -1,0 +1,15 @@
+# Logs
+logs
+
+# Output of 'npm pack'
+build/
+dist/
+
+# Coverage directory used by tools like jest
+coverage/
+
+# Dependency directories
+node_modules/
+**/node_modules/
+
+registerServiceWorker.js
