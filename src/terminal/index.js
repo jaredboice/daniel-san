@@ -28,7 +28,9 @@ const rightPadToBoundary = ({ leftSideOfHeading, character }) => {
 
 const terminalBoundary = (loops = 1) => {
     for (let looper = 0; looper < loops; looper++) {
-        console.log('*******************************************************');
+        const leftSideOfHeading = '';
+        const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: '*' });
+        console.log(fullHeading);
     }
 };
 
@@ -40,7 +42,9 @@ const lineHeading = (heading) => {
 
 const lineSeparator = (loops = 1) => {
     for (let looper = 0; looper < loops; looper++) {
-        console.log('-------------------------------------------------------');
+        const leftSideOfHeading = '';
+        const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: '-' });
+        console.log(fullHeading);
     }
 };
 
