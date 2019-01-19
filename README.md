@@ -326,7 +326,7 @@ if (operationResult.error) {
     }
 } else {
     if {
-        (waxOn.terminalOptions) terminal({ danielSan: waxOn.danielSan, terminalOptions: waxOn.terminalOptions });
+        (waxOn.terminalOptions) terminal({ danielSan: operationResult.danielSan, terminalOptions: waxOn.terminalOptions });
     }
 }
 ```
