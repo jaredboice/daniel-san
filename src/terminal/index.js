@@ -21,7 +21,14 @@ const terminalBoundary = (loops = 1) => {
 };
 
 const lineHeading = (heading) => {
-    console.log(`********${heading}********`);
+    const leftSideOfHeading = `********${heading}`;
+    const length = leftSideOfHeading.length;
+    let rightSideOfHeading = '';
+    for (let looper = 0; looper < length; looper++) {
+        rightSideOfHeading = `${rightSideOfHeading}${rightSideOfHeading}`;
+    }
+    fullLineHeading = rightSideOfHeading ? `${leftSideOfHeading}${rightSideOfHeading}` : leftSideOfHeading;
+    console.log(fullLineHeading);
 };
 
 const lineSeparator = (loops = 1) => {
