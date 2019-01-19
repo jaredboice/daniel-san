@@ -14,7 +14,7 @@ const {
     NOT_AVAILABLE
 } = require('../constants');
 
-const TERMINAL_BOUNDARY_LIMIT = 55;
+const TERMINAL_BOUNDARY_LIMIT = 89;
 
 const rightPadToBoundary = ({ leftSideOfHeading, character }) => {
     let rightSideOfHeading = '';
