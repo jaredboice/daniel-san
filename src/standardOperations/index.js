@@ -26,6 +26,7 @@ const {
     DISCOVERING_OPERATION_TYPE,
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
+    EXECUTION_REJECTED,
     MODIFIED
 } = require('../constants');
 
@@ -61,17 +62,66 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                 date
             });
             if (
+                cashflowRule.frequency === DAILY ||
                 isUndefinedOrNull(cashflowRule.processDate) ||
                 (cashflowRule.processDate === relevantDateSegmentByFrequency ||
                     _28DayCondition({ processDate: cashflowRule.processDate, date, frequency: cashflowRule.frequency })) // TODO: place this 2nd condition in a function and create special case for after the 28th and also a special case for last day of month
             ) {
                 // if there are modulus/cycle attributes, then perform the modulus operation type
+                if (cashflowRule.excluding) {
+                    // eslint-disable-next-line no-unused-vars
+                    let relevantDateSegmentForExclusion;
+                    let dynamicDateSegmentForExclusion;
+                    let anyMatch = false;
+                    if (cashflowRule.excluding.weekdays) {
+                        relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                            frequency: WEEKLY,
+                            date
+                        });
+                        anyMatch = cashflowRule.excluding.weekdays.some((thisDate) => {
+                            dynamicDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                                frequency: WEEKLY,
+                                date: moment(thisDate, DATE_FORMAT_STRING)
+                            });
+                            return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                        });
+                        if (anyMatch) processPhase = EXECUTION_REJECTED;
+                    }
+                    if (cashflowRule.excluding.dates) {
+                        relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                            frequency: MONTHLY,
+                            date
+                        });
+                        anyMatch = cashflowRule.excluding.dates.some((thisDate) => {
+                            dynamicDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                                frequency: MONTHLY,
+                                date: moment(thisDate, DATE_FORMAT_STRING)
+                            });
+                            return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                        });
+                        if (anyMatch) processPhase = EXECUTION_REJECTED;
+                    }
+                    if (cashflowRule.excluding.exactDates) {
+                        relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                            frequency: ONCE,
+                            date
+                        });
+                        anyMatch = cashflowRule.excluding.weekdays.some((thisDate) => {
+                            dynamicDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                                frequency: ONCE,
+                                date: moment(thisDate, DATE_FORMAT_STRING)
+                            });
+                            return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                        });
+                        if (anyMatch) processPhase = EXECUTION_REJECTED;
+                    }
+                }
                 if (cashflowRule.modulus) {
-                    if (isCycleAtModulus(cashflowRule)) {
+                    if (isCycleAtModulus(cashflowRule) && processPhase !== EXECUTION_REJECTED) {
                         processPhase = EXECUTING_RULE_INSERTION;
                     }
                     cycleModulusUp(cashflowRule);
-                } else {
+                } else if (processPhase !== EXECUTION_REJECTED) {
                     processPhase = EXECUTING_RULE_INSERTION;
                 }
                 if (processPhase === EXECUTING_RULE_INSERTION) {
