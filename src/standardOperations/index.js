@@ -39,9 +39,11 @@ const _28DayCondition = ({ processDate, date, frequency }) => {
             frequency: MONTHLY, // we are going to compare dates like this '2019-06-28' === '2019-06-31'
             date
         });
-        const fullDateOfLastDayOfMonth = moment(date)
-            .endOf('month');
-        const dateStringOfLastDayOfMonth = getRelevantDateSegmentByFrequency({ frequency: MONTHLY, date: fullDateOfLastDayOfMonth });
+        const fullDateOfLastDayOfMonth = moment(date).endOf('month');
+        const dateStringOfLastDayOfMonth = getRelevantDateSegmentByFrequency({
+            frequency: MONTHLY,
+            date: fullDateOfLastDayOfMonth
+        });
         if (processDate >= dateStringOfLastDayOfMonth && dateString >= dateStringOfLastDayOfMonth) {
             return true;
         } else {
@@ -67,7 +69,14 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                 (cashflowRule.processDate === relevantDateSegmentByFrequency ||
                     _28DayCondition({ processDate: cashflowRule.processDate, date, frequency: cashflowRule.frequency })) // TODO: place this 2nd condition in a function and create special case for after the 28th and also a special case for last day of month
             ) {
-                // if there are modulus/cycle attributes, then perform the modulus operation type
+                /*
+                    excluding: {
+                        weekdays: [SATURDAY_NUM, SUNDAY_NUM],
+                        dates: ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
+                        exactDates: ['2019-07-04', '2019-09-17', '2019-10-31']
+                    }
+                */
+                // TODO: abstract this exluding section more
                 if (cashflowRule.excluding) {
                     // eslint-disable-next-line no-unused-vars
                     let relevantDateSegmentForExclusion;
@@ -82,18 +91,25 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
                     }
-                    if (cashflowRule.excluding.dates) {
+                    if (cashflowRule.excluding.dates && processPhase !== EXECUTION_REJECTED) {
                         relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
                             frequency: MONTHLY,
                             date
                         });
                         anyMatch = cashflowRule.excluding.dates.some((thisDate) => {
                             dynamicDateSegmentForExclusion = thisDate;
-                            return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                            return (
+                                dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion ||
+                                _28DayCondition({
+                                    processDate: dynamicDateSegmentForExclusion,
+                                    date,
+                                    frequency: MONTHLY
+                                })
+                            );
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
                     }
-                    if (cashflowRule.excluding.exactDates) {
+                    if (cashflowRule.excluding.exactDates && processPhase !== EXECUTION_REJECTED) {
                         relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
                             frequency: ONCE,
                             date
@@ -105,6 +121,7 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
                     }
                 }
+                // if there are modulus/cycle attributes, then perform the modulus operation type
                 if (cashflowRule.modulus) {
                     if (isCycleAtModulus(cashflowRule) && processPhase !== EXECUTION_REJECTED) {
                         processPhase = EXECUTING_RULE_INSERTION;

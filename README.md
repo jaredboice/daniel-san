@@ -55,6 +55,19 @@ const danielSan = {
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
             cycle: 1,
             syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
+        },
+        { // cashflowRule 3
+            type: STANDARD_OPERATION,
+            frequency: DAILY,
+            name: 'cafeteria breakfast',
+            amount: -5.00,
+            dateStart: '2019-01-01',
+            dateEnd: null,
+            excluding: { // excluding can be used for all STANDARD_OPERATIONS - also, exclusion hits will still cycle the modulus
+                weekdays: [SATURDAY_NUM, SUNDAY_NUM], // excluding these weekdays
+                dates: ['15', '30'], // exluding these dates on each month
+                exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
+            }
         }
     ],
     cashflowOperations: [] // future balance projections stored here
@@ -104,7 +117,7 @@ const danielSan = {
             processDate: '01', // for MONTHLY operations, this string represents the day within that month
             dateStart: '2019-01-01' // date to start evaluating and processing this account
             dateEnd: '2019-12-13'
-            modulus: 3, // in conjunction with cycle, this attribute signifies every THIRD match will trigger a processing operation
+            modulus: 3, // in conjunction with cycle, this attribute signifies every THIRD match will trigger a processing event
             cycle: 1 // the cycle of this modulus - see "Modulus/Cycle" to review this advanced feature
         },
     ],
@@ -270,6 +283,36 @@ const danielSan = {
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
             cycle: 1,
             syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
+        }
+    ],
+    cashflowOperations: [] // future balance projections stored here
+};
+```
+
+## EXCLUSIONS
+
+Exclusions will skip an event trigger entirely.
+
+
+```javascript
+const danielSan = {
+    beginBalance: 1618.03,
+    endBalance: null, // future end balance is stored here
+    dateStart: '2019-03-20', // always required
+    dateEnd: '2019-12-13', // required except when using the STANDARD_OPERATION with a frequency of ONCE
+    cashflowRules: [
+        { // cashflowRule 1
+            type: STANDARD_OPERATION,
+            frequency: DAILY,
+            name: 'cafeteria breakfast',
+            amount: -5.00,
+            dateStart: '2019-01-01',
+            dateEnd: null,
+            excluding: { // excluding can be used for all STANDARD_OPERATIONS - also, exclusion hits will still cycle the modulus
+                weekdays: [SATURDAY_NUM, SUNDAY_NUM], // excluding these weekdays
+                dates: ['15', '30'], // exluding these dates on each month
+                exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
+            }
         }
     ],
     cashflowOperations: [] // future balance projections stored here

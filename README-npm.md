@@ -23,7 +23,7 @@ get the [full documentation](https://github.com/jaredboice/daniel-san) at gitHub
 ```javascript
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
-const { STANDARD_OPERATION, MONTHLY, WEEKLY, FRIDAY_NUM } = require('daniel-san/constants');
+const { STANDARD_OPERATION, MONTHLY, WEEKLY, DAILY, FRIDAY_NUM, SATURDAY_NUM, SUNDAY_NUM } = require('daniel-san/constants');
 ```
 
 **Defining Accounts/Cashflow Rules**
@@ -57,6 +57,19 @@ const danielSan = {
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
             cycle: 1,
             syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
+        },
+        { // cashflowRule 3
+            type: STANDARD_OPERATION,
+            frequency: DAILY,
+            name: 'cafeteria breakfast',
+            amount: -5.00,
+            dateStart: '2019-01-01',
+            dateEnd: null,
+            excluding: { // excluding can be used for all STANDARD_OPERATIONS - also, exclusion hits will still cycle the modulus
+                weekdays: [SATURDAY_NUM, SUNDAY_NUM], // excluding these weekdays
+                dates: ['15', '30'], // exluding these dates on each month
+                exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
+            }
         }
     ],
     cashflowOperations: [] // future balance projections stored here
