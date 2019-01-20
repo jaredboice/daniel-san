@@ -1,5 +1,5 @@
 const { isUndefinedOrNull } = require('../utility/validation');
-const { isCycleAtModulus, cycleModulusUp } = require('../timeStream');
+const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle/index');
 const { errorDisc } = require('../utility/errorHandling');
 const {
     DATE_FORMAT_STRING,

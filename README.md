@@ -362,9 +362,9 @@ const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
 
 const eventResults = findBalance(waxOn.danielSan);
-if (eventResults.error) {
+if (eventResults.err) {
     if (terminalOptions) { 
-        terminal({ error: eventResults.error });
+        terminal({ error: eventResults.err });
     }
 } else {
     if {
