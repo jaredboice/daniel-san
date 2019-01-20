@@ -48,29 +48,29 @@ const lineSeparator = (loops = 1) => {
     }
 };
 
-const conciseOutput = (cashflowOperation) => {
+const conciseOutput = (event) => {
     lineSeparator(1);
-    console.log(`name: `, cashflowOperation.name);
-    console.log(`amount: `, cashflowOperation.amount);
-    console.log(`endBalance: `, cashflowOperation.endBalance);
-    console.log(`thisDate: `, cashflowOperation.thisDate);
+    console.log(`name: `, event.name);
+    console.log(`amount: `, event.amount);
+    console.log(`endBalance: `, event.endBalance);
+    console.log(`thisDate: `, event.thisDate);
     lineSeparator(1);
 };
 
-const verboseOutput = (cashflowOperation) => {
-    console.log(cashflowOperation);
+const verboseOutput = (event) => {
+    console.log(event);
 };
 
-const cashflowOperationsLogger = ({ cashflowOperations, terminalOptions }) => {
+const eventsLogger = ({ events, terminalOptions }) => {
     switch (terminalOptions.mode) {
         case VERBOSE:
-            cashflowOperations.forEach((cashflowOperation) => {
-                verboseOutput(cashflowOperation);
+            events.forEach((event) => {
+                verboseOutput(event);
             });
             break;
         case CONCISE:
-            cashflowOperations.forEach((cashflowOperation) => {
-                conciseOutput(cashflowOperation);
+            events.forEach((event) => {
+                conciseOutput(event);
             });
             break;
         default:
@@ -90,8 +90,8 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     let criticalSnapshots = null;
     if (!isUndefinedOrNull(terminalOptions.criticalThreshold)) {
-        criticalSnapshots = danielSan.cashflowOperations.filter((cashflowOperation) => {
-            return cashflowOperation.endBalance < terminalOptions.criticalThreshold;
+        criticalSnapshots = danielSan.events.filter((event) => {
+            return event.endBalance < terminalOptions.criticalThreshold;
         });
     }
     lineHeading(` beginBalance: ${danielSan.beginBalance} `);
@@ -99,11 +99,11 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     lineHeading(` dateEnd:   ${danielSan.dateEnd} `);
     lineSeparator(2);
 
-    lineHeading(' begin cashflow operations ');
+    lineHeading(' begin cashflow events ');
     lineSeparator(2);
-    cashflowOperationsLogger({ cashflowOperations: danielSan.cashflowOperations, terminalOptions });
+    eventsLogger({ events: danielSan.events, terminalOptions });
     lineSeparator(2);
-    lineHeading(' end cashflow operations ');
+    lineHeading(' end cashflow events ');
     lineSeparator(2);
 
     if (criticalSnapshots) {
@@ -111,7 +111,7 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
         lineHeading(' begin critical snapshots ');
         lineHeading(` critical threshold: < ${terminalOptions.criticalThreshold} `);
         lineSeparator(2);
-        if (criticalSnapshots) cashflowOperationsLogger({ cashflowOperations: criticalSnapshots, terminalOptions });
+        if (criticalSnapshots) eventsLogger({ events: criticalSnapshots, terminalOptions });
         lineSeparator(2);
         lineHeading(' end critical snapshots ');
         lineSeparator(2);

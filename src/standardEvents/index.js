@@ -1,16 +1,16 @@
 const moment = require('moment');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
-const { getRelevantDateSegmentByFrequency } = require('../standardOperations/common');
+const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const {
     DATE_DELIMITER,
     DATE_FORMAT_STRING,
-    STANDARD_OPERATION,
+    STANDARD_EVENT,
     NTH_WEEKDAYS_OF_MONTH,
     WEEKDAY_ON_DATE,
-    MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
+    MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     VOID_AMOUNT_ON_THIS_PARTICULAR_DATE,
-    ADJUST_AMOUNT_ON_THESE_PARTICULAR_DATES,
+    ADJUST_AMOUNT_ON_THESE_DATES,
     ANNUALLY,
     MONTHLY,
     WEEKLY,
@@ -23,7 +23,7 @@ const {
     THURSDAY_NUM,
     FRIDAY_NUM,
     SATURDAY_NUM,
-    DISCOVERING_OPERATION_TYPE,
+    DISCOVERING_EVENT_TYPE,
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
     EXECUTION_REJECTED,
@@ -54,20 +54,20 @@ const _28DayCondition = ({ processDate, date, frequency }) => {
     }
 };
 
-const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }) => {
+const buildStandardEvent = ({ danielSan, rule, date, index }) => {
     let processPhase;
     try {
         processPhase = EVALUATING_RULE_INSERTION;
-        if (isUndefinedOrNull(cashflowRule.dateStart) || cashflowRule.dateStart <= date.format(DATE_FORMAT_STRING)) {
+        if (isUndefinedOrNull(rule.dateStart) || rule.dateStart <= date.format(DATE_FORMAT_STRING)) {
             const relevantDateSegmentByFrequency = getRelevantDateSegmentByFrequency({
-                frequency: cashflowRule.frequency,
+                frequency: rule.frequency,
                 date
             });
             if (
-                cashflowRule.frequency === DAILY ||
-                isUndefinedOrNull(cashflowRule.processDate) ||
-                (cashflowRule.processDate === relevantDateSegmentByFrequency ||
-                    _28DayCondition({ processDate: cashflowRule.processDate, date, frequency: cashflowRule.frequency })) // TODO: place this 2nd condition in a function and create special case for after the 28th and also a special case for last day of month
+                rule.frequency === DAILY ||
+                isUndefinedOrNull(rule.processDate) ||
+                (rule.processDate === relevantDateSegmentByFrequency ||
+                    _28DayCondition({ processDate: rule.processDate, date, frequency: rule.frequency })) // TODO: place this 2nd condition in a function and create special case for after the 28th and also a special case for last day of month
             ) {
                 /*
                     excluding: {
@@ -77,26 +77,26 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                     }
                 */
                 // TODO: abstract this exluding section more
-                if (cashflowRule.excluding) {
+                if (rule.excluding) {
                     // eslint-disable-next-line no-unused-vars
                     let relevantDateSegmentForExclusion;
                     let dynamicDateSegmentForExclusion;
                     let anyMatch = false;
-                    if (cashflowRule.excluding.weekdays) {
+                    if (rule.excluding.weekdays) {
                         relevantDateSegmentForExclusion = date.weekday();
-                        anyMatch = cashflowRule.excluding.weekdays.some((thisDate) => {
+                        anyMatch = rule.excluding.weekdays.some((thisDate) => {
                             dynamicDateSegmentForExclusion = thisDate;
                             // eslint-disable-next-line eqeqeq
                             return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
                     }
-                    if (cashflowRule.excluding.dates && processPhase !== EXECUTION_REJECTED) {
+                    if (rule.excluding.dates && processPhase !== EXECUTION_REJECTED) {
                         relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
                             frequency: MONTHLY,
                             date
                         });
-                        anyMatch = cashflowRule.excluding.dates.some((thisDate) => {
+                        anyMatch = rule.excluding.dates.some((thisDate) => {
                             dynamicDateSegmentForExclusion = thisDate;
                             return (
                                 dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion ||
@@ -109,38 +109,38 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
                     }
-                    if (cashflowRule.excluding.exactDates && processPhase !== EXECUTION_REJECTED) {
+                    if (rule.excluding.exactDates && processPhase !== EXECUTION_REJECTED) {
                         relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
                             frequency: ONCE,
                             date
                         });
-                        anyMatch = cashflowRule.excluding.exactDates.some((thisDate) => {
+                        anyMatch = rule.excluding.exactDates.some((thisDate) => {
                             dynamicDateSegmentForExclusion = thisDate;
                             return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
                     }
                 }
-                // if there are modulus/cycle attributes, then perform the modulus operation type
-                if (cashflowRule.modulus) {
-                    if (isCycleAtModulus(cashflowRule) && processPhase !== EXECUTION_REJECTED) {
+                // if there are modulus/cycle attributes, then execute them
+                if (rule.modulus) {
+                    if (isCycleAtModulus(rule) && processPhase !== EXECUTION_REJECTED) {
                         processPhase = EXECUTING_RULE_INSERTION;
                     }
-                    cycleModulusUp(cashflowRule);
+                    cycleModulusUp(rule);
                 } else if (processPhase !== EXECUTION_REJECTED) {
                     processPhase = EXECUTING_RULE_INSERTION;
                 }
                 if (processPhase === EXECUTING_RULE_INSERTION) {
-                    cashflowRule.thisDate = date.format(DATE_FORMAT_STRING);
-                    danielSan.cashflowOperations.push({ ...cashflowRule });
+                    rule.thisDate = date.format(DATE_FORMAT_STRING);
+                    danielSan.events.push({ ...rule });
                     processPhase = MODIFIED;
                 }
             }
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in buildStandardCashflowOperation()', { date, processPhase, cashflowRule });
+        throw errorDisc(err, 'error in buildStandardEvent()', { date, processPhase, rule });
     }
 };
 
-module.exports = { buildStandardCashflowOperation };
+module.exports = { buildStandardEvent };

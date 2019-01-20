@@ -34,32 +34,32 @@ const getRelevantDateSegmentByFrequency = ({ frequency, date }) => {
     }
 };
 
-const flagCashflowRuleForRetirement = ({ danielSan, cashflowRule, date, index }) => {
+const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
     try {
         // if dateEnd has been reached, flag the rule for retirement
-        if (!isUndefinedOrNull(cashflowRule.dateEnd) && date.format(DATE_FORMAT_STRING) >= cashflowRule.dateEnd) {
+        if (!isUndefinedOrNull(rule.dateEnd) && date.format(DATE_FORMAT_STRING) >= rule.dateEnd) {
             danielSan.cashflowRetiredRuleIndices.push(index);
         }
     } catch (err) {
-        throw errorDisc(err, 'error in flagCashflowRuleForRetirement()', { date, cashflowRule, index });
+        throw errorDisc(err, 'error in flagRuleForRetirement()', { date, rule, index });
     }
 };
 
-const retireCashflowRules = ({ danielSan }) => {
+const retireRules = ({ danielSan }) => {
     let looper;
     try {
-        // retire obsolete cashflowRules
+        // retire obsolete rules
         let indexOffset = 0;
         if (danielSan.cashflowRetiredRuleIndices.length > 0) {
             for (looper = 0; looper < danielSan.cashflowRetiredRuleIndices.length; looper++) {
                 const looperIndex = looper - indexOffset;
-                danielSan.cashflowRules.splice(danielSan.cashflowRetiredRuleIndices[looperIndex], 1);
+                danielSan.rules.splice(danielSan.cashflowRetiredRuleIndices[looperIndex], 1);
                 indexOffset++;
             }
             danielSan.cashflowRetiredRuleIndices = [];
         }
     } catch (err) {
-        throw errorDisc(err, 'error in retireCashflowRules()', {
+        throw errorDisc(err, 'error in retireRules()', {
             looper,
             cashflowRetiredRuleIndices: danielSan.cashflowRetiredRuleIndices
         });
@@ -68,6 +68,6 @@ const retireCashflowRules = ({ danielSan }) => {
 
 module.exports = {
     getRelevantDateSegmentByFrequency,
-    retireCashflowRules,
-    flagCashflowRuleForRetirement
+    retireRules,
+    flagRuleForRetirement
 };

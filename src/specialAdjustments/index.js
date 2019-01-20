@@ -3,9 +3,9 @@ const errorDisc = require('../utility/errorHandling');
 const { TimeStream, streamForward } = require('../timeStream');
 const {
     getRelevantDateSegmentByFrequency,
-    flagCashflowRuleForRetirement,
-    retireCashflowRules
-} = require('../standardOperations/common');
+    flagRuleForRetirement,
+    retireRules
+} = require('../standardEvents/common');
 const {
     DATE_DELIMITER,
     DATE_FORMAT_STRING,
@@ -21,35 +21,35 @@ const {
 /*
     specialAdjustments: [
         {
-            type: MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_WEEKDAYS
+            type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS
             weekdays: [SATURDAY_NUM, SUNDAY_NUM]
         }
     ];
 
 */
-const moveThisParticularProcessDateAfterTheseWeekdays = ({ cashflowRule, specialAdjustment }) => {
+const moveThisProcessDateAfterTheseWeekdays = ({ rule, specialAdjustment }) => {
     let processPhase;
     try {
         const { weekdays } = specialAdjustment;
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         let thisWeekday = getRelevantDateSegmentByFrequency({
             frequency: WEEKLY,
-            date: moment(cashflowRule.thisDate, DATE_FORMAT_STRING)
+            date: moment(rule.thisDate, DATE_FORMAT_STRING)
         });
         while (weekdays.includes(thisWeekday)) {
-            const looperDate = streamForward(moment(cashflowRule.thisDate, DATE_FORMAT_STRING));
-            cashflowRule.thisDate = looperDate.format(DATE_FORMAT_STRING);
+            const looperDate = streamForward(moment(rule.thisDate, DATE_FORMAT_STRING));
+            rule.thisDate = looperDate.format(DATE_FORMAT_STRING);
             thisWeekday = getRelevantDateSegmentByFrequency({
                 frequency: WEEKLY,
-                date: moment(cashflowRule.thisDate, DATE_FORMAT_STRING)
+                date: moment(rule.thisDate, DATE_FORMAT_STRING)
             });
             processPhase = MODIFIED;
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in moveThisParticularProcessDateAfterTheseWeekdays()', {
+        throw errorDisc(err, 'error in moveThisProcessDateAfterTheseWeekdays()', {
             processPhase,
-            cashflowRule,
+            rule,
             specialAdjustment
         });
     }
@@ -58,14 +58,14 @@ const moveThisParticularProcessDateAfterTheseWeekdays = ({ cashflowRule, special
 /*
         specialAdjustments: [
             {
-                type: MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_DATES,
+                type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
                 dates: ['2019-07-04', '2019-12-25'],
                 weekdays: [SATURDAY_NUM, SUNDAY_NUM] // weekdays are optional
             }
         ]
 
 */
-const moveThisParticularProcessDateAfterTheseDates = ({ cashflowRule, specialAdjustment }) => {
+const moveThisProcessDateAfterTheseDates = ({ rule, specialAdjustment }) => {
     let processPhase;
     try {
         const { dates } = specialAdjustment;
@@ -73,31 +73,31 @@ const moveThisParticularProcessDateAfterTheseDates = ({ cashflowRule, specialAdj
         if (specialAdjustment.dates) {
             let currentProcessDate = getRelevantDateSegmentByFrequency({
                 frequency: ONCE,
-                date: moment(cashflowRule.thisDate, DATE_FORMAT_STRING)
+                date: moment(rule.thisDate, DATE_FORMAT_STRING)
             });
             while (dates.includes(currentProcessDate)) {
-                const looperDate = streamForward(moment(cashflowRule.thisDate, DATE_FORMAT_STRING));
-                cashflowRule.thisDate = looperDate.format(DATE_FORMAT_STRING);
+                const looperDate = streamForward(moment(rule.thisDate, DATE_FORMAT_STRING));
+                rule.thisDate = looperDate.format(DATE_FORMAT_STRING);
                 currentProcessDate = getRelevantDateSegmentByFrequency({
                     frequency: ONCE,
-                    date: moment(cashflowRule.thisDate, DATE_FORMAT_STRING)
+                    date: moment(rule.thisDate, DATE_FORMAT_STRING)
                 });
             }
         }
         if (specialAdjustment.weekdays) {
-            processPhase = moveThisParticularProcessDateAfterTheseWeekdays({
-                cashflowRule,
+            processPhase = moveThisProcessDateAfterTheseWeekdays({
+                rule,
                 specialAdjustment
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisParticularProcessDateAfterTheseDates({ cashflowRule, specialAdjustment });
+                processPhase = moveThisProcessDateAfterTheseDates({ rule, specialAdjustment });
             }
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in moveThisParticularProcessDateAfterTheseDates()', {
+        throw errorDisc(err, 'error in moveThisProcessDateAfterTheseDates()', {
             processPhase,
-            cashflowRule,
+            rule,
             specialAdjustment
         });
     }
@@ -107,7 +107,7 @@ const moveThisParticularProcessDateAfterTheseDates = ({ cashflowRule, specialAdj
     dates & amounts are parallel arrays
     specialAdjustments: [
         { 
-            type: ADJUST_AMOUNT_ON_THESE_PARTICULAR_DATES,
+            type: ADJUST_AMOUNT_ON_THESE_DATES,
             dates: [
                 '2019-06-01', 
                 '2019-09-01'
@@ -119,27 +119,27 @@ const moveThisParticularProcessDateAfterTheseDates = ({ cashflowRule, specialAdj
         }
     ]
 */
-const adjustAmountOnTheseParticularDates = ({ cashflowRule, specialAdjustment }) => {
+const adjustAmountOnTheseDates = ({ rule, specialAdjustment }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     try {
         specialAdjustment.dates.forEach((looperDate, looperDateIndex) => {
-            if (looperDate === cashflowRule.thisDate) {
-                cashflowRule.amount += specialAdjustment.amounts[looperDateIndex];
+            if (looperDate === rule.thisDate) {
+                rule.amount += specialAdjustment.amounts[looperDateIndex];
             }
             processPhase = MODIFIED;
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in adjustAmountOnTheseParticularDates()', {
+        throw errorDisc(err, 'error in adjustAmountOnTheseDates()', {
             processPhase,
-            cashflowRule,
+            rule,
             specialAdjustment
         });
     }
 };
 
 module.exports = {
-    moveThisParticularProcessDateAfterTheseWeekdays,
-    moveThisParticularProcessDateAfterTheseDates,
-    adjustAmountOnTheseParticularDates
+    moveThisProcessDateAfterTheseWeekdays,
+    moveThisProcessDateAfterTheseDates,
+    adjustAmountOnTheseDates
 };

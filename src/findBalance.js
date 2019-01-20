@@ -1,29 +1,29 @@
 const { TimeStream } = require('./timeStream');
 const errorDisc = require('./utility/errorHandling');
-const { buildStandardCashflowOperation } = require('./standardOperations');
-const { nthWeekdaysOfMonth, weekdayOnDate } = require('./specialOperations');
+const { buildStandardEvent } = require('./standardEvents');
+const { nthWeekdaysOfMonth, weekdayOnDate } = require('./specialEvents');
 const {
-    moveThisParticularProcessDateAfterTheseWeekdays,
-    moveThisParticularProcessDateAfterTheseDates,
-    adjustAmountOnTheseParticularDates
+    moveThisProcessDateAfterTheseWeekdays,
+    moveThisProcessDateAfterTheseDates,
+    adjustAmountOnTheseDates
 } = require('./specialAdjustments');
 const {
     getRelevantDateSegmentByFrequency,
-    flagCashflowRuleForRetirement,
-    retireCashflowRules
-} = require('./standardOperations/common');
+    flagRuleForRetirement,
+    retireRules
+} = require('./standardEvents/common');
 const { cycleModulusUpToDate, cycleModulusDownToDate, cycleModulusUp, isCycleAtModulus } = require('./modulusCycle');
 const { isUndefinedOrNull } = require('./utility/validation');
 const {
     DATE_DELIMITER,
     DATE_FORMAT_STRING,
-    STANDARD_OPERATION,
+    STANDARD_EVENT,
     NTH_WEEKDAYS_OF_MONTH,
     WEEKDAY_ON_DATE,
-    MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
-    MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_DATES,
+    MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
+    MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
     VOID_AMOUNT_ON_THIS_PARTICULAR_DATE,
-    ADJUST_AMOUNT_ON_THESE_PARTICULAR_DATES,
+    ADJUST_AMOUNT_ON_THESE_DATES,
     ANNUALLY,
     MONTHLY,
     WEEKLY,
@@ -37,7 +37,7 @@ const {
     FRIDAY_NUM,
     SATURDAY_NUM,
     BUILD_DATE_STRING,
-    DISCOVERING_OPERATION_TYPE,
+    DISCOVERING_EVENT_TYPE,
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
     EXECUTING_SPECIAL_ADJUSTMENT,
@@ -45,49 +45,49 @@ const {
     RETIRING_RULES
 } = require('./constants');
 
-const buildCashflowOperations = ({ danielSan, cashflowRules, date }) => {
+const buildEvents = ({ danielSan, rules, date }) => {
     let processPhase;
     try {
-        cashflowRules.forEach((cashflowRule, index) => {
+        rules.forEach((rule, index) => {
             danielSan.cashflowRetiredRuleIndices = [];
-            processPhase = DISCOVERING_OPERATION_TYPE;
-            switch (cashflowRule.type) {
-                case STANDARD_OPERATION:
-                    processPhase = buildStandardCashflowOperation({ danielSan, cashflowRule, date });
+            processPhase = DISCOVERING_EVENT_TYPE;
+            switch (rule.type) {
+                case STANDARD_EVENT:
+                    processPhase = buildStandardEvent({ danielSan, rule, date });
                     break;
                 case NTH_WEEKDAYS_OF_MONTH:
-                    processPhase = nthWeekdaysOfMonth({ danielSan, cashflowRule, date });
+                    processPhase = nthWeekdaysOfMonth({ danielSan, rule, date });
                     break;
                 case WEEKDAY_ON_DATE:
-                    processPhase = weekdayOnDate({ danielSan, cashflowRule, date });
+                    processPhase = weekdayOnDate({ danielSan, rule, date });
                     break;
                 default:
                     break;
             }
             if (
                 processPhase === MODIFIED &&
-                danielSan.cashflowOperations[danielSan.cashflowOperations.length - 1].specialAdjustments
+                danielSan.events[danielSan.events.length - 1].specialAdjustments
             ) {
-                // note: perform specialAdjustments if exists
+                // note: execute specialAdjustments if exists
                 processPhase = EXECUTING_SPECIAL_ADJUSTMENT;
-                danielSan.cashflowOperations[danielSan.cashflowOperations.length - 1].specialAdjustments.forEach(
+                danielSan.events[danielSan.events.length - 1].specialAdjustments.forEach(
                     (specialAdjustment) => {
                         switch (specialAdjustment.type) {
-                            case MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
-                                moveThisParticularProcessDateAfterTheseWeekdays({
-                                    cashflowRule: danielSan.cashflowOperations[danielSan.cashflowOperations.length - 1],
+                            case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
+                                moveThisProcessDateAfterTheseWeekdays({
+                                    rule: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment
                                 });
                                 break;
-                            case MOVE_THIS_PARTICULAR_PROCESS_DATE_AFTER_THESE_DATES:
-                                moveThisParticularProcessDateAfterTheseDates({
-                                    cashflowRule: danielSan.cashflowOperations[danielSan.cashflowOperations.length - 1],
+                            case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
+                                moveThisProcessDateAfterTheseDates({
+                                    rule: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment
                                 });
                                 break;
-                            case ADJUST_AMOUNT_ON_THESE_PARTICULAR_DATES:
-                                adjustAmountOnTheseParticularDates({
-                                    cashflowRule: danielSan.cashflowOperations[danielSan.cashflowOperations.length - 1],
+                            case ADJUST_AMOUNT_ON_THESE_DATES:
+                                adjustAmountOnTheseDates({
+                                    rule: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment
                                 });
                                 break;
@@ -98,16 +98,16 @@ const buildCashflowOperations = ({ danielSan, cashflowRules, date }) => {
                 );
             }
             processPhase = RETIRING_RULES;
-            flagCashflowRuleForRetirement({ danielSan, cashflowRule, date, index });
-            retireCashflowRules({ danielSan });
+            flagRuleForRetirement({ danielSan, rule, date, index });
+            retireRules({ danielSan });
         });
     } catch (err) {
-        throw errorDisc(err, 'error in buildCashflowOperations()', { date, processPhase, cashflowRules });
+        throw errorDisc(err, 'error in buildEvents()', { date, processPhase, rules });
     }
 };
 
 const sortDanielSan = (danielSan) => {
-    danielSan.cashflowOperations.sort((a, b) => {
+    danielSan.events.sort((a, b) => {
         const thisDateA = a.thisDate.split(DATE_DELIMITER).join('');
         const thisDateB = b.thisDate.split(DATE_DELIMITER).join('');
         if (thisDateA > thisDateB) {
@@ -120,17 +120,17 @@ const sortDanielSan = (danielSan) => {
     });
 };
 
-const deleteIrrelevantCashflowRules = ({ danielSan, dateStartString }) => {
-    const newCashflowRules = danielSan.cashflowRules.filter((cashflowRule) => {
+const deleteIrrelevantRules = ({ danielSan, dateStartString }) => {
+    const newRules = danielSan.rules.filter((rule) => {
         try {
-            if (cashflowRule.frequency === ONCE && cashflowRule.processDate < dateStartString) {
+            if (rule.frequency === ONCE && rule.processDate < dateStartString) {
                 // exclude:
                 return false;
             }
-            if (isUndefinedOrNull(cashflowRule.dateEnd)) {
+            if (isUndefinedOrNull(rule.dateEnd)) {
                 // include
                 return true;
-            } else if (cashflowRule.dateEnd < dateStartString) {
+            } else if (rule.dateEnd < dateStartString) {
                 // exclude
                 return false;
                 // eslint-disable-next-line no-else-return
@@ -139,60 +139,60 @@ const deleteIrrelevantCashflowRules = ({ danielSan, dateStartString }) => {
                 return true;
             }
         } catch (err) {
-            throw errorDisc(err, 'error in deleteIrrelevantCashflowRules()', { dateStartString, cashflowRule });
+            throw errorDisc(err, 'error in deleteIrrelevantRules()', { dateStartString, rule });
         }
     });
-    danielSan.cashflowRules = newCashflowRules;
+    danielSan.rules = newRules;
 };
 
-const prepareCashflowRules = ({ danielSan, dateStartString }) => {
-    // bring modulus/cycle up-to-date for each cashflowRule
-    danielSan.cashflowRules.forEach((cashflowRule, index) => {
+const prepareRules = ({ danielSan, dateStartString }) => {
+    // bring modulus/cycle up-to-date for each rule
+    danielSan.rules.forEach((rule, index) => {
         try {
             // modulus and cycle are required for unambiguous conditioning (better to define it and know it is there in this case)
             if (
-                isUndefinedOrNull(cashflowRule.modulus) ||
-                isUndefinedOrNull(cashflowRule.cycle) ||
-                cashflowRule.frequency === ONCE
+                isUndefinedOrNull(rule.modulus) ||
+                isUndefinedOrNull(rule.cycle) ||
+                rule.frequency === ONCE
             ) {
-                cashflowRule.modulus = 0;
-                cashflowRule.cycle = 0;
+                rule.modulus = 0;
+                rule.cycle = 0;
             } else {
                 // cycleModulus
                 // eslint-disable-next-line no-lonely-if
-                if (cashflowRule.syncDate && cashflowRule.syncDate < dateStartString) {
-                    cycleModulusUpToDate({ cashflowRule, dateStartString });
-                } else if (cashflowRule.syncDate && cashflowRule.syncDate > dateStartString) {
-                    cycleModulusDownToDate({ cashflowRule, dateStartString });
+                if (rule.syncDate && rule.syncDate < dateStartString) {
+                    cycleModulusUpToDate({ rule, dateStartString });
+                } else if (rule.syncDate && rule.syncDate > dateStartString) {
+                    cycleModulusDownToDate({ rule, dateStartString });
                 }
             }
-            if (cashflowRule.frequency === DAILY) {
-                cashflowRule.processDate = null;
+            if (rule.frequency === DAILY) {
+                rule.processDate = null;
             }
         } catch (err) {
-            throw errorDisc(err, 'error in prepareCashflowRules()', { index, dateStartString, cashflowRule });
+            throw errorDisc(err, 'error in prepareRules()', { index, dateStartString, rule });
         }
     });
 };
 
-const executeCashflowOperations = ({ danielSan }) => {
-    danielSan.cashflowOperations.forEach((cashflowRule, index) => {
+const executeEvents = ({ danielSan }) => {
+    danielSan.events.forEach((rule, index) => {
         try {
-            cashflowRule.beginBalance =
-                index === 0 ? danielSan.beginBalance : danielSan.cashflowOperations[index - 1].endBalance;
-            cashflowRule.endBalance = cashflowRule.beginBalance + cashflowRule.amount;
+            rule.beginBalance =
+                index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
+            rule.endBalance = rule.beginBalance + rule.amount;
         } catch (err) {
-            throw errorDisc(err, 'error in executeCashflowOperations()', { cashflowRule, index });
+            throw errorDisc(err, 'error in executeEvents()', { rule, index });
         }
     });
 };
 
-const checkForInputErrors = ({ danielSan, dateStartString, dateEndString, cashflowRules }) => {
+const checkForInputErrors = ({ danielSan, dateStartString, dateEndString, rules }) => {
     let errorMessage = null;
     if (
         isUndefinedOrNull(danielSan) ||
         danielSan === {} ||
-        (!Array.isArray(danielSan.cashflowRules) || danielSan.cashflowRules.length === 0)
+        (!Array.isArray(danielSan.rules) || danielSan.rules.length === 0)
     ) {
         errorMessage =
             'findBalance() must first find appropriate parameters. expected danielSan to be an object with cashflow rules';
@@ -200,7 +200,7 @@ const checkForInputErrors = ({ danielSan, dateStartString, dateEndString, cashfl
     if (isUndefinedOrNull(dateStartString) || isUndefinedOrNull(dateEndString) || dateStartString > dateEndString) {
         errorMessage = 'findBalance() must first find appropriate parameters. there was a problem with a date input';
     }
-    if (!danielSan.cashflowRules || !Array.isArray(danielSan.cashflowRules) || danielSan.cashflowRules.length === 0) {
+    if (!danielSan.rules || !Array.isArray(danielSan.rules) || danielSan.rules.length === 0) {
         errorMessage = 'findBalance() must first find appropriate parameters. where are the cashflow rules?';
     }
 
@@ -215,28 +215,28 @@ const findBalance = (danielSan = {}) => {
         const dateStartString = danielSan.dateStart;
         const dateEndString = danielSan.dateEnd;
         checkForInputErrors({ danielSan, dateStartString, dateEndString });
-        deleteIrrelevantCashflowRules({
+        deleteIrrelevantRules({
             danielSan,
             dateStartString
         });
-        prepareCashflowRules({ danielSan, dateStartString });
+        prepareRules({ danielSan, dateStartString });
         const timeStream = new TimeStream({ dateStartString, dateEndString });
         do {
-            buildCashflowOperations({
+            buildEvents({
                 danielSan,
-                cashflowRules: danielSan.cashflowRules,
+                rules: danielSan.rules,
                 date: timeStream.looperDate
             });
         } while (timeStream.stream1DayForward());
-        sortDanielSan(danielSan); // note: danielSan must be sorted prior to performing operations
-        executeCashflowOperations({ danielSan });
-        danielSan.endBalance = danielSan.cashflowOperations[danielSan.cashflowOperations.length - 1].endBalance;
+        sortDanielSan(danielSan); // note: danielSan must be sorted prior to executing events
+        executeEvents({ danielSan });
+        danielSan.endBalance = danielSan.events[danielSan.events.length - 1].endBalance;
         return {
             error: null,
             danielSan
         };
     } catch (err) {
-        const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died', { cashflowOperations: danielSan.cashflowOperations });
+        const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died', { events: danielSan.events });
         return error;
     }
 };

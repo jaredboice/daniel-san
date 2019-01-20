@@ -23,7 +23,7 @@ get the [full documentation](https://github.com/jaredboice/daniel-san) at gitHub
 ```javascript
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
-const { STANDARD_OPERATION, MONTHLY, WEEKLY, DAILY, FRIDAY_NUM, SATURDAY_NUM, SUNDAY_NUM } = require('daniel-san/constants');
+const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY_NUM, SATURDAY_NUM, SUNDAY_NUM } = require('daniel-san/constants');
 ```
 
 **Defining Accounts/Cashflow Rules**
@@ -33,23 +33,23 @@ const danielSan = {
     beginBalance: 1618.03,
     endBalance: null, // future end balance is stored here
     dateStart: '2019-03-20', // always required
-    dateEnd: '2019-12-13', // required except when using the STANDARD_OPERATION with a frequency of ONCE
-    cashflowRules: [
-        { // cashflowRule 1
+    dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE
+    rules: [
+        { // rule 1
             name: 'monthly bitcoin investment',
             amount: -79.83, // negative amount subtracts, positive amount adds
-            type: STANDARD_OPERATION, // see "Operation Types" - import from constants.js
+            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: MONTHLY,
-            processDate: '30', // for MONTHLY operations, this string represents the day within that month
+            processDate: '30', // for MONTHLY events, this string represents the day within that month
             dateStart: '2019-01-01' // date to start evaluating and processing this account
             dateEnd: null, // null dateEnd represents an ongoing account
             modulus: 1, // not required - see "Modulus/Cycle" to review this advanced feature
             cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
         },
-        { // cashflowRule 2
+        { // rule 2
             name: 'shenanigans',
             amount: -97.00,
-            type: STANDARD_OPERATION, // see "Operation Types" - import from constants.js
+            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
             processDate: FRIDAY_NUM, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
@@ -58,21 +58,21 @@ const danielSan = {
             cycle: 1,
             syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
         },
-        { // cashflowRule 3
-            type: STANDARD_OPERATION,
+        { // rule 3
+            type: STANDARD_EVENT,
             frequency: DAILY,
             name: 'cafeteria breakfast',
             amount: -5.00,
             dateStart: '2019-01-01',
             dateEnd: null,
-            excluding: { // excluding can be used for all STANDARD_OPERATIONS - also, exclusion hits will still cycle the modulus
+            excluding: { // excluding can be used for all STANDARD_EVENTS - also, exclusion hits will still cycle the modulus
                 weekdays: [SATURDAY_NUM, SUNDAY_NUM], // excluding these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
         }
     ],
-    cashflowOperations: [] // future balance projections stored here
+    events: [] // future balance projections stored here
 };
 
 const craneKick = findBalance(danielSan);

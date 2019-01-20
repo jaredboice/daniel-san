@@ -3,9 +3,9 @@ const errorDisc = require('../utility/errorHandling');
 const { TimeStream, streamForward, streamBackward } = require('../timeStream');
 const {
     getRelevantDateSegmentByFrequency,
-    flagCashflowRuleForRetirement,
-    retireCashflowRules
-} = require('../standardOperations/common');
+    flagRuleForRetirement,
+    retireRules
+} = require('../standardEvents/common');
 const {
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
@@ -95,10 +95,10 @@ const findAllWeekdaysInTheMonth = (date) => {
     ];
 
 */
-const nthWeekdaysOfMonth = ({ danielSan, cashflowRule, date }) => {
+const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
     let processPhase;
     try {
-        const nthProcessDays = cashflowRule.frequency;
+        const nthProcessDays = rule.frequency;
         const weekdaysInMonth = findAllWeekdaysInTheMonth(date);
         processPhase = EVALUATING_RULE_INSERTION;
         nthProcessDays.forEach((nthProcessDay) => {
@@ -112,15 +112,15 @@ const nthWeekdaysOfMonth = ({ danielSan, cashflowRule, date }) => {
                         nthProcessDay.nthId === 0 ||
                         (nthProcessDay.nthId < 0 && looperDateIndex === sizeOfObjectKeyArray - 1))
                 ) {
-                    cashflowRule.thisDate = date.format(DATE_FORMAT_STRING);
-                    danielSan.cashflowOperations.push({ ...cashflowRule });
+                    rule.thisDate = date.format(DATE_FORMAT_STRING);
+                    danielSan.events.push({ ...rule });
                     processPhase = MODIFIED;
                 }
             });
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in nthWeekdaysOfMonth()', { processPhase, cashflowRule, date });
+        throw errorDisc(err, 'error in nthWeekdaysOfMonth()', { processPhase, rule, date });
     }
 };
 
@@ -129,7 +129,7 @@ const nthWeekdaysOfMonth = ({ danielSan, cashflowRule, date }) => {
     processDate: '13',
 
 */
-const weekdayOnDate = ({ danielSan, cashflowRule, date }) => {
+const weekdayOnDate = ({ danielSan, rule, date }) => {
     let processPhase;
     try {
         const thisProcessDate = getRelevantDateSegmentByFrequency({
@@ -141,15 +141,15 @@ const weekdayOnDate = ({ danielSan, cashflowRule, date }) => {
             date: date
         });
         processPhase = EVALUATING_RULE_INSERTION;
-        if (cashflowRule.processDate === thisProcessDate && cashflowRule.frequency === thisWeekday) {
+        if (rule.processDate === thisProcessDate && rule.frequency === thisWeekday) {
             processPhase = EXECUTING_RULE_INSERTION;
-            cashflowRule.thisDate = date.format(DATE_FORMAT_STRING);
-            danielSan.cashflowOperations.push({ ...cashflowRule });
+            rule.thisDate = date.format(DATE_FORMAT_STRING);
+            danielSan.events.push({ ...rule });
             processPhase = MODIFIED;
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in weekdayOnDate()', { date, processPhase, cashflowRule });
+        throw errorDisc(err, 'error in weekdayOnDate()', { date, processPhase, rule });
     }
 };
 
