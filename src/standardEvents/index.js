@@ -16,13 +16,13 @@ const {
     WEEKLY,
     DAILY,
     ONCE,
-    SUNDAY_NUM,
-    MONDAY_NUM,
-    TUESDAY_NUM,
-    WEDNESDAY_NUM,
-    THURSDAY_NUM,
-    FRIDAY_NUM,
-    SATURDAY_NUM,
+    SUNDAY,
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
     DISCOVERING_EVENT_TYPE,
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
@@ -71,7 +71,7 @@ const buildStandardEvent = ({ danielSan, rule, date, index }) => {
             ) {
                 /*
                     excluding: {
-                        weekdays: [SATURDAY_NUM, SUNDAY_NUM],
+                        weekdays: [SATURDAY, SUNDAY],
                         dates: ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
                         exactDates: ['2019-07-04', '2019-09-17', '2019-10-31']
                     }

@@ -23,7 +23,7 @@ get the [full documentation](https://github.com/jaredboice/daniel-san) at gitHub
 ```javascript
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
-const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY_NUM, SATURDAY_NUM, SUNDAY_NUM } = require('daniel-san/constants');
+const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = require('daniel-san/constants');
 ```
 
 **Defining Accounts/Cashflow Rules**
@@ -51,7 +51,7 @@ const danielSan = {
             amount: -97.00,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
-            processDate: FRIDAY_NUM, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
+            processDate: FRIDAY, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
@@ -66,7 +66,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             excluding: { // excluding can be used for all STANDARD_EVENTS - also, exclusion hits will still cycle the modulus
-                weekdays: [SATURDAY_NUM, SUNDAY_NUM], // excluding these weekdays
+                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }

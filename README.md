@@ -21,7 +21,7 @@
 ```javascript
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
-const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY_NUM, SATURDAY_NUM, SUNDAY_NUM } = require('daniel-san/constants');
+const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = require('daniel-san/constants');
 ```
 
 **Defining Accounts/Cashflow Rules**
@@ -49,7 +49,7 @@ const danielSan = {
             amount: -97.00,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
-            processDate: FRIDAY_NUM, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
+            processDate: FRIDAY, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
@@ -64,7 +64,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             excluding: { // excluding can be used for all STANDARD_EVENTS - also, exclusion hits will still cycle the modulus
-                weekdays: [SATURDAY_NUM, SUNDAY_NUM], // excluding these weekdays
+                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -146,9 +146,9 @@ const danielSan = {
             amount: -79.83,
             type: NTH_WEEKDAYS_OF_MONTH, // see "Event Types" - import from constants.js
             frequency: [
-                { nthId: 1, weekday: FRIDAY_NUM }, // every 1st friday
-                { nthId: 3, weekday: FRIDAY_NUM }, // and 3rd friday
-                { nthId: -1, weekday: SUNDAY_NUM } // a negative nthId means the last occurence of the month
+                { nthId: 1, weekday: FRIDAY }, // every 1st friday
+                { nthId: 3, weekday: FRIDAY }, // and 3rd friday
+                { nthId: -1, weekday: SUNDAY } // a negative nthId means the last occurence of the month
         ],
             dateStart: '2019-01-01', // date to start evaluating and processing this account
             dateEnd: null // null dateEnd represents an ongoing account
@@ -157,7 +157,7 @@ const danielSan = {
             name: 'jasons birthday party',
             amount: -66.6,
             type: WEEKDAY_ON_DATE, // see "Event Types" - import from constants.js
-            frequency: FRIDAY_NUM,
+            frequency: FRIDAY,
             processDate: '13',
             dateStart: '2019-01-01',
             dateEnd: null
@@ -195,7 +195,7 @@ const danielSan = {
             specialAdjustments: [
                 { 
                     type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
-                    weekdays: [SATURDAY_NUM, SUNDAY_NUM] 
+                    weekdays: [SATURDAY, SUNDAY] 
                 }
             ]
         },
@@ -214,7 +214,7 @@ const danielSan = {
                 {
                     type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
                     dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it rolls over them
-                    weekdays: [SATURDAY_NUM, SUNDAY_NUM] // weekdays are optional
+                    weekdays: [SATURDAY, SUNDAY] // weekdays are optional
                 }
             ]
         },
@@ -223,9 +223,9 @@ const danielSan = {
             amount: -79.83,
             type: NTH_WEEKDAYS_OF_MONTH, // see "Event Types" - import from constants.js
             frequency: [
-                { nthId: 1, weekday: FRIDAY_NUM }, // every 1st friday
-                { nthId: 3, weekday: FRIDAY_NUM }, // and 3rd friday
-                { nthId: -1, weekday: SUNDAY_NUM } // a negative nthId means the last occurence of the month
+                { nthId: 1, weekday: FRIDAY }, // every 1st friday
+                { nthId: 3, weekday: FRIDAY }, // and 3rd friday
+                { nthId: -1, weekday: SUNDAY } // a negative nthId means the last occurence of the month
         ],
             dateStart: '2019-01-01', // date to start evaluating and processing this account
             dateEnd: null, // null dateEnd represents an ongoing account
@@ -279,7 +279,7 @@ const danielSan = {
             amount: -97.00,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
-            processDate: FRIDAY_NUM, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
+            processDate: FRIDAY, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
@@ -311,7 +311,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             excluding: { // excluding can be used for all STANDARD_EVENTS - also, exclusion hits will still cycle the modulus
-                weekdays: [SATURDAY_NUM, SUNDAY_NUM], // excluding these weekdays
+                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -389,13 +389,13 @@ const {
     WEEKLY,
     DAILY,
     ONCE,
-    SUNDAY_NUM,
-    MONDAY_NUM,
-    TUESDAY_NUM,
-    WEDNESDAY_NUM,
-    THURSDAY_NUM,
-    FRIDAY_NUM,
-    SATURDAY_NUM,
+    SUNDAY,
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE

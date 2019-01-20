@@ -22,7 +22,7 @@ const {
     specialAdjustments: [
         {
             type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS
-            weekdays: [SATURDAY_NUM, SUNDAY_NUM]
+            weekdays: [SATURDAY, SUNDAY]
         }
     ];
 
@@ -60,7 +60,7 @@ const moveThisProcessDateAfterTheseWeekdays = ({ rule, specialAdjustment }) => {
             {
                 type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
                 dates: ['2019-07-04', '2019-12-25'],
-                weekdays: [SATURDAY_NUM, SUNDAY_NUM] // weekdays are optional
+                weekdays: [SATURDAY, SUNDAY] // weekdays are optional
             }
         ]
 

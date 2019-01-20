@@ -14,13 +14,13 @@ const {
     DAILY,
     WEEKLY,
     MONTHLY,
-    SUNDAY_NUM,
-    MONDAY_NUM,
-    TUESDAY_NUM,
-    WEDNESDAY_NUM,
-    THURSDAY_NUM,
-    FRIDAY_NUM,
-    SATURDAY_NUM
+    SUNDAY,
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY
 } = require('../constants');
 
 /*
@@ -48,26 +48,26 @@ const findAllWeekdaysInTheMonth = (date) => {
                     date: thisLooperDate
                 });
                 switch (thisWeekday) {
-                    case SUNDAY_NUM:
-                        monthlyWeekdayConstruct[SUNDAY_NUM].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    case SUNDAY:
+                        monthlyWeekdayConstruct[SUNDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
                         break;
-                    case MONDAY_NUM:
-                        monthlyWeekdayConstruct[MONDAY_NUM].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    case MONDAY:
+                        monthlyWeekdayConstruct[MONDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
                         break;
-                    case TUESDAY_NUM:
-                        monthlyWeekdayConstruct[TUESDAY_NUM].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    case TUESDAY:
+                        monthlyWeekdayConstruct[TUESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
                         break;
-                    case WEDNESDAY_NUM:
-                        monthlyWeekdayConstruct[WEDNESDAY_NUM].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    case WEDNESDAY:
+                        monthlyWeekdayConstruct[WEDNESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
                         break;
-                    case THURSDAY_NUM:
-                        monthlyWeekdayConstruct[THURSDAY_NUM].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    case THURSDAY:
+                        monthlyWeekdayConstruct[THURSDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
                         break;
-                    case FRIDAY_NUM:
-                        monthlyWeekdayConstruct[FRIDAY_NUM].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    case FRIDAY:
+                        monthlyWeekdayConstruct[FRIDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
                         break;
-                    case SATURDAY_NUM:
-                        monthlyWeekdayConstruct[SATURDAY_NUM].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    case SATURDAY:
+                        monthlyWeekdayConstruct[SATURDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
                         break;
                 }
             } catch (err) {
@@ -89,9 +89,9 @@ const findAllWeekdaysInTheMonth = (date) => {
 
 /*
     frequency = [
-        { nthId: 1, weekday: FRIDAY_NUM },
-        { nthId: 3, weekday: FRIDAY_NUM }
-        { nthId: -1, weekday: SUNDAY_NUM } // a negative nthId means the last occurence of the month
+        { nthId: 1, weekday: FRIDAY },
+        { nthId: 3, weekday: FRIDAY }
+        { nthId: -1, weekday: SUNDAY } // a negative nthId means the last occurence of the month
     ];
 
 */
@@ -125,7 +125,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
 };
 
 /*
-    frequency: FRIDAY_NUM,
+    frequency: FRIDAY,
     processDate: '13',
 
 */
