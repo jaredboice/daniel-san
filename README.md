@@ -52,7 +52,7 @@ const danielSan = {
             processDate: FRIDAY, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
-            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
+            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
             cycle: 1,
             syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
         },
@@ -207,7 +207,7 @@ const danielSan = {
             processDate: 0, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
-            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
+            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
             cycle: 1,
             syncDate: '2019-08-12', // specific to "Modulus/Cycle" - read that section for instructions,
             specialAdjustments: [
@@ -282,7 +282,7 @@ const danielSan = {
             processDate: FRIDAY, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
-            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday - in this case Sunday
+            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
             cycle: 1,
             syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
         }
