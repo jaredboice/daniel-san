@@ -12,7 +12,7 @@ const {
     flagRuleForRetirement,
     retireRules
 } = require('./standardEvents/common');
-const { cycleModulusUpToDate, cycleModulusDownToDate, cycleModulusUp, isCycleAtModulus } = require('./modulusCycle');
+const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle/cycleModulusToDate');
 const { isUndefinedOrNull } = require('./utility/validation');
 const {
     DATE_DELIMITER,
