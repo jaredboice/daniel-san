@@ -1,5 +1,5 @@
 const { isUndefinedOrNull } = require('../utility/validation');
-const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle/index');
+const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
 const { errorDisc } = require('../utility/errorHandling');
 const {
     DATE_FORMAT_STRING,
