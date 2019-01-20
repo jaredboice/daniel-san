@@ -354,18 +354,18 @@ Passing a criticalThreshold property will log snapshots to the command-line when
 **An Example Assuming CashflowRules and Terminal Options are Defined**
 
 ```javascript
-const waxOn = require('./cashflowRules');
+const waxOn = require('./cashflowRules'); // defined by user as const { cashflowRules = {} } = waxOn (so we can use the word waxOn)
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
 
 const operationResult = findBalance(waxOn.danielSan);
 if (operationResult.error) {
-    if (waxOn.terminalOptions) { 
+    if (terminalOptions) { 
         terminal({ error: operationResult.error });
     }
 } else {
     if {
-        (waxOn.terminalOptions) terminal({ danielSan: operationResult.danielSan, terminalOptions: waxOn.terminalOptions });
+        (terminalOptions) terminal({ danielSan: operationResult.danielSan, terminalOptions: terminalOptions });
     }
 }
 ```
