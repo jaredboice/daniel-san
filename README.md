@@ -360,14 +360,14 @@ const waxOn = require('./rules'); // defined by user as const { rules = {} } = w
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
 
-const eventResult = findBalance(waxOn.danielSan);
-if (eventResult.error) {
+const eventResults = findBalance(waxOn.danielSan);
+if (eventResults.error) {
     if (terminalOptions) { 
-        terminal({ error: eventResult.error });
+        terminal({ error: eventResults.error });
     }
 } else {
     if {
-        (terminalOptions) terminal({ danielSan: eventResult.danielSan, terminalOptions: terminalOptions });
+        (terminalOptions) terminal({ danielSan: eventResults.danielSan, terminalOptions: terminalOptions });
     }
 }
 ```
