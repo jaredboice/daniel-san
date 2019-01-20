@@ -291,9 +291,9 @@ const danielSan = {
 };
 ```
 
-## EXCLUSIONS
+## Exclusions
 
-Exclusions will skip an event trigger entirely.
+Exclusions will skip an event trigger entirely. _(For Standard Operations making use of the modulus/cycle operators, exclusion hits will still cycle the modulus)_
 
 
 ```javascript
