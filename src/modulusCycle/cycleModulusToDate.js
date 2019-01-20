@@ -1,5 +1,5 @@
 const moment = require('moment');
-const { cycleModulusUp, cycleModulusDown } = require('./index');
+const { cycleModulusUp, cycleModulusDown } = require('./index.js');
 const { streamForward, streamBackward } = require('../timeStream');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
