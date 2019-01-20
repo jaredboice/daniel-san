@@ -129,8 +129,8 @@ const danielSan = {
 
 **Special Eventss**
 
--   `type: 'NTH_WEEKDAYS_OF_MONTH'` \_trigger an event process every 1st and 3rd Friday)\_
--   `type: 'WEEKDAY_ON_DATE'` \_trigger an event process every Friday the 13th)\_
+-   `type: 'NTH_WEEKDAYS_OF_MONTH'` _(trigger an event process every 1st and 3rd Friday)
+-   `type: 'WEEKDAY_ON_DATE'` _(trigger an event process every Friday the 13th)_
 
 _special events do not utilize the frequency attribute, nor modulus/cycle/syncDate_
 
