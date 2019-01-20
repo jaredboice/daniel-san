@@ -332,12 +332,12 @@ terminal({ danielSan, terminalOptions, error });
 
 **Terminal Type Options**
 
--   `type: 'STANDARD_TERMINAL_OUTPUT'` \*(standard command-line functionality)\_
+-   `type: 'STANDARD_TERMINAL_OUTPUT'` \_(standard command-line functionality)\_
 
 **Terminal Mode Options**
 
--   `mode: 'CONCISE'` \*(minimal output)\_
--   `mode: 'VERBOSE'` \*(maximum output)\_
+-   `mode: 'CONCISE'` \_(minimal output)\_
+-   `mode: 'VERBOSE'` \_(maximum output)\_
 
 **Critical Snapshots**
 
