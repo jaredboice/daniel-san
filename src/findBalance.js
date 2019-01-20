@@ -137,12 +137,12 @@ const deleteIrrelevantRules = ({ danielSan, dateStartString }) => {
 };
 
 const prepareRules = ({ danielSan, dateStartString }) => {
+    if (!danielSan.events) {
+        danielSan.events = [];
+    }
     // bring modulus/cycle up-to-date for each rule
     danielSan.rules.forEach((rule, index) => {
         try {
-            if (!rule.events) {
-                rule.events = [];
-            }
             // modulus and cycle are required for unambiguous conditioning (better to define it and know it is there in this case)
             if (isUndefinedOrNull(rule.modulus) || isUndefinedOrNull(rule.cycle) || rule.frequency === ONCE) {
                 rule.modulus = 0;
