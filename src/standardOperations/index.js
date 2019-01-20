@@ -74,15 +74,10 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                     let dynamicDateSegmentForExclusion;
                     let anyMatch = false;
                     if (cashflowRule.excluding.weekdays) {
-                        relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                            frequency: WEEKLY,
-                            date
-                        });
+                        relevantDateSegmentForExclusion = date.weekday();
                         anyMatch = cashflowRule.excluding.weekdays.some((thisDate) => {
-                            dynamicDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                                frequency: WEEKLY,
-                                date: moment(thisDate, DATE_FORMAT_STRING)
-                            });
+                            dynamicDateSegmentForExclusion = thisDate;
+                            // eslint-disable-next-line eqeqeq
                             return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
@@ -93,10 +88,7 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                             date
                         });
                         anyMatch = cashflowRule.excluding.dates.some((thisDate) => {
-                            dynamicDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                                frequency: MONTHLY,
-                                date: moment(thisDate, DATE_FORMAT_STRING)
-                            });
+                            dynamicDateSegmentForExclusion = thisDate;
                             return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
@@ -107,10 +99,7 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                             date
                         });
                         anyMatch = cashflowRule.excluding.weekdays.some((thisDate) => {
-                            dynamicDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                                frequency: ONCE,
-                                date: moment(thisDate, DATE_FORMAT_STRING)
-                            });
+                            dynamicDateSegmentForExclusion = thisDate;
                             return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                         });
                         if (anyMatch) processPhase = EXECUTION_REJECTED;
