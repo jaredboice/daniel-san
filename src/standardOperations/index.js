@@ -98,7 +98,7 @@ const buildStandardCashflowOperation = ({ danielSan, cashflowRule, date, index }
                             frequency: ONCE,
                             date
                         });
-                        anyMatch = cashflowRule.excluding.weekdays.some((thisDate) => {
+                        anyMatch = cashflowRule.excluding.exactDates.some((thisDate) => {
                             dynamicDateSegmentForExclusion = thisDate;
                             return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                         });
