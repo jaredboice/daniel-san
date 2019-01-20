@@ -7,11 +7,7 @@ const {
     moveThisProcessDateAfterTheseDates,
     adjustAmountOnTheseDates
 } = require('./specialAdjustments');
-const {
-    getRelevantDateSegmentByFrequency,
-    flagRuleForRetirement,
-    retireRules
-} = require('./standardEvents/common');
+const { getRelevantDateSegmentByFrequency, flagRuleForRetirement, retireRules } = require('./standardEvents/common');
 const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle/cycleModulusToDate');
 const { isUndefinedOrNull } = require('./utility/validation');
 const {
@@ -64,38 +60,33 @@ const buildEvents = ({ danielSan, rules, date }) => {
                 default:
                     break;
             }
-            if (
-                processPhase === MODIFIED &&
-                danielSan.events[danielSan.events.length - 1].specialAdjustments
-            ) {
+            if (processPhase === MODIFIED && danielSan.events[danielSan.events.length - 1].specialAdjustments) {
                 // note: execute specialAdjustments if exists
                 processPhase = EXECUTING_SPECIAL_ADJUSTMENT;
-                danielSan.events[danielSan.events.length - 1].specialAdjustments.forEach(
-                    (specialAdjustment) => {
-                        switch (specialAdjustment.type) {
-                            case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
-                                moveThisProcessDateAfterTheseWeekdays({
-                                    rule: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
-                                });
-                                break;
-                            case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
-                                moveThisProcessDateAfterTheseDates({
-                                    rule: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
-                                });
-                                break;
-                            case ADJUST_AMOUNT_ON_THESE_DATES:
-                                adjustAmountOnTheseDates({
-                                    rule: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
-                                });
-                                break;
-                            default:
-                                break;
-                        }
+                danielSan.events[danielSan.events.length - 1].specialAdjustments.forEach((specialAdjustment) => {
+                    switch (specialAdjustment.type) {
+                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
+                            moveThisProcessDateAfterTheseWeekdays({
+                                rule: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment
+                            });
+                            break;
+                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
+                            moveThisProcessDateAfterTheseDates({
+                                rule: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment
+                            });
+                            break;
+                        case ADJUST_AMOUNT_ON_THESE_DATES:
+                            adjustAmountOnTheseDates({
+                                rule: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment
+                            });
+                            break;
+                        default:
+                            break;
                     }
-                );
+                });
             }
             processPhase = RETIRING_RULES;
             flagRuleForRetirement({ danielSan, rule, date, index });
@@ -149,12 +140,11 @@ const prepareRules = ({ danielSan, dateStartString }) => {
     // bring modulus/cycle up-to-date for each rule
     danielSan.rules.forEach((rule, index) => {
         try {
+            if (!rule.events) {
+                rule.events = [];
+            }
             // modulus and cycle are required for unambiguous conditioning (better to define it and know it is there in this case)
-            if (
-                isUndefinedOrNull(rule.modulus) ||
-                isUndefinedOrNull(rule.cycle) ||
-                rule.frequency === ONCE
-            ) {
+            if (isUndefinedOrNull(rule.modulus) || isUndefinedOrNull(rule.cycle) || rule.frequency === ONCE) {
                 rule.modulus = 0;
                 rule.cycle = 0;
             } else {
@@ -178,8 +168,7 @@ const prepareRules = ({ danielSan, dateStartString }) => {
 const executeEvents = ({ danielSan }) => {
     danielSan.events.forEach((rule, index) => {
         try {
-            rule.beginBalance =
-                index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
+            rule.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
             rule.endBalance = rule.beginBalance + rule.amount;
         } catch (err) {
             throw errorDisc(err, 'error in executeEvents()', { rule, index });
@@ -236,7 +225,9 @@ const findBalance = (danielSan = {}) => {
             danielSan
         };
     } catch (err) {
-        const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died', { events: danielSan.events });
+        const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died', {
+            events: danielSan.events
+        });
         return error;
     }
 };
