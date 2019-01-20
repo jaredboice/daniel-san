@@ -63,8 +63,8 @@ const danielSan = {
             amount: -5.00,
             dateStart: '2019-01-01',
             dateEnd: null,
-            excluding: { // excluding can be used for all STANDARD_EVENTS - also, exclusion hits will still cycle the modulus
-                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
+            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
+                weekdays: [SATURDAY, SUNDAY], // exclusions these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -293,7 +293,8 @@ const danielSan = {
 
 ## Exclusions
 
-Exclusions will skip an event trigger entirely. _(For Standard Events making use of the modulus/cycle operators, exclusion hits will still cycle the modulus)_
+Exclusions will skip an event trigger entirely. 
+_(When making use of the modulus/cycle operators on STANDARD_EVENTS, exclusion hits will still cycle the modulus)_
 
 
 ```javascript
@@ -310,8 +311,8 @@ const danielSan = {
             amount: -5.00,
             dateStart: '2019-01-01',
             dateEnd: null,
-            excluding: { // excluding can be used for all STANDARD_EVENTS - also, exclusion hits will still cycle the modulus
-                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
+            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
+                weekdays: [SATURDAY, SUNDAY], // exclusions these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }

@@ -1,14 +1,16 @@
 const moment = require('moment');
-const errorDisc = require('../utility/errorHandling');
+const { errorDisc } = require('../utility/errorHandling');
 const { TimeStream, streamForward, streamBackward } = require('../timeStream');
 const {
     getRelevantDateSegmentByFrequency,
     flagRuleForRetirement,
-    retireRules
+    retireRules,
+    exclusionsPhase
 } = require('../standardEvents/common');
 const {
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
+    EXECUTION_REJECTED,
     MODIFIED,
     DATE_FORMAT_STRING,
     DAILY,
@@ -96,25 +98,28 @@ const findAllWeekdaysInTheMonth = (date) => {
 
 */
 const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
-    let processPhase;
+    let processPhase = EVALUATING_RULE_INSERTION;
     try {
         const nthProcessDays = rule.frequency;
         const weekdaysInMonth = findAllWeekdaysInTheMonth(date);
-        processPhase = EVALUATING_RULE_INSERTION;
         nthProcessDays.forEach((nthProcessDay) => {
             const objectKey = nthProcessDay.weekday;
             const sizeOfObjectKeyArray = weekdaysInMonth[objectKey].length;
-            processPhase = EXECUTING_RULE_INSERTION;
             weekdaysInMonth[objectKey].forEach((looperDate, looperDateIndex) => {
+                processPhase = EVALUATING_RULE_INSERTION;
                 if (
                     date.format(DATE_FORMAT_STRING) === looperDate &&
                     (nthProcessDay.nthId === looperDateIndex + 1 ||
                         nthProcessDay.nthId === 0 ||
                         (nthProcessDay.nthId < 0 && looperDateIndex === sizeOfObjectKeyArray - 1))
                 ) {
-                    rule.thisDate = date.format(DATE_FORMAT_STRING);
-                    danielSan.events.push({ ...rule });
-                    processPhase = MODIFIED;
+                    processPhase = EXECUTING_RULE_INSERTION;
+                    processPhase = exclusionsPhase({ rule, date, processPhase });
+                    if (processPhase !== EXECUTION_REJECTED) {
+                        rule.thisDate = date.format(DATE_FORMAT_STRING);
+                        danielSan.events.push({ ...rule });
+                        processPhase = MODIFIED;
+                    }
                 }
             });
         });
@@ -130,7 +135,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
 
 */
 const weekdayOnDate = ({ danielSan, rule, date }) => {
-    let processPhase;
+    let processPhase = EVALUATING_RULE_INSERTION;
     try {
         const thisProcessDate = getRelevantDateSegmentByFrequency({
             frequency: MONTHLY,
@@ -140,12 +145,14 @@ const weekdayOnDate = ({ danielSan, rule, date }) => {
             frequency: WEEKLY,
             date: date
         });
-        processPhase = EVALUATING_RULE_INSERTION;
         if (rule.processDate === thisProcessDate && rule.frequency === thisWeekday) {
             processPhase = EXECUTING_RULE_INSERTION;
-            rule.thisDate = date.format(DATE_FORMAT_STRING);
-            danielSan.events.push({ ...rule });
-            processPhase = MODIFIED;
+            processPhase = exclusionsPhase({ rule, date, processPhase });
+            if (processPhase !== EXECUTION_REJECTED) {
+                rule.thisDate = date.format(DATE_FORMAT_STRING);
+                danielSan.events.push({ ...rule });
+                processPhase = MODIFIED;
+            }
         }
         return processPhase;
     } catch (err) {

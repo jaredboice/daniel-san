@@ -1,5 +1,5 @@
 const moment = require('moment');
-const errorDisc = require('../utility/errorHandling');
+const { errorDisc } = require('../utility/errorHandling');
 const { TimeStream, streamForward } = require('../timeStream');
 const {
     getRelevantDateSegmentByFrequency,

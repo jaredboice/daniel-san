@@ -1,5 +1,5 @@
 const { TimeStream } = require('./timeStream');
-const errorDisc = require('./utility/errorHandling');
+const { errorDisc } = require('./utility/errorHandling');
 const { buildStandardEvent } = require('./standardEvents');
 const { nthWeekdaysOfMonth, weekdayOnDate } = require('./specialEvents');
 const {

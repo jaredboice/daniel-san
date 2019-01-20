@@ -7,4 +7,6 @@ const errorDisc = (error = {}, message = '', moreInfo = {}) => {
     };
 };
 
-module.exports = errorDisc;
+module.exports = {
+    errorDisc
+};
