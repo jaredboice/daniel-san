@@ -21,7 +21,7 @@
 ```javascript
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
-const { STANDARD_OPERATION, MONTHLY, WEEKLY, FRIDAY_NUM } = require('daniel-san/constants');
+const { STANDARD_OPERATION, MONTHLY, WEEKLY, DAILY, FRIDAY_NUM, SATURDAY_NUM, SUNDAY_NUM } = require('daniel-san/constants');
 ```
 
 **Defining Accounts/Cashflow Rules**
@@ -72,6 +72,8 @@ const danielSan = {
     ],
     cashflowOperations: [] // future balance projections stored here
 };
+
+const craneKick = findBalance(danielSan);
 ```
 
 **Execution Example**
