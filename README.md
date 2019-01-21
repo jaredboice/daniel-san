@@ -127,9 +127,9 @@ const danielSan = {
 };
 ```
 
-**Special Eventss**
+**Special Events**
 
--   `type: 'NTH_WEEKDAYS_OF_MONTH'` _(trigger an event process every 1st and 3rd Friday)
+-   `type: 'NTH_WEEKDAYS_OF_MONTH'` _(trigger an event process every 1st and 3rd Friday)_
 -   `type: 'WEEKDAY_ON_DATE'` _(trigger an event process every Friday the 13th)_
 
 _special events do not utilize the frequency attribute, nor modulus/cycle/syncDate_
@@ -245,10 +245,10 @@ const danielSan = {
         },
     ],
     events: [] // future balance projections stored here
-};
+};fs
 ```
 
-## Modulus/Cycle
+## Modulus/Cycle _(only for STANDARD_EVENTS)_
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
