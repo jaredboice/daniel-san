@@ -49,7 +49,7 @@ const danielSan = {
             amount: -97.00,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
-            processDate: FRIDAY, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
+            processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
@@ -64,7 +64,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
-                weekdays: [SATURDAY, SUNDAY], // exclusions these weekdays
+                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -204,7 +204,7 @@ const danielSan = {
             amount: -23.57,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
-            processDate: 0, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
+            processDate: 0, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
@@ -279,7 +279,7 @@ const danielSan = {
             amount: -97.00,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
-            processDate: FRIDAY, // 0-6 with 0 representing Sunday - weekday constants are available to be imported
+            processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
@@ -312,7 +312,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
-                weekdays: [SATURDAY, SUNDAY], // exclusions these weekdays
+                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['15', '30'], // exluding these dates on each month
                 exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
