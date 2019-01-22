@@ -118,9 +118,7 @@ const modulusPhase = ({ rule, processPhase }) => {
 /*
     exclusions: {
         weekdays: [SATURDAY, SUNDAY],
-        dates: ['11', '12', '13', '14', '15', '16', '17', '18', '19', '20'],
-        annualDates: ['12-24', '12-25'],
-        exactDates: ['2019-07-04', '2019-09-17', '2019-10-31']
+        dates: ['2019-07-04', '2019-09-17', '2019-10-31']
     }
 */
 const exclusionsPhase = ({ rule, date, processPhase }) => {
@@ -141,39 +139,10 @@ const exclusionsPhase = ({ rule, date, processPhase }) => {
         }
         if (rule.exclusions.dates && transientProcessPhase !== EXECUTION_REJECTED) {
             relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                frequency: MONTHLY,
-                date
-            });
-            anyMatch = rule.exclusions.dates.some((thisDate) => {
-                dynamicDateSegmentForExclusion = thisDate;
-                return (
-                    dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion ||
-                    _28DayCondition({
-                        processDate: dynamicDateSegmentForExclusion,
-                        date,
-                        frequency: MONTHLY
-                    })
-                );
-            });
-            if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
-        }
-        if (rule.exclusions.annualDates && transientProcessPhase !== EXECUTION_REJECTED) {
-            relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                frequency: ANNUALLY,
-                date
-            });
-            anyMatch = rule.exclusions.annualDates.some((thisDate) => {
-                dynamicDateSegmentForExclusion = thisDate;
-                return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
-            });
-            if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
-        }
-        if (rule.exclusions.exactDates && transientProcessPhase !== EXECUTION_REJECTED) {
-            relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
                 frequency: ONCE,
                 date
             });
-            anyMatch = rule.exclusions.exactDates.some((thisDate) => {
+            anyMatch = rule.exclusions.dates.some((thisDate) => {
                 dynamicDateSegmentForExclusion = thisDate;
                 return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
             });

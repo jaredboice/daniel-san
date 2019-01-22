@@ -65,9 +65,7 @@ const danielSan = {
             dateEnd: null,
             exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
-                dates: ['15', '30'], // exluding these dates on each month
-                annualDates: ['12-24', '12-25'], // excluding these dates each year
-                exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
+                dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
         }
     ],
@@ -314,9 +312,7 @@ const danielSan = {
             dateEnd: null,
             exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
-                dates: ['15', '30'], // exluding these dates on each month
-                annualDates: ['12-24', '12-25'], // excluding these dates each year
-                exactDates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
+                dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
         }
     ],
