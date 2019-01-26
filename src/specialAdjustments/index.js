@@ -1,11 +1,7 @@
 const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
 const { TimeStream, streamForward } = require('../timeStream');
-const {
-    getRelevantDateSegmentByFrequency,
-    flagRuleForRetirement,
-    retireRules
-} = require('../standardEvents/common');
+const { getRelevantDateSegmentByFrequency, flagRuleForRetirement, retireRules } = require('../standardEvents/common');
 const {
     DATE_DELIMITER,
     DATE_FORMAT_STRING,
@@ -123,7 +119,7 @@ const adjustAmountOnTheseDates = ({ rule, specialAdjustment }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     try {
         specialAdjustment.dates.forEach((looperDate, looperDateIndex) => {
-            if (looperDate === rule.thisDate) {
+            if (looperDate === rule.thisDate && rule.amount) {
                 rule.amount += specialAdjustment.amounts[looperDateIndex];
             }
             processPhase = MODIFIED;

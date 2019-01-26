@@ -15,7 +15,11 @@ const {
     DATE_FORMAT_STRING,
     STANDARD_EVENT,
     NTH_WEEKDAYS_OF_MONTH,
+    NTH_WEEKDAYS_OF_MONTH_ROUTINE,
+    NTH_WEEKDAYS_OF_MONTH_REMINDER,
     WEEKDAY_ON_DATE,
+    WEEKDAY_ON_DATE_ROUTINE,
+    WEEKDAY_ON_DATE_REMINDER,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
     ADJUST_AMOUNT_ON_THESE_DATES,
@@ -37,7 +41,9 @@ const {
     EXECUTING_RULE_INSERTION,
     EXECUTING_SPECIAL_ADJUSTMENT,
     MODIFIED,
-    RETIRING_RULES
+    RETIRING_RULES,
+    STANDARD_EVENT_ROUTINE,
+    STANDARD_EVENT_REMINDER
 } = require('./constants');
 
 const buildEvents = ({ danielSan, rules, date }) => {
@@ -48,12 +54,18 @@ const buildEvents = ({ danielSan, rules, date }) => {
             processPhase = DISCOVERING_EVENT_TYPE;
             switch (rule.type) {
                 case STANDARD_EVENT:
+                case STANDARD_EVENT_ROUTINE:
+                case STANDARD_EVENT_REMINDER:
                     processPhase = buildStandardEvent({ danielSan, rule, date });
                     break;
                 case NTH_WEEKDAYS_OF_MONTH:
+                case NTH_WEEKDAYS_OF_MONTH_ROUTINE:
+                case NTH_WEEKDAYS_OF_MONTH_REMINDER:
                     processPhase = nthWeekdaysOfMonth({ danielSan, rule, date });
                     break;
                 case WEEKDAY_ON_DATE:
+                case WEEKDAY_ON_DATE_ROUTINE:
+                case WEEKDAY_ON_DATE_REMINDER:
                     processPhase = weekdayOnDate({ danielSan, rule, date });
                     break;
                 default:
@@ -96,6 +108,52 @@ const buildEvents = ({ danielSan, rules, date }) => {
     }
 };
 
+const compareByPropertyKey = (a, b, propertyKey) => {
+    if (a[propertyKey] && b[propertyKey]) {
+        const paramA = (typeof a[propertyKey] === 'string') ? a[propertyKey].toLowerCase() : a[propertyKey];
+        const paramB = (typeof b[propertyKey] === 'string') ? b[propertyKey].toLowerCase() : b[propertyKey];
+        if (paramA > paramB) {
+            return 1;
+        } else if (paramA < paramB) {
+            return -1;
+            // eslint-disable-next-line no-else-return
+        } else {
+            return 0;
+        }
+    } else if (a && !b) {
+        return 1;
+    } else if (b && !a) {
+        return -1;
+    } else {
+        return 0;
+    }
+};
+
+const compareTime = (a, b) => {
+    if (a && b) {
+        const paramA = a.toLowerCase();
+        const paramB = b.toLowerCase();
+        if (paramA.includes('pm') && paramB.includes('am')) {
+            return 1;
+        } else if (paramA.includes('am') && paramB.includes('pm')) {
+            return -1;
+        } else if (paramA > paramB) {
+            return 1;
+        } else if (paramA < paramB) {
+            return -1;
+            // eslint-disable-next-line no-else-return
+        } else {
+            return 0;
+        }
+    } else if (a && !b) {
+        return 1;
+    } else if (b && !a) {
+        return -1;
+    } else {
+        return 0;
+    }
+};
+
 const sortDanielSan = (danielSan) => {
     danielSan.events.sort((a, b) => {
         const thisDateA = a.thisDate.split(DATE_DELIMITER).join('');
@@ -104,9 +162,18 @@ const sortDanielSan = (danielSan) => {
             return 1;
         } else if (thisDateA < thisDateB) {
             return -1;
+        } else if (thisDateA === thisDateB) {
+            if (a.timeStart || b.timeStart) {
+                return compareTime(a.timeStart, b.timeStart);
+                // eslint-disable-next-line no-else-return
+            } else {
+                return compareByPropertyKey(a, b, 'sortPriority');
+            }
         } else {
             return 0;
         }
+        // eslint-disable-next-line no-unreachable
+        return 0; // this line is unreachable/dead code, but it satisfies another linting error
     });
 };
 
@@ -136,30 +203,34 @@ const deleteIrrelevantRules = ({ danielSan, dateStartString }) => {
 };
 
 const prepareRules = ({ danielSan, dateStartString }) => {
+    // to avoid unnecessary future checks to see if certain properties exist, we will add them with default values
     if (!danielSan.events) {
         danielSan.events = [];
     }
-    // bring modulus/cycle up-to-date for each rule
+    if (!danielSan.beginBalance) {
+        danielSan.beginBalance = 0;
+    }
     danielSan.rules.forEach((rule, index) => {
-        try {
-            // modulus and cycle are required for unambiguous conditioning (better to define it and know it is there in this case)
-            if (isUndefinedOrNull(rule.modulus) || isUndefinedOrNull(rule.cycle) || rule.frequency === ONCE) {
-                rule.modulus = 0;
-                rule.cycle = 0;
-            } else {
-                // cycleModulus
-                // eslint-disable-next-line no-lonely-if
-                if (rule.syncDate && rule.syncDate < dateStartString) {
-                    cycleModulusUpToDate({ rule, dateStartString });
-                } else if (rule.syncDate && rule.syncDate > dateStartString) {
-                    cycleModulusDownToDate({ rule, dateStartString });
+        if (rule.type === STANDARD_EVENT || STANDARD_EVENT_ROUTINE) {
+            try {
+                if (isUndefinedOrNull(rule.modulus) || isUndefinedOrNull(rule.cycle) || rule.frequency === ONCE) {
+                    rule.modulus = 0;
+                    rule.cycle = 0;
+                } else {
+                    // bring modulus/cycle up-to-date for each rule
+                    // eslint-disable-next-line no-lonely-if
+                    if (rule.syncDate && rule.syncDate < dateStartString) {
+                        cycleModulusUpToDate({ rule, dateStartString });
+                    } else if (rule.syncDate && rule.syncDate > dateStartString) {
+                        cycleModulusDownToDate({ rule, dateStartString });
+                    }
                 }
+                if (rule.frequency === DAILY) {
+                    rule.processDate = null;
+                }
+            } catch (err) {
+                throw errorDisc(err, 'error in prepareRules()', { index, dateStartString, rule });
             }
-            if (rule.frequency === DAILY) {
-                rule.processDate = null;
-            }
-        } catch (err) {
-            throw errorDisc(err, 'error in prepareRules()', { index, dateStartString, rule });
         }
     });
 };
@@ -168,7 +239,7 @@ const executeEvents = ({ danielSan }) => {
     danielSan.events.forEach((rule, index) => {
         try {
             rule.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
-            rule.endBalance = rule.beginBalance + rule.amount;
+            rule.endBalance = rule.amount ? rule.beginBalance + rule.amount : rule.beginBalance; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
         } catch (err) {
             throw errorDisc(err, 'error in executeEvents()', { rule, index });
         }

@@ -63,7 +63,7 @@ const danielSan = {
             amount: -5.00,
             dateStart: '2019-01-01',
             dateEnd: null,
-            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
+            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENT)
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -87,7 +87,9 @@ const craneKick = findBalance(danielSan);
 
 **Standard Events**
 
--   `type: 'STANDARD_EVENTS'` _(see "Modulus/Cycle" to review an advanced feature exclusive to Standard Events)_
+-   `type: 'STANDARD_EVENT'` _(see "Modulus/Cycle" to review an advanced feature exclusive to Standard Events)_
+-   `type: 'STANDARD_EVENT_ROUTINE'` _(same as above but does not need an amount field)_
+-   `type: 'STANDARD_EVENT_REMINDER'` _(same as above but does not need an amount field)_
 
 _includes all standard frequencies: 'ANNUALLY', 'MONTHLY', 'WEEKLY', 'DAILY', and 'ONCE'_
 
@@ -129,7 +131,11 @@ const danielSan = {
 **Special Events**
 
 -   `type: 'NTH_WEEKDAYS_OF_MONTH'` _(trigger an event process every 1st and 3rd Friday)_
+-   `type: 'NTH_WEEKDAYS_OF_MONTH_ROUTINE'` _(same as above but does not need an amount field)_
+-   `type: 'NTH_WEEKDAYS_OF_MONTH_REMINDER'` _(same as above but does not need an amount field)_
 -   `type: 'WEEKDAY_ON_DATE'` _(trigger an event process every Friday the 13th)_
+-   `type: 'WEEKDAY_ON_DATE_ROUTINE'` _(same as above but does not need an amount field)_
+-   `type: 'WEEKDAY_ON_DATE_REMINDER'` _(same as above but does not need an amount field)_
 
 _special events do not utilize the frequency attribute, nor modulus/cycle/syncDate_
 
@@ -247,7 +253,7 @@ const danielSan = {
 };fs
 ```
 
-## Modulus/Cycle _(only for STANDARD_EVENTS)_
+## Modulus/Cycle _(only for STANDARD_EVENT)_
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
@@ -293,7 +299,7 @@ const danielSan = {
 ## Exclusions
 
 Exclusions will skip an event trigger entirely. 
-_(When making use of the modulus/cycle operators on STANDARD_EVENTS, exclusion hits will still cycle the modulus)_
+_(When making use of the modulus/cycle operators on STANDARD_EVENT, exclusion hits will still cycle the modulus)_
 
 
 ```javascript
@@ -310,7 +316,7 @@ const danielSan = {
             amount: -5.00,
             dateStart: '2019-01-01',
             dateEnd: null,
-            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS)
+            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENT)
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -332,6 +338,16 @@ terminal({ danielSan, terminalOptions, error });
 **Terminal Type Options**
 
 -   `type: 'STANDARD_TERMINAL_OUTPUT'` \_(standard command-line functionality)\_
+-   `type: 'STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE'` \_(also outputs obsolete rules that shoud be deleted)\_
+-   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` \_(display only the critical snapshots)\_
+-   `type: 'DISPLAY_EVENTS'` \_(display only the events, nothing fancy)\_
+-   `type: 'DISPLAY_EVENTS_BY_GROUPS'` \_(passing searchValues: ['Group1', 'Group2'] will search against the optional group property)\_
+-   `type: 'DISPLAY_EVENTS_BY_NAMES'` \_(passing searchValues: ['Name1', 'Name2'] will search against the name property)\_
+-   `type: 'DISPLAY_EVENTS_BY_TYPE'` \_(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)\_
+-   `type: 'DISPLAY_IMPORTANT_EVENTS'` \_(display events with the optional attribute important: true)\_
+-   `type: 'DISPLAY_TIME_EVENTS'` \_(display events with the optional attribute timeStart)\_
+-   `type: 'DISPLAY_ROUTINE_EVENTS'` \_(display events that contain 'ROUTINE' somewhere in the string of the type field)\_
+-   `type: 'DISPLAY_REMINDER_EVENTS'` \_(display events that contain 'REMINDER' somewhere in the string of the type field)\_
 
 **Terminal Mode Options**
 
@@ -340,7 +356,11 @@ terminal({ danielSan, terminalOptions, error });
 
 **Critical Snapshots**
 
-Passing a criticalThreshold property will log snapshots to the command-line when the endBalance is less than the criticalThreshold.
+Passing a criticalThreshold property will log snapshots to the command-line when the endBalance is less than the criticalThreshold, for STANDARD_TERMINAL_OUTPUT and DISPLAY_CRITICAL_SNAPSHOTS.
+
+**Search Values**
+
+searchValues: [string1, string2, string3] is used for the DISPLAY_EVENTS_BY_* terminal types. Case-Sensitive!
 
 **Terminal Option Configuration Example**
 
@@ -348,7 +368,16 @@ Passing a criticalThreshold property will log snapshots to the command-line when
     const terminalOptions = {
         type: STANDARD_TERMINAL_OUTPUT,
         mode: CONCISE,
-        criticalThreshold: 577.00
+        criticalThreshold: 577.00,
+        // the formatting object is optional as the following values are defaulted for you which will format amount, beginBalance, and endBalance in mode: CONCISE
+        formatting: {
+            minIntegerDigits: 1,
+            minDecimalDigits: 2,
+            maxDecimalDigits: 2,
+            locale: 'en-US',
+            style: 'currency', // change to 'decimal' to remove the prepended currency symbol if using the default formattingFunction
+            currency: 'USD'
+        } // in addition, you can also pass formattingFunction into the formatting object above and all of the above parameters will be passed into that function call for you
     };
 ```
 
@@ -371,6 +400,57 @@ if (eventResults.err) {
 }
 ```
 
+## More Useful Features
+
+**Additional Attributes**
+
+```javascript
+const danielSan = {
+    beginBalance: 1618.03,
+    endBalance: null,
+    dateStart: '2019-03-20',
+    dateEnd: '2019-12-13',
+    rules: [
+        { // rule 1
+            name: 'monthly bitcoin investment',
+            group: 'investments' // optional: assign a group category and filter the results with DISPLAY_EVENTS_BY_GROUPS
+            amount: -79.83, 
+            type: STANDARD_EVENT,
+            frequency: MONTHLY,
+            processDate: '30',
+            timeStart: '09:11am', // optional: assigning a timeStart attribute will order the event appropriately
+            sortPriority: 25,   // optional: forces higher sort priority for event operations, the lower the sortPriority value, 
+                                // the sooner it is applied in the event sequence, (thisDate and timeStart take precedence over sortPriority)
+            notes: 'some message to your future self', // optional
+            important: true, // optional: assign important: true and filter the results with DISPLAY_IMPORTANT_EVENTS
+            dateStart: '2019-01-01'
+            dateEnd: null,
+            modulus: 1,
+            cycle: 1 
+        }
+    ],
+    events: [] // future balance projections stored here
+};
+```
+
+**Useful Functions**
+
+```javascript
+const {     
+    findCriticalSnapshots,
+    findRulesToRetire,
+    findEventsWithProperty,
+    findEventsByPropertyKeyAndValues,
+    findEventsWithPropertyKeyContainingSubstring } = require('daniel-san/analytics');
+
+// see the source code for real example cases of the following exposed funtions
+const criticalSnapshots = findCriticalSnapshots({ danielSan, terminalOptions }); // uses the criticalThreshold field
+const rulesToRetire = findRulesToRetire({ danielSan }); // finds rules with a dateEnd lower than the dateStart value for the projection
+const eventsWithProperty = findEventsWithProperty({ events: danielSan.events, propertyKey }); // eg. propertyKey: 'timeStart'
+const eventsWithValues = findEventsByPropertyKeyAndValues({ events: danielSan.events, propertyKey, searchValues }); // eg. propertyKey: 'group', searchValues: ['Group 1', 'Group 2']
+const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubstring({ events: danielSan.events, propertyKey, substring }); // eg. propertyKey: 'type', substring: 'ROUTINE'
+```
+
 ## Constants
 
 **Constants Available For Import**
@@ -378,8 +458,14 @@ if (eventResults.err) {
 ```javascript
 const { 
     STANDARD_EVENT,
+    STANDARD_EVENT_ROUTINE,
+    STANDARD_EVENT_REMINDER,
     NTH_WEEKDAYS_OF_MONTH,
+    NTH_WEEKDAYS_OF_MONTH_ROUTINE,
+    NTH_WEEKDAYS_OF_MONTH_REMINDER,
     WEEKDAY_ON_DATE,
+    WEEKDAY_ON_DATE_ROUTINE,
+    WEEKDAY_ON_DATE_REMINDER,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
     ADJUST_AMOUNT_ON_THESE_DATES,
@@ -397,6 +483,16 @@ const {
     SATURDAY,
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
-    CONCISE
+    CONCISE,
+    STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE,
+    DISPLAY_EVENTS_BY_GROUPS,
+    DISPLAY_EVENTS_BY_NAMES,
+    DISPLAY_EVENTS_BY_TYPES,
+    DISPLAY_EVENTS,
+    DISPLAY_CRITICAL_SNAPSHOTS,
+    DISPLAY_IMPORTANT_EVENTS,
+    DISPLAY_TIME_EVENTS,
+    DISPLAY_ROUTINE_EVENTS,
+    DISPLAY_REMINDER_EVENTS,
 } = require('daniel-san/constants');
 ```
