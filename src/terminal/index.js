@@ -11,7 +11,6 @@ const {
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE,
-    STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE,
     DISPLAY_EVENTS_BY_GROUPS,
     DISPLAY_EVENTS_BY_NAMES,
     DISPLAY_EVENTS_BY_TYPES,
@@ -20,7 +19,8 @@ const {
     DISPLAY_IMPORTANT_EVENTS,
     DISPLAY_TIME_EVENTS,
     DISPLAY_ROUTINE_EVENTS,
-    DISPLAY_REMINDER_EVENTS
+    DISPLAY_REMINDER_EVENTS,
+    DISPLAY_RULES_TO_RETIRE
 } = require('../constants');
 
 const TERMINAL_BOUNDARY_LIMIT = 89;
@@ -250,6 +250,12 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
     }
 };
 
+const displayRulesToRetire = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    showRulesToRetire({ danielSan, terminalOptions });
+    terminalBoundary(5);
+};
+
 const displayCriticalThresholdEvents = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
@@ -273,9 +279,6 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     lineSeparator(2);
     if (terminalOptions.type !== DISPLAY_EVENTS) {
         showCriticalSnapshots({ danielSan, terminalOptions });
-        if (terminalOptions.type === STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE) {
-            showRulesToRetire({ danielSan, terminalOptions });
-        }
     }
     terminalBoundary(5);
 };
@@ -356,7 +359,6 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             switch (terminalOptions.type) {
             case DISPLAY_EVENTS:
             case STANDARD_TERMINAL_OUTPUT:
-            case STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE:
                 standardTerminalOutput({ danielSan, terminalOptions });
                 break;
             case DISPLAY_EVENTS_BY_GROUPS:
@@ -412,6 +414,9 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                     propertyKey: 'type',
                     substring: 'REMINDER'
                 });
+                break;
+            case DISPLAY_RULES_TO_RETIRE:
+                displayRulesToRetire({ danielSan, terminalOptions });
                 break;
             default:
                 break;

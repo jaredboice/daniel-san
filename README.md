@@ -338,7 +338,6 @@ terminal({ danielSan, terminalOptions, error });
 **Terminal Type Options**
 
 -   `type: 'STANDARD_TERMINAL_OUTPUT'` \_(standard command-line functionality)\_
--   `type: 'STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE'` \_(also outputs obsolete rules that shoud be deleted)\_
 -   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` \_(display only the critical snapshots)\_
 -   `type: 'DISPLAY_EVENTS'` \_(display only the events, nothing fancy)\_
 -   `type: 'DISPLAY_EVENTS_BY_GROUPS'` \_(passing searchValues: ['Group1', 'Group2'] will search against the optional group property)\_
@@ -348,6 +347,7 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_TIME_EVENTS'` \_(display events with the optional attribute timeStart)\_
 -   `type: 'DISPLAY_ROUTINE_EVENTS'` \_(display events that contain 'ROUTINE' somewhere in the string of the type field)\_
 -   `type: 'DISPLAY_REMINDER_EVENTS'` \_(display events that contain 'REMINDER' somewhere in the string of the type field)\_
+-   `type: 'DISPLAY_RULES_TO_RETIRE'` \_(displays obsolete rules to retire but only works if you have not already executed findBalance)\_
 
 **Terminal Mode Options**
 
@@ -485,7 +485,6 @@ const {
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE,
-    STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE,
     DISPLAY_EVENTS_BY_GROUPS,
     DISPLAY_EVENTS_BY_NAMES,
     DISPLAY_EVENTS_BY_TYPES,
@@ -495,5 +494,6 @@ const {
     DISPLAY_TIME_EVENTS,
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
+    DISPLAY_RULES_TO_RETIRE
 } = require('daniel-san/constants');
 ```
