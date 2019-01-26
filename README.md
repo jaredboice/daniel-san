@@ -337,17 +337,17 @@ terminal({ danielSan, terminalOptions, error });
 
 **Terminal Type Options**
 
--   `type: 'STANDARD_TERMINAL_OUTPUT'` \_(standard command-line functionality)\_
--   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` \_(display only the critical snapshots)\_
--   `type: 'DISPLAY_EVENTS'` \_(display only the events, nothing fancy)\_
--   `type: 'DISPLAY_EVENTS_BY_GROUPS'` \_(passing searchValues: ['Group1', 'Group2'] will search against the optional group property)\_
--   `type: 'DISPLAY_EVENTS_BY_NAMES'` \_(passing searchValues: ['Name1', 'Name2'] will search against the name property)\_
--   `type: 'DISPLAY_EVENTS_BY_TYPE'` \_(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)\_
--   `type: 'DISPLAY_IMPORTANT_EVENTS'` \_(display events with the optional attribute important: true)\_
--   `type: 'DISPLAY_TIME_EVENTS'` \_(display events with the optional attribute timeStart)\_
--   `type: 'DISPLAY_ROUTINE_EVENTS'` \_(display events that contain 'ROUTINE' somewhere in the string of the type field)\_
--   `type: 'DISPLAY_REMINDER_EVENTS'` \_(display events that contain 'REMINDER' somewhere in the string of the type field)\_
--   `type: 'DISPLAY_RULES_TO_RETIRE'` \_(displays obsolete rules to retire but only works if you have not already executed findBalance)\_
+-   `type: 'STANDARD_TERMINAL_OUTPUT'` _(standard command-line functionality)_
+-   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical snapshots)_
+-   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy)_
+-   `type: 'DISPLAY_EVENTS_BY_GROUPS'` _(passing searchValues: ['Group1', 'Group2'] into terminalOptions will search against the optional group property)_
+-   `type: 'DISPLAY_EVENTS_BY_NAMES'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
+-   `type: 'DISPLAY_EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
+-   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
+-   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart)_
+-   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
+-   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
+-   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire but only works if you have not already executed findBalance)_
 
 **Terminal Mode Options**
 
