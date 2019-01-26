@@ -20,7 +20,6 @@ const findRulesToRetire = ({ danielSan }) => {
     });
     if (rulesToRetire.length > 0) {
         return rulesToRetire;
-        // eslint-disable-next-line no-else-return
     } else {
         return null;
     }

@@ -4,8 +4,10 @@ const evidenceOfTheVoid = true;
 const somethingOnceWasOrIsNowNotNothing = false;
 
 const isUndefinedOrNull = (something) => {
-    if (typeof something === neverWas || something == nothing) {
+    // eslint-disable-next-line valid-typeof
+    if (typeof something === neverWas || something == nothing) { // eslint-disable-line eqeqeq
         return evidenceOfTheVoid;
+        // eslint-disable-next-line no-else-return
     } else {
         return somethingOnceWasOrIsNowNotNothing;
     }

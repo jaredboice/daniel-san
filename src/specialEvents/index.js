@@ -1,10 +1,8 @@
 const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
-const { TimeStream, streamForward, streamBackward } = require('../timeStream');
+const { streamForward } = require('../timeStream');
 const {
     getRelevantDateSegmentByFrequency,
-    flagRuleForRetirement,
-    retireRules,
     exclusionsPhase
 } = require('../standardEvents/common');
 const {
@@ -13,7 +11,6 @@ const {
     EXECUTION_REJECTED,
     MODIFIED,
     DATE_FORMAT_STRING,
-    DAILY,
     WEEKLY,
     MONTHLY,
     SUNDAY,
@@ -50,27 +47,29 @@ const findAllWeekdaysInTheMonth = (date) => {
                     date: thisLooperDate
                 });
                 switch (thisWeekday) {
-                    case SUNDAY:
-                        monthlyWeekdayConstruct[SUNDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case MONDAY:
-                        monthlyWeekdayConstruct[MONDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case TUESDAY:
-                        monthlyWeekdayConstruct[TUESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case WEDNESDAY:
-                        monthlyWeekdayConstruct[WEDNESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case THURSDAY:
-                        monthlyWeekdayConstruct[THURSDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case FRIDAY:
-                        monthlyWeekdayConstruct[FRIDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case SATURDAY:
-                        monthlyWeekdayConstruct[SATURDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
+                case SUNDAY:
+                    monthlyWeekdayConstruct[SUNDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case MONDAY:
+                    monthlyWeekdayConstruct[MONDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case TUESDAY:
+                    monthlyWeekdayConstruct[TUESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case WEDNESDAY:
+                    monthlyWeekdayConstruct[WEDNESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case THURSDAY:
+                    monthlyWeekdayConstruct[THURSDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case FRIDAY:
+                    monthlyWeekdayConstruct[FRIDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case SATURDAY:
+                    monthlyWeekdayConstruct[SATURDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                default:
+                    break;
                 }
             } catch (err) {
                 throw errorDisc(err, 'error in processThisLooperDate()', { thisLooperDate });
@@ -139,11 +138,11 @@ const weekdayOnDate = ({ danielSan, rule, date }) => {
     try {
         const thisProcessDate = getRelevantDateSegmentByFrequency({
             frequency: MONTHLY,
-            date: date
+            date
         });
         const thisWeekday = getRelevantDateSegmentByFrequency({
             frequency: WEEKLY,
-            date: date
+            date
         });
         if (rule.processDate === thisProcessDate && rule.frequency === thisWeekday) {
             processPhase = EXECUTING_RULE_INSERTION;

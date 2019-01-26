@@ -1,32 +1,11 @@
-const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
-const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
 const { getRelevantDateSegmentByFrequency, _28DayCondition, modulusPhase, exclusionsPhase } = require('../standardEvents/common');
 const {
-    DATE_DELIMITER,
     DATE_FORMAT_STRING,
-    STANDARD_EVENT,
-    NTH_WEEKDAYS_OF_MONTH,
-    WEEKDAY_ON_DATE,
-    MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
-    ADJUST_AMOUNT_ON_THESE_DATES,
-    ANNUALLY,
-    MONTHLY,
-    WEEKLY,
     DAILY,
-    ONCE,
-    SUNDAY,
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
-    DISCOVERING_EVENT_TYPE,
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
-    EXECUTION_REJECTED,
     MODIFIED
 } = require('../constants');
 

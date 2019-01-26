@@ -54,6 +54,7 @@ module.exports = {
         'arrow-parens': 1,
         'arrow-body-style': [0, 'as-needed'],
         'function-paren-newline': [0, 'as-needed'],
-        'object-curly-newline': 0
+        'object-curly-newline': 0,
+        "no-else-return": 0
     }
 };

@@ -1,5 +1,5 @@
 const cycleModulusUp = (rule) => {
-    let newCycle = (rule.cycle % rule.modulus) + 1;
+    const newCycle = (rule.cycle % rule.modulus) + 1;
     rule.cycle = newCycle;
 };
 
@@ -18,5 +18,7 @@ const isCycleAtModulus = (rule) => {
 };
 
 module.exports = {
-    cycleModulusUp, cycleModulusDown, isCycleAtModulus
+    cycleModulusUp,
+    cycleModulusDown,
+    isCycleAtModulus
 };

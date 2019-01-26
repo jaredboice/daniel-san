@@ -7,12 +7,11 @@ const {
     moveThisProcessDateAfterTheseDates,
     adjustAmountOnTheseDates
 } = require('./specialAdjustments');
-const { getRelevantDateSegmentByFrequency, flagRuleForRetirement, retireRules } = require('./standardEvents/common');
+const { flagRuleForRetirement, retireRules } = require('./standardEvents/common');
 const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle/cycleModulusToDate');
 const { isUndefinedOrNull } = require('./utility/validation');
 const {
     DATE_DELIMITER,
-    DATE_FORMAT_STRING,
     STANDARD_EVENT,
     NTH_WEEKDAYS_OF_MONTH,
     NTH_WEEKDAYS_OF_MONTH_ROUTINE,
@@ -23,22 +22,9 @@ const {
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
     ADJUST_AMOUNT_ON_THESE_DATES,
-    ANNUALLY,
-    MONTHLY,
-    WEEKLY,
     DAILY,
     ONCE,
-    SUNDAY,
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
-    BUILD_DATE_STRING,
     DISCOVERING_EVENT_TYPE,
-    EVALUATING_RULE_INSERTION,
-    EXECUTING_RULE_INSERTION,
     EXECUTING_SPECIAL_ADJUSTMENT,
     MODIFIED,
     RETIRING_RULES,
@@ -53,49 +39,49 @@ const buildEvents = ({ danielSan, rules, date }) => {
             danielSan.cashflowRetiredRuleIndices = [];
             processPhase = DISCOVERING_EVENT_TYPE;
             switch (rule.type) {
-                case STANDARD_EVENT:
-                case STANDARD_EVENT_ROUTINE:
-                case STANDARD_EVENT_REMINDER:
-                    processPhase = buildStandardEvent({ danielSan, rule, date });
-                    break;
-                case NTH_WEEKDAYS_OF_MONTH:
-                case NTH_WEEKDAYS_OF_MONTH_ROUTINE:
-                case NTH_WEEKDAYS_OF_MONTH_REMINDER:
-                    processPhase = nthWeekdaysOfMonth({ danielSan, rule, date });
-                    break;
-                case WEEKDAY_ON_DATE:
-                case WEEKDAY_ON_DATE_ROUTINE:
-                case WEEKDAY_ON_DATE_REMINDER:
-                    processPhase = weekdayOnDate({ danielSan, rule, date });
-                    break;
-                default:
-                    break;
+            case STANDARD_EVENT:
+            case STANDARD_EVENT_ROUTINE:
+            case STANDARD_EVENT_REMINDER:
+                processPhase = buildStandardEvent({ danielSan, rule, date });
+                break;
+            case NTH_WEEKDAYS_OF_MONTH:
+            case NTH_WEEKDAYS_OF_MONTH_ROUTINE:
+            case NTH_WEEKDAYS_OF_MONTH_REMINDER:
+                processPhase = nthWeekdaysOfMonth({ danielSan, rule, date });
+                break;
+            case WEEKDAY_ON_DATE:
+            case WEEKDAY_ON_DATE_ROUTINE:
+            case WEEKDAY_ON_DATE_REMINDER:
+                processPhase = weekdayOnDate({ danielSan, rule, date });
+                break;
+            default:
+                break;
             }
             if (processPhase === MODIFIED && danielSan.events[danielSan.events.length - 1].specialAdjustments) {
                 // note: execute specialAdjustments if exists
                 processPhase = EXECUTING_SPECIAL_ADJUSTMENT;
                 danielSan.events[danielSan.events.length - 1].specialAdjustments.forEach((specialAdjustment) => {
                     switch (specialAdjustment.type) {
-                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
-                            moveThisProcessDateAfterTheseWeekdays({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
-                            moveThisProcessDateAfterTheseDates({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        case ADJUST_AMOUNT_ON_THESE_DATES:
-                            adjustAmountOnTheseDates({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        default:
-                            break;
+                    case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
+                        moveThisProcessDateAfterTheseWeekdays({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
+                        moveThisProcessDateAfterTheseDates({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    case ADJUST_AMOUNT_ON_THESE_DATES:
+                        adjustAmountOnTheseDates({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    default:
+                        break;
                     }
                 });
             }
@@ -104,14 +90,14 @@ const buildEvents = ({ danielSan, rules, date }) => {
             retireRules({ danielSan });
         });
     } catch (err) {
-        throw errorDisc(err, 'error in buildEvents()', { date, processPhase, rules });
+        throw errorDisc(err, 'error in buildEvents()', { date, processPhase });
     }
 };
 
 const compareByPropertyKey = (a, b, propertyKey) => {
     if (a[propertyKey] && b[propertyKey]) {
-        const paramA = (typeof a[propertyKey] === 'string') ? a[propertyKey].toLowerCase() : a[propertyKey];
-        const paramB = (typeof b[propertyKey] === 'string') ? b[propertyKey].toLowerCase() : b[propertyKey];
+        const paramA = typeof a[propertyKey] === 'string' ? a[propertyKey].toLowerCase() : a[propertyKey];
+        const paramB = typeof b[propertyKey] === 'string' ? b[propertyKey].toLowerCase() : b[propertyKey];
         if (paramA > paramB) {
             return 1;
         } else if (paramA < paramB) {
@@ -246,7 +232,7 @@ const executeEvents = ({ danielSan }) => {
     });
 };
 
-const checkForInputErrors = ({ danielSan, dateStartString, dateEndString, rules }) => {
+const checkForInputErrors = ({ danielSan, dateStartString, dateEndString }) => {
     let errorMessage = null;
     if (
         isUndefinedOrNull(danielSan) ||
@@ -295,9 +281,7 @@ const findBalance = (danielSan = {}) => {
             danielSan
         };
     } catch (err) {
-        const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died', {
-            events: danielSan.events
-        });
+        const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died');
         return error;
     }
 };

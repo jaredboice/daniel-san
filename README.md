@@ -391,7 +391,7 @@ const terminal = require('daniel-san/terminal');
 const eventResults = findBalance(waxOn.danielSan);
 if (eventResults.err) {
     if (terminalOptions) { 
-        terminal({ error: eventResults.err });
+        terminal({ error: eventResults });
     }
 } else {
     if {
@@ -444,6 +444,7 @@ const {
     findEventsWithPropertyKeyContainingSubstring } = require('daniel-san/analytics');
 
 // see the source code for real example cases of the following exposed funtions
+// there are also useful functions in the utility directory
 const criticalSnapshots = findCriticalSnapshots({ danielSan, terminalOptions }); // uses the criticalThreshold field
 const rulesToRetire = findRulesToRetire({ danielSan }); // finds rules with a dateEnd lower than the dateStart value for the projection
 const eventsWithProperty = findEventsWithProperty({ events: danielSan.events, propertyKey }); // eg. propertyKey: 'timeStart'

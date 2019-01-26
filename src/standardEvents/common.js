@@ -1,3 +1,4 @@
+const moment = 'moment';
 const { isUndefinedOrNull } = require('../utility/validation');
 const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
 const { errorDisc } = require('../utility/errorHandling');
@@ -15,8 +16,8 @@ const {
 
 /*
     function: getRelevantDateSegmentByFrequency
-    description: 
-        returns the relevant part of the date. 
+    description:
+        returns the relevant part of the date.
         example:
             for WEEKLY frequency it only needs to return the weekday (as a number 0-6).
             for ANNUAL frequency it returns something like "12-31"
@@ -28,20 +29,18 @@ const getRelevantDateSegmentByFrequency = ({ frequency, date }) => {
     const [currentYearString, currentMonthString, currentDayString] = currentDateString.split(DATE_DELIMITER);
     const currentWeekday = date.day();
     switch (frequency) {
-        case ANNUALLY:
-            return `${currentMonthString}${DATE_DELIMITER}${currentDayString}`;
-            break;
-        case MONTHLY:
-            return currentDayString;
-            break;
-        case WEEKLY:
-            return currentWeekday;
-            break;
-        case DAILY:
-            break;
-        case ONCE:
-            return `${currentYearString}${DATE_DELIMITER}${currentMonthString}${DATE_DELIMITER}${currentDayString}`;
-            break;
+    case ANNUALLY:
+        return `${currentMonthString}${DATE_DELIMITER}${currentDayString}`;
+    case MONTHLY:
+        return currentDayString;
+    case WEEKLY:
+        return currentWeekday;
+    case DAILY:
+        break;
+    case ONCE:
+        return `${currentYearString}${DATE_DELIMITER}${currentMonthString}${DATE_DELIMITER}${currentDayString}`;
+    default:
+        break;
     }
 };
 

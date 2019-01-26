@@ -1,4 +1,3 @@
-const { isUndefinedOrNull } = require('../utility/validation');
 const { decimalFormatterStandard } = require('../utility/formatting');
 const {
     findCriticalSnapshots,
@@ -9,17 +8,9 @@ const {
 } = require('../analytics');
 
 const {
-    DATE_FORMAT_STRING,
-    ONCE,
-    DAILY,
-    WEEKLY,
-    MONTHLY,
-    ANNUALLY,
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE,
-    BUILD_DATE_STRING,
-    NOT_AVAILABLE,
     STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE,
     DISPLAY_EVENTS_BY_GROUPS,
     DISPLAY_EVENTS_BY_NAMES,
@@ -57,6 +48,7 @@ const terminalBoundary = (loops = 1) => {
     for (let looper = 0; looper < loops; looper++) {
         const leftSideOfHeading = '';
         const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: '*' });
+        // eslint-disable-next-line no-console
         console.log(fullHeading);
     }
 };
@@ -64,6 +56,7 @@ const terminalBoundary = (loops = 1) => {
 const lineHeading = (heading) => {
     const leftSideOfHeading = `********${heading}`;
     const fullLineHeading = rightPadToBoundary({ leftSideOfHeading, character: '*' });
+    // eslint-disable-next-line no-console
     console.log(fullLineHeading);
 };
 
@@ -71,11 +64,13 @@ const lineSeparator = (loops = 1) => {
     for (let looper = 0; looper < loops; looper++) {
         const leftSideOfHeading = '';
         const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: '-' });
+        // eslint-disable-next-line no-console
         console.log(fullHeading);
     }
 };
 
 const showNothingToDisplay = () => {
+    // eslint-disable-next-line quotes
     lineHeading(` nothing to display `);
     lineSeparator(2);
 };
@@ -131,11 +126,14 @@ const conciseOutput = ({ event, terminalOptions }) => {
         currency
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineSeparator(1);
+    // eslint-disable-next-line no-console
     if (event.name) console.log(`name: `, event.name);
+    // eslint-disable-next-line no-console
     if (event.group) console.log(`name: `, event.group);
     if (event.amount) {
+        // eslint-disable-next-line no-console
         console.log(
-            `amount: `,
+            `amount: `, // eslint-disable-line quotes
             formattingFunction(event.amount, {
                 minIntegerDigits,
                 minDecimalDigits,
@@ -146,8 +144,9 @@ const conciseOutput = ({ event, terminalOptions }) => {
             })
         );
     }
+    // eslint-disable-next-line no-console
     console.log(
-        `endBalance: `,
+        `endBalance: `, // eslint-disable-line quotes
         formattingFunction(event.endBalance, {
             minIntegerDigits,
             minDecimalDigits,
@@ -157,30 +156,34 @@ const conciseOutput = ({ event, terminalOptions }) => {
             currency
         })
     );
-    console.log(`thisDate: `, event.thisDate);
-    if (event.timeStart) console.log(`timeStart: `, event.timeStart);
-    if (event.notes) console.log(`notes: `, event.notes);
+    // eslint-disable-next-line no-console
+    console.log(`thisDate: `, event.thisDate); // eslint-disable-line quotes
+    // eslint-disable-next-line no-console
+    if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
+    // eslint-disable-next-line no-console
+    if (event.notes) console.log(`notes: `, event.notes); // eslint-disable-line quotes
     lineSeparator(1);
 };
 
 const verboseOutput = (event) => {
+    // eslint-disable-next-line no-console
     console.log(event);
 };
 
 const eventsLogger = ({ events, terminalOptions }) => {
     switch (terminalOptions.mode) {
-        case VERBOSE:
-            events.forEach((event) => {
-                verboseOutput(event);
-            });
-            break;
-        case CONCISE:
-            events.forEach((event) => {
-                conciseOutput({ event, terminalOptions });
-            });
-            break;
-        default:
-            break;
+    case VERBOSE:
+        events.forEach((event) => {
+            verboseOutput(event);
+        });
+        break;
+    case CONCISE:
+        events.forEach((event) => {
+            conciseOutput({ event, terminalOptions });
+        });
+        break;
+    default:
+        break;
     }
 };
 
@@ -341,6 +344,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
 
 const terminal = ({ danielSan, terminalOptions = {}, error }) => {
     if (error) {
+        // eslint-disable-next-line no-console
         console.log(error);
     } else if (danielSan) {
         try {
@@ -350,69 +354,70 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             // eslint-disable-next-line no-lonely-if
             if (!terminalOptions.type) terminalOptions.type = STANDARD_TERMINAL_OUTPUT;
             switch (terminalOptions.type) {
-                case DISPLAY_EVENTS:
-                case STANDARD_TERMINAL_OUTPUT:
-                case STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE:
-                    standardTerminalOutput({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_EVENTS_BY_GROUPS:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'group'
-                    });
-                    break;
-                case DISPLAY_EVENTS_BY_NAMES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'name'
-                    });
-                    break;
-                case DISPLAY_EVENTS_BY_TYPES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type'
-                    });
-                    break;
-                case DISPLAY_CRITICAL_SNAPSHOTS:
-                    displayCriticalThresholdEvents({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_IMPORTANT_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'important'
-                    });
-                    break;
-                case DISPLAY_TIME_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'timeStart'
-                    });
-                    break;
-                case DISPLAY_ROUTINE_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type',
-                        substring: 'ROUTINE'
-                    });
-                    break;
-                case DISPLAY_REMINDER_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type',
-                        substring: 'REMINDER'
-                    });
-                    break;
-                default:
-                    break;
+            case DISPLAY_EVENTS:
+            case STANDARD_TERMINAL_OUTPUT:
+            case STANDARD_TERMINAL_OUTPUT_PLUS_RULES_TO_RETIRE:
+                standardTerminalOutput({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_EVENTS_BY_GROUPS:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'group'
+                });
+                break;
+            case DISPLAY_EVENTS_BY_NAMES:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'name'
+                });
+                break;
+            case DISPLAY_EVENTS_BY_TYPES:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type'
+                });
+                break;
+            case DISPLAY_CRITICAL_SNAPSHOTS:
+                displayCriticalThresholdEvents({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_IMPORTANT_EVENTS:
+                displayEventsWithProperty({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'important'
+                });
+                break;
+            case DISPLAY_TIME_EVENTS:
+                displayEventsWithProperty({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'timeStart'
+                });
+                break;
+            case DISPLAY_ROUTINE_EVENTS:
+                displayEventsWithPropertyKeyContainingSubstring({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type',
+                    substring: 'ROUTINE'
+                });
+                break;
+            case DISPLAY_REMINDER_EVENTS:
+                displayEventsWithPropertyKeyContainingSubstring({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type',
+                    substring: 'REMINDER'
+                });
+                break;
+            default:
+                break;
             }
         } catch (err) {
+            // eslint-disable-next-line no-console
             console.log(err);
         }
     }
