@@ -1,7 +1,5 @@
 const { isUndefinedOrNull } = require('../utility/validation');
-const {
-    DATE_FORMAT_STRING
-} = require('../constants');
+const { DATE_FORMAT_STRING } = require('../constants');
 
 const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0 }) => {
     let criticalSnapshots = null;
@@ -107,6 +105,28 @@ const snapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'e
     return newCollection;
 };
 
+const greatestEndBalanceSnapshots = ({
+    collection = [],
+    propertyKey = 'endBalance',
+    selectionAmount = 7,
+    reverse = false
+}) => {
+    let sortedCollection = collection.sort((a, b) => {
+        if (a[propertyKey] > b[propertyKey]) {
+            return -1;
+        } else if (a[propertyKey] < b[propertyKey]) {
+            return 1;
+        } else {
+            return 0;
+        }
+    });
+    if (reverse) {
+        sortedCollection = sortedCollection.reverse();
+    }
+    const finalCollection = sortedCollection.slice(0, selectionAmount);
+    return finalCollection;
+};
+
 module.exports = {
     snapshotsGreaterThanAmount,
     snapshotsLessThanAmount,
@@ -114,5 +134,6 @@ module.exports = {
     findRulesToRetire,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
-    findEventsWithPropertyKeyContainingSubstring
+    findEventsWithPropertyKeyContainingSubstring,
+    greatestEndBalanceSnapshots
 };

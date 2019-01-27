@@ -6,7 +6,8 @@ const {
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,
     snapshotsGreaterThanAmount,
-    snapshotsLessThanAmount
+    snapshotsLessThanAmount,
+    greatestEndBalanceSnapshots
 } = require('../analytics');
 
 const {
@@ -23,8 +24,10 @@ const {
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
-    DISPLAY_END_BALANCES_GREATER_THAN_MAX_AMOUNT,
-    DISPLAY_END_BALANCES_LESS_THAN_MIN_AMOUNT,
+    DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
+    DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
+    DISPLAY_LEAST_END_BALANCE_SNAPSHOTS,
     MIN_INT_DIGITS_DEFAULT,
     MIN_DECIMAL_DIGITS_DEFAULT,
     MAX_DECIMAL_DIGITS_DEFAULT,
@@ -236,7 +239,10 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
 };
 
 const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
-    const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold: terminalOptions.criticalThreshold });
+    const criticalSnapshots = findCriticalSnapshots({
+        danielSan,
+        criticalThreshold: terminalOptions.criticalThreshold
+    });
     if (criticalSnapshots) {
         terminalBoundary(3);
         lineHeading(' begin critical snapshots ');
@@ -244,7 +250,11 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
             lineHeading(` critical threshold: < ${terminalOptions.criticalThreshold} `);
         }
         lineSeparator(2);
-        eventsLogger({ events: criticalSnapshots, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: criticalSnapshots,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
         lineSeparator(2);
         lineHeading(' end critical snapshots ');
         lineSeparator(2);
@@ -258,7 +268,11 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
         lineHeading(' begin rules to retire ');
         lineHeading(' the following rules have obsolete dateEnd values ');
         lineSeparator(2);
-        eventsLogger({ events: rulesToRetire, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: rulesToRetire,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
         lineSeparator(2);
         lineHeading(' end rules to retire ');
         lineSeparator(2);
@@ -278,38 +292,108 @@ const displayCriticalThresholdEvents = ({ danielSan, terminalOptions }) => {
     terminalBoundary(5);
 };
 
-const displayEndBalancesGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
-    const collection = snapshotsGreaterThanAmount({ collection: danielSan.events, amount: terminalOptions.maxAmount || 0, propertyKey: 'endBalance' });
+const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
+    const collection = snapshotsGreaterThanAmount({
+        collection: danielSan.events,
+        amount: terminalOptions.maxAmount || 0,
+        propertyKey: 'endBalance'
+    });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin events/routines/reminders ');
+    lineHeading(' begin primary output ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
     } else {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end events/routines/reminders ');
+    lineHeading(' end primary output ');
     lineSeparator(2);
     terminalBoundary(5);
 };
 
-const displayEndBalancesLessThanMinAmount = ({ danielSan, terminalOptions }) => {
-    const collection = snapshotsLessThanAmount({ collection: danielSan.events, amount: terminalOptions.minAmount || 0, propertyKey: 'endBalance' });
+const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOptions }) => {
+    const collection = snapshotsLessThanAmount({
+        collection: danielSan.events,
+        amount: terminalOptions.minAmount || 0,
+        propertyKey: 'endBalance'
+    });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin events/routines/reminders ');
+    lineHeading(' begin primary output ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
     } else {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end events/routines/reminders ');
+    lineHeading(' end primary output ');
+    lineSeparator(2);
+    terminalBoundary(5);
+};
+
+const displayGreatestEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
+    const collection = greatestEndBalanceSnapshots({
+        collection: danielSan.events,
+        propertyKey: 'endBalance',
+        selectionAmount: terminalOptions.selectionAmount || 7,
+        reverse: false
+    });
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    lineHeading(' begin primary output ');
+    lineSeparator(2);
+    const relevantEvents = collection;
+    if (relevantEvents) {
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
+    } else {
+        showNothingToDisplay();
+    }
+    lineSeparator(2);
+    lineHeading(' end primary output ');
+    lineSeparator(2);
+    terminalBoundary(5);
+};
+
+const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
+    const collection = greatestEndBalanceSnapshots({
+        collection: danielSan.events,
+        propertyKey: 'endBalance',
+        selectionAmount: terminalOptions.selectionAmount || 7,
+        reverse: true
+    });
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    lineHeading(' begin primary output ');
+    lineSeparator(2);
+    const relevantEvents = collection;
+    if (relevantEvents) {
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
+    } else {
+        showNothingToDisplay();
+    }
+    lineSeparator(2);
+    lineHeading(' end primary output ');
     lineSeparator(2);
     terminalBoundary(5);
 };
@@ -317,16 +401,20 @@ const displayEndBalancesLessThanMinAmount = ({ danielSan, terminalOptions }) => 
 const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin events/routines/reminders ');
+    lineHeading(' begin primary output ');
     lineSeparator(2);
     const relevantEvents = danielSan.events;
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
     } else {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end events/routines/reminders ');
+    lineHeading(' end primary output ');
     lineSeparator(2);
     if (terminalOptions.type !== DISPLAY_EVENTS) {
         showCriticalSnapshots({ danielSan, terminalOptions });
@@ -342,11 +430,15 @@ const displayEventsWithProperty = ({
 }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin events/routines/reminders ');
+    lineHeading(' begin primary output ');
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey });
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
     } else {
         showNothingToDisplay();
     }
@@ -362,12 +454,16 @@ const displayEventsByPropertyKeyAndValues = ({
 }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin events/routines/reminders ');
+    lineHeading(' begin primary output ');
     lineSeparator(2);
     const { searchValues } = terminalOptions;
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, searchValues });
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
     } else {
         showNothingToDisplay();
     }
@@ -384,11 +480,15 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
 }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin events/routines/reminders ');
+    lineHeading(' begin primary output ');
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, substring });
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+        eventsLogger({
+            events: relevantEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
     } else {
         showNothingToDisplay();
     }
@@ -469,11 +569,17 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             case DISPLAY_RULES_TO_RETIRE:
                 displayRulesToRetire({ danielSan, terminalOptions });
                 break;
-            case DISPLAY_END_BALANCES_GREATER_THAN_MAX_AMOUNT:
-                displayEndBalancesGreaterThanMaxAmount({ danielSan, terminalOptions });
+            case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
+                displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
                 break;
-            case DISPLAY_END_BALANCES_LESS_THAN_MIN_AMOUNT:
-                displayEndBalancesLessThanMinAmount({ danielSan, terminalOptions });
+            case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
+                displayGreatestEndBalanceSnapshots({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
+                displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
                 break;
             default:
                 break;
