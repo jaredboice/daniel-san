@@ -55,7 +55,10 @@ const appConstants = {
     MAX_DECIMAL_DIGITS_DEFAULT: 2,
     LOCALE_DEFAULT: 'en-US',
     STYLE_DEFAULT: 'currency',
-    CURRENCY_DEFAULT: 'USD'
+    CURRENCY_DEFAULT: 'USD',
+    INFLOW_AND_OUTFLOW: 'INFLOW_AND_OUTFLOW',
+    INFLOW: 'INFLOW',
+    OUTFLOW: 'OUTFLOW'
 };
 
 module.exports = appConstants;

@@ -4,7 +4,13 @@ const {
     findRulesToRetire,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
-    findEventsWithPropertyKeyContainingSubstring
+    findEventsWithPropertyKeyContainingSubstring,
+    getGreatestWeeklyEventFlows,
+    getGreatestMonthlyEventFlows,
+    getGreatestAnnualEventFlows,
+    getGreatestTotalInflows,
+    getGreatestTotalOutflows,
+    getGreatestTotalInflowsAndOutflows
 } = require('../analytics');
 
 const {
