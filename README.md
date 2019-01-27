@@ -348,7 +348,7 @@ const danielSan = {
             'CNY': 6.75 // 1 USD is worth 6.75 CNY
         };
         switch (futureSymbol) {
-        case 'USD': // converting amount (in this case the amount is in EUR) to USD
+        case 'USD': // converting amount (in this case the amount is in EUR since there is only one rule and its currencySymbol is EUR) to USD
             return amount * symbolEnum[currentSymbol];
         default:
             break;
