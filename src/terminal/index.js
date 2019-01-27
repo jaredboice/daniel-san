@@ -265,7 +265,7 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
     const rulesToRetire = findRulesToRetire({ danielSan });
     if (rulesToRetire) {
         terminalBoundary(3);
-        lineHeading(' begin rules to retire ');
+        lineHeading(' begin showRulesToRetire ');
         lineHeading(' the following rules have obsolete dateEnd values ');
         lineSeparator(2);
         eventsLogger({
@@ -274,7 +274,7 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
             currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
         });
         lineSeparator(2);
-        lineHeading(' end rules to retire ');
+        lineHeading(' end showRulesToRetire ');
         lineSeparator(2);
     }
 };
@@ -285,7 +285,7 @@ const displayRulesToRetire = ({ danielSan, terminalOptions }) => {
     terminalBoundary(5);
 };
 
-const displayCriticalThresholdEvents = ({ danielSan, terminalOptions }) => {
+const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     showCriticalSnapshots({ danielSan, terminalOptions });
@@ -300,7 +300,7 @@ const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOpt
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin displayEndBalanceSnapshotsGreaterThanMaxAmount ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -313,7 +313,7 @@ const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOpt
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end primary output ');
+    lineHeading(' end displayEndBalanceSnapshotsGreaterThanMaxAmount ');
     lineSeparator(2);
     terminalBoundary(5);
 };
@@ -326,7 +326,7 @@ const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOption
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin displayEndBalanceSnapshotsLessThanMinAmount ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -339,7 +339,7 @@ const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOption
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end primary output ');
+    lineHeading(' end displayEndBalanceSnapshotsLessThanMinAmount ');
     lineSeparator(2);
     terminalBoundary(5);
 };
@@ -353,7 +353,7 @@ const displayGreatestEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin displayGreatestEndBalanceSnapshots ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -366,7 +366,7 @@ const displayGreatestEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end primary output ');
+    lineHeading(' end displayGreatestEndBalanceSnapshots ');
     lineSeparator(2);
     terminalBoundary(5);
 };
@@ -380,7 +380,7 @@ const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin displayLeastEndBalanceSnapshots');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -393,7 +393,7 @@ const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end primary output ');
+    lineHeading(' end displayLeastEndBalanceSnapshots ');
     lineSeparator(2);
     terminalBoundary(5);
 };
@@ -401,7 +401,7 @@ const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
 const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin standardTerminalOutput ');
     lineSeparator(2);
     const relevantEvents = danielSan.events;
     if (relevantEvents) {
@@ -414,7 +414,7 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end primary output ');
+    lineHeading(' end standardTerminalOutput ');
     lineSeparator(2);
     if (terminalOptions.type !== DISPLAY_EVENTS) {
         showCriticalSnapshots({ danielSan, terminalOptions });
@@ -430,7 +430,7 @@ const displayEventsWithProperty = ({
 }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin displayEventsWithProperty ');
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey });
     if (relevantEvents) {
@@ -443,6 +443,8 @@ const displayEventsWithProperty = ({
         showNothingToDisplay();
     }
     lineSeparator(2);
+    lineHeading(' end displayEventsWithProperty ');
+    lineSeparator(2);
     terminalBoundary(5);
 };
 
@@ -454,7 +456,7 @@ const displayEventsByPropertyKeyAndValues = ({
 }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin displayEventsByPropertyKeyAndValues ');
     lineSeparator(2);
     const { searchValues } = terminalOptions;
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, searchValues });
@@ -468,6 +470,8 @@ const displayEventsByPropertyKeyAndValues = ({
         showNothingToDisplay();
     }
     lineSeparator(2);
+    lineHeading(' end displayEventsByPropertyKeyAndValues ');
+    lineSeparator(2);
     terminalBoundary(5);
 };
 
@@ -480,7 +484,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
 }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin primary output ');
+    lineHeading(' begin displayEventsWithPropertyKeyContainingSubstring ');
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, substring });
     if (relevantEvents) {
@@ -492,6 +496,8 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
     } else {
         showNothingToDisplay();
     }
+    lineSeparator(2);
+    lineHeading(' end displayEventsWithPropertyKeyContainingSubstring ');
     lineSeparator(2);
     terminalBoundary(5);
 };
@@ -534,7 +540,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 });
                 break;
             case DISPLAY_CRITICAL_SNAPSHOTS:
-                displayCriticalThresholdEvents({ danielSan, terminalOptions });
+                displayCriticalSnapshots({ danielSan, terminalOptions });
                 break;
             case DISPLAY_IMPORTANT_EVENTS:
                 displayEventsWithProperty({
