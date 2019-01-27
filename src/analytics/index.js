@@ -90,7 +90,7 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
 
 const snapshotsGreaterThanAmount = ({ collection = [], level = 0, propertyKey = 'endBalance' }) => {
     const newCollection = collection.filter((element) => {
-        if (element[propertyKey] > level) {
+        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > level) {
             return element;
         }
     });
@@ -99,50 +99,11 @@ const snapshotsGreaterThanAmount = ({ collection = [], level = 0, propertyKey = 
 
 const snapshotsLessThanAmount = ({ collection = [], level = 0, propertyKey = 'endBalance' }) => {
     const newCollection = collection.filter((element) => {
-        if (element[propertyKey] < level) {
+        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] < level) {
             return element;
         }
     });
     return newCollection;
-};
-
-const greatestInflowsAndOutflows = ({ collection = [], propertyKey = 'endBalance', selectionNumber }) => {
-    const inflows = [];
-    const outflows = [];
-    collection.forEach((element) => {
-        if (!isUndefinedOrNull(element[propertyKey])) {
-            if (element[propertyKey] > 0) {
-                inflows.push(element);
-            } else if (element[propertyKey] < 0) {
-                outflows.push(element);
-            }
-        }
-    });
-
-    const sortedInflows = inflows.sort((a, b) => {
-        if (a[propertyKey] > b[propertyKey]) {
-            return 1;
-        } else if (a[propertyKey] > b[propertyKey]) {
-            return -1;
-        } else {
-            return 0;
-        }
-    });
-    const sortedOutflows = outflows.sort((a, b) => {
-        if (Math.abs(a[propertyKey]) > Math.abs(b[propertyKey])) {
-            return 1;
-        } else if (Math.abs(a[propertyKey]) > Math.abs(b[propertyKey])) {
-            return -1;
-        } else {
-            return 0;
-        }
-    });
-
-    const bundle = {
-        inflows: sortedInflows.slice(0, selectionNumber),
-        outflows: sortedOutflows.slice(0, selectionNumber)
-    };
-    return bundle;
 };
 
 module.exports = {

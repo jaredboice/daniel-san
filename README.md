@@ -342,6 +342,8 @@ const danielSan = {
          // amount represents the rule amount
          // currentSymbol represets the currencySymbol from the rule/event (as seen below)
          // futureSymbol represents the currency you will be converting to (namely the 'USD' value above)
+         // even if you do not add a currencyConversion function, it will be added for you and it will simply 
+         // return to the convertedAmount exactly what is in the amount field
         const symbolEnum = {
             'USD': 1,
             'EUR': 0.88 // 1 USD is worth 0.88 EUR
@@ -515,7 +517,13 @@ const {
 // see the source code for real example cases of the following exposed funtions
 // there are also useful functions in the utility directory
 const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold }); // uses the criticalThreshold field
-const rulesToRetire = findRulesToRetire({ danielSan }); // finds rules with a dateEnd lower than the dateStart value for the projection
+const bigSnapshots = snapshotsGreaterThanAmount({ collection: danielSan.events, level: 3000, propertyKey: 'endBalance' });
+const smallSnapshots = snapshotsLessThanAmount({ collection: danielSan.rules, level: 0, propertyKey: 'convertedAmount' }); 
+// even if you do not add a currencyConversion function, it will be added for you and it will simply return to the convertedAmount exactly what is in the amount field
+const rulesToRetire = findRulesToRetire({ danielSan }); 
+// finds rules with a dateEnd lower than the dateStart value of the main danielSan tree trunk.
+// rules are auto retired during the buget projection process however so if you want to find rules that you need to retire/
+// then make sure you perform it on a clean instance of danielSan prior to running it through findBalance()
 const eventsWithProperty = findEventsWithProperty({ events: danielSan.events, propertyKey }); // eg. propertyKey: 'timeStart'
 const eventsWithValues = findEventsByPropertyKeyAndValues({ events: danielSan.events, propertyKey, searchValues }); // eg. propertyKey: 'group', searchValues: ['Group 1', 'Group 2']
 const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubstring({ events: danielSan.events, propertyKey, substring }); // eg. propertyKey: 'type', substring: 'ROUTINE'
