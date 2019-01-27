@@ -26,14 +26,14 @@ const moveThisProcessDateAfterTheseWeekdays = ({ rule, specialAdjustment }) => {
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         let thisWeekday = getRelevantDateSegmentByFrequency({
             frequency: WEEKLY,
-            date: moment(rule.thisDate, DATE_FORMAT_STRING)
+            date: moment(rule.eventDate, DATE_FORMAT_STRING)
         });
         while (weekdays.includes(thisWeekday)) {
-            const looperDate = streamForward(moment(rule.thisDate, DATE_FORMAT_STRING));
-            rule.thisDate = looperDate.format(DATE_FORMAT_STRING);
+            const looperDate = streamForward(moment(rule.eventDate, DATE_FORMAT_STRING));
+            rule.eventDate = looperDate.format(DATE_FORMAT_STRING);
             thisWeekday = getRelevantDateSegmentByFrequency({
                 frequency: WEEKLY,
-                date: moment(rule.thisDate, DATE_FORMAT_STRING)
+                date: moment(rule.eventDate, DATE_FORMAT_STRING)
             });
             processPhase = MODIFIED;
         }
@@ -65,14 +65,14 @@ const moveThisProcessDateAfterTheseDates = ({ rule, specialAdjustment }) => {
         if (specialAdjustment.dates) {
             let currentProcessDate = getRelevantDateSegmentByFrequency({
                 frequency: ONCE,
-                date: moment(rule.thisDate, DATE_FORMAT_STRING)
+                date: moment(rule.eventDate, DATE_FORMAT_STRING)
             });
             while (dates.includes(currentProcessDate)) {
-                const looperDate = streamForward(moment(rule.thisDate, DATE_FORMAT_STRING));
-                rule.thisDate = looperDate.format(DATE_FORMAT_STRING);
+                const looperDate = streamForward(moment(rule.eventDate, DATE_FORMAT_STRING));
+                rule.eventDate = looperDate.format(DATE_FORMAT_STRING);
                 currentProcessDate = getRelevantDateSegmentByFrequency({
                     frequency: ONCE,
-                    date: moment(rule.thisDate, DATE_FORMAT_STRING)
+                    date: moment(rule.eventDate, DATE_FORMAT_STRING)
                 });
             }
         }
@@ -115,7 +115,7 @@ const adjustAmountOnTheseDates = ({ rule, specialAdjustment }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     try {
         specialAdjustment.dates.forEach((looperDate, looperDateIndex) => {
-            if (looperDate === rule.thisDate && rule.amount) {
+            if (looperDate === rule.eventDate && rule.amount) {
                 rule.amount += specialAdjustment.amounts[looperDateIndex];
             }
             processPhase = MODIFIED;

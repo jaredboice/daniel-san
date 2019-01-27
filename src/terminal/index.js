@@ -169,7 +169,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
         })
     );
     // eslint-disable-next-line no-console
-    console.log(`thisDate: `, event.thisDate); // eslint-disable-line quotes
+    console.log(`eventDate: `, event.eventDate); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
     if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
@@ -232,7 +232,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
 };
 
 const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
-    const criticalSnapshots = findCriticalSnapshots({ danielSan, terminalOptions });
+    const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold: terminalOptions.criticalThreshold });
     if (criticalSnapshots) {
         terminalBoundary(3);
         lineHeading(' begin critical snapshots ');

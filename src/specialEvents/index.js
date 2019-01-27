@@ -115,7 +115,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
                     processPhase = EXECUTING_RULE_INSERTION;
                     processPhase = exclusionsPhase({ rule, date, processPhase });
                     if (processPhase !== EXECUTION_REJECTED) {
-                        rule.thisDate = date.format(DATE_FORMAT_STRING);
+                        rule.eventDate = date.format(DATE_FORMAT_STRING);
                         danielSan.events.push({ ...rule });
                         processPhase = MODIFIED;
                     }
@@ -148,7 +148,7 @@ const weekdayOnDate = ({ danielSan, rule, date }) => {
             processPhase = EXECUTING_RULE_INSERTION;
             processPhase = exclusionsPhase({ rule, date, processPhase });
             if (processPhase !== EXECUTION_REJECTED) {
-                rule.thisDate = date.format(DATE_FORMAT_STRING);
+                rule.eventDate = date.format(DATE_FORMAT_STRING);
                 danielSan.events.push({ ...rule });
                 processPhase = MODIFIED;
             }

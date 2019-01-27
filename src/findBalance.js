@@ -143,8 +143,8 @@ const compareTime = (a, b) => {
 
 const sortDanielSan = (danielSan) => {
     danielSan.events.sort((a, b) => {
-        const thisDateA = a.thisDate.split(DATE_DELIMITER).join('');
-        const thisDateB = b.thisDate.split(DATE_DELIMITER).join('');
+        const thisDateA = a.eventDate.split(DATE_DELIMITER).join('');
+        const thisDateB = b.eventDate.split(DATE_DELIMITER).join('');
         if (thisDateA > thisDateB) {
             return 1;
         } else if (thisDateA < thisDateB) {

@@ -375,7 +375,7 @@ const danielSan = {
 **Logging Results to the Command-Line**
 
 ```javascript
-// passing error will log it to the console and bypass all other terminal functionality
+// passing a non-null value for error will log it to the console and bypass all other terminal functionality
 terminal({ danielSan, terminalOptions, error });
 ```
 
@@ -391,7 +391,7 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart)_
 -   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
 -   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
--   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire but only works if you have not already executed findBalance)_
+-   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on a non-processed danielSan object since findBalance retires rules (with obsolete dateEnd dates) automatically during the projection phase)_
 
 **Terminal Mode Options**
 
@@ -489,7 +489,7 @@ const danielSan = {
             processDate: '30',
             timeStart: '09:11am', // optional: assigning a timeStart attribute will order the event appropriately
             sortPriority: 25,   // optional: forces higher sort priority for event operations, the lower the sortPriority value, 
-                                // the sooner it is applied in the event sequence, (thisDate and timeStart take precedence over sortPriority)
+                                // the sooner it is applied in the event sequence, (eventDate and timeStart take precedence over sortPriority)
             notes: 'some message to your future self', // optional
             important: true, // optional: assign important: true and filter the results with DISPLAY_IMPORTANT_EVENTS
             dateStart: '2019-01-01'
@@ -514,7 +514,7 @@ const {
 
 // see the source code for real example cases of the following exposed funtions
 // there are also useful functions in the utility directory
-const criticalSnapshots = findCriticalSnapshots({ danielSan, terminalOptions }); // uses the criticalThreshold field
+const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold }); // uses the criticalThreshold field
 const rulesToRetire = findRulesToRetire({ danielSan }); // finds rules with a dateEnd lower than the dateStart value for the projection
 const eventsWithProperty = findEventsWithProperty({ events: danielSan.events, propertyKey }); // eg. propertyKey: 'timeStart'
 const eventsWithValues = findEventsByPropertyKeyAndValues({ events: danielSan.events, propertyKey, searchValues }); // eg. propertyKey: 'group', searchValues: ['Group 1', 'Group 2']

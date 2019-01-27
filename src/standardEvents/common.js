@@ -129,8 +129,8 @@ const exclusionsPhase = ({ rule, date, processPhase }) => {
         let anyMatch = false;
         if (rule.exclusions.weekdays) {
             relevantDateSegmentForExclusion = date.weekday();
-            anyMatch = rule.exclusions.weekdays.some((thisDate) => {
-                dynamicDateSegmentForExclusion = thisDate;
+            anyMatch = rule.exclusions.weekdays.some((eventDate) => {
+                dynamicDateSegmentForExclusion = eventDate;
                 // eslint-disable-next-line eqeqeq
                 return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
             });
@@ -141,8 +141,8 @@ const exclusionsPhase = ({ rule, date, processPhase }) => {
                 frequency: ONCE,
                 date
             });
-            anyMatch = rule.exclusions.dates.some((thisDate) => {
-                dynamicDateSegmentForExclusion = thisDate;
+            anyMatch = rule.exclusions.dates.some((eventDate) => {
+                dynamicDateSegmentForExclusion = eventDate;
                 return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
             });
             if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;

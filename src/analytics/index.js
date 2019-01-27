@@ -1,11 +1,13 @@
 const { isUndefinedOrNull } = require('../utility/validation');
-const { DATE_FORMAT_STRING } = require('../constants');
+const {
+    DATE_FORMAT_STRING
+} = require('../constants');
 
-const findCriticalSnapshots = ({ danielSan, terminalOptions }) => {
+const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0 }) => {
     let criticalSnapshots = null;
-    if (!isUndefinedOrNull(terminalOptions.criticalThreshold)) {
+    if (!isUndefinedOrNull(criticalThreshold)) {
         criticalSnapshots = danielSan.events.filter((event) => {
-            return event.endBalance < terminalOptions.criticalThreshold;
+            return event.endBalance < criticalThreshold;
         });
     }
     return criticalSnapshots;
@@ -30,7 +32,8 @@ const findRulesToRetire = ({ danielSan }) => {
 
 const findEventsWithProperty = ({ events, propertyKey }) => {
     // eslint-disable-next-line array-callback-return
-    const eventsFound = events.filter((event) => { // eslint-disable-line consistent-return
+    const eventsFound = events.filter((event) => {
+        // eslint-disable-line consistent-return
         if (event[propertyKey]) {
             return event;
         }
@@ -69,7 +72,8 @@ const findEventsByPropertyKeyAndValues = ({ events, propertyKey, searchValues })
 
 const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, substring }) => {
     // eslint-disable-next-line array-callback-return
-    const eventsFound = events.filter((event) => { // eslint-disable-line consistent-return
+    const eventsFound = events.filter((event) => {
+        // eslint-disable-line consistent-return
         if (event[propertyKey] && event[propertyKey].includes(substring)) {
             return event;
         }
@@ -84,7 +88,66 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     return null; // this line satisfies another linting error
 };
 
+const snapshotsGreaterThanAmount = ({ collection = [], level = 0, propertyKey = 'endBalance' }) => {
+    const newCollection = collection.filter((element) => {
+        if (element[propertyKey] > level) {
+            return element;
+        }
+    });
+    return newCollection;
+};
+
+const snapshotsLessThanAmount = ({ collection = [], level = 0, propertyKey = 'endBalance' }) => {
+    const newCollection = collection.filter((element) => {
+        if (element[propertyKey] < level) {
+            return element;
+        }
+    });
+    return newCollection;
+};
+
+const greatestInflowsAndOutflows = ({ collection = [], propertyKey = 'endBalance', selectionNumber }) => {
+    const inflows = [];
+    const outflows = [];
+    collection.forEach((element) => {
+        if (!isUndefinedOrNull(element[propertyKey])) {
+            if (element[propertyKey] > 0) {
+                inflows.push(element);
+            } else if (element[propertyKey] < 0) {
+                outflows.push(element);
+            }
+        }
+    });
+
+    const sortedInflows = inflows.sort((a, b) => {
+        if (a[propertyKey] > b[propertyKey]) {
+            return 1;
+        } else if (a[propertyKey] > b[propertyKey]) {
+            return -1;
+        } else {
+            return 0;
+        }
+    });
+    const sortedOutflows = outflows.sort((a, b) => {
+        if (Math.abs(a[propertyKey]) > Math.abs(b[propertyKey])) {
+            return 1;
+        } else if (Math.abs(a[propertyKey]) > Math.abs(b[propertyKey])) {
+            return -1;
+        } else {
+            return 0;
+        }
+    });
+
+    const bundle = {
+        inflows: sortedInflows.slice(0, selectionNumber),
+        outflows: sortedOutflows.slice(0, selectionNumber)
+    };
+    return bundle;
+};
+
 module.exports = {
+    snapshotsGreaterThanAmount,
+    snapshotsLessThanAmount,
     findCriticalSnapshots,
     findRulesToRetire,
     findEventsWithProperty,
