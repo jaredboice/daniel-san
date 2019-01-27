@@ -9,7 +9,7 @@ const {
     MODIFIED
 } = require('../constants');
 
-const buildStandardEvent = ({ danielSan, rule, date, index }) => {
+const buildStandardEvent = ({ danielSan, rule, date }) => {
     let processPhase;
     try {
         processPhase = EVALUATING_RULE_INSERTION;
@@ -22,7 +22,7 @@ const buildStandardEvent = ({ danielSan, rule, date, index }) => {
                 rule.frequency === DAILY ||
                 isUndefinedOrNull(rule.processDate) ||
                 (rule.processDate === relevantDateSegmentByFrequency ||
-                    _28DayCondition({ processDate: rule.processDate, date, frequency: rule.frequency })) // TODO: place this 2nd condition in a function and create special case for after the 28th and also a special case for last day of month
+                    _28DayCondition({ processDate: rule.processDate, date, frequency: rule.frequency }))
             ) {
                 processPhase = exclusionsPhase({ rule, date, processPhase });
                 processPhase = modulusPhase({ rule, processPhase });

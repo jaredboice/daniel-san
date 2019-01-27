@@ -1,4 +1,4 @@
-const { decimalFormatterStandard } = require('../utility/formatting');
+const { isUndefinedOrNull } = require('../utility/validation');
 const {
     findCriticalSnapshots,
     findRulesToRetire,
@@ -20,18 +20,17 @@ const {
     DISPLAY_TIME_EVENTS,
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
-    DISPLAY_RULES_TO_RETIRE
+    DISPLAY_RULES_TO_RETIRE,
+    MIN_INT_DIGITS_DEFAULT,
+    MIN_DECIMAL_DIGITS_DEFAULT,
+    MAX_DECIMAL_DIGITS_DEFAULT,
+    LOCALE_DEFAULT,
+    STYLE_DEFAULT,
+    CURRENCY_DEFAULT,
+    FORMATTING_FUNCTION_DEFAULT
 } = require('../constants');
 
 const TERMINAL_BOUNDARY_LIMIT = 89;
-
-const formattingFunctionDefault = decimalFormatterStandard;
-const minIntegerDigitsDefault = 1;
-const minDecimalDigitsDefault = 2;
-const maxDecimalDigitsDefault = 2;
-const localeDefault = 'en-US';
-const styleDefault = 'currency';
-const currencyDefault = 'USD';
 
 const rightPadToBoundary = ({ leftSideOfHeading, character }) => {
     let rightSideOfHeading = '';
@@ -79,31 +78,31 @@ const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
     const formattingFunction =
         terminalOptions.formatting && terminalOptions.formattingFunction
             ? terminalOptions.formattingFunction
-            : formattingFunctionDefault;
+            : FORMATTING_FUNCTION_DEFAULT;
     const minIntegerDigits =
         terminalOptions.formatting && terminalOptions.formatting.minIntegerDigits
             ? terminalOptions.formatting.minIntegerDigits
-            : minIntegerDigitsDefault; // TODO: break this out and also in standardTerminalSubheader
+            : MIN_INT_DIGITS_DEFAULT;
     const minDecimalDigits =
         terminalOptions.formatting && terminalOptions.formatting.minDecimalDigits
             ? terminalOptions.formatting.minDecimalDigits
-            : minDecimalDigitsDefault; // add these options in documentation
+            : MIN_DECIMAL_DIGITS_DEFAULT;
     const maxDecimalDigits =
         terminalOptions.formatting && terminalOptions.formatting.maxDecimalDigits
             ? terminalOptions.formatting.maxDecimalDigits
-            : maxDecimalDigitsDefault;
+            : MAX_DECIMAL_DIGITS_DEFAULT;
     const locale =
         terminalOptions.formatting && terminalOptions.formatting.locale
             ? terminalOptions.formatting.locale
-            : localeDefault;
+            : LOCALE_DEFAULT;
     const style =
         terminalOptions.formatting && terminalOptions.formatting.style
             ? terminalOptions.formatting.style
-            : styleDefault;
+            : STYLE_DEFAULT;
     const currency =
         terminalOptions.formatting && terminalOptions.formatting.currency
             ? terminalOptions.formatting.currency
-            : currencyDefault;
+            : CURRENCY_DEFAULT;
     return {
         formattingFunction,
         minIntegerDigits,
@@ -115,22 +114,21 @@ const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
     };
 };
 
-const conciseOutput = ({ event, terminalOptions }) => {
+const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     const {
         formattingFunction,
         minIntegerDigits,
         minDecimalDigits,
         maxDecimalDigits,
         locale,
-        style,
-        currency
+        style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineSeparator(1);
     // eslint-disable-next-line no-console
-    if (event.name) console.log(`name: `, event.name);
+    if (event.name) console.log(`name: `, event.name); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
-    if (event.group) console.log(`name: `, event.group);
-    if (event.amount) {
+    if (event.group) console.log(`group: `, event.group); // eslint-disable-line quotes
+    if (!isUndefinedOrNull(event.amount)) {
         // eslint-disable-next-line no-console
         console.log(
             `amount: `, // eslint-disable-line quotes
@@ -140,7 +138,21 @@ const conciseOutput = ({ event, terminalOptions }) => {
                 maxDecimalDigits,
                 locale,
                 style,
-                currency
+                currency: event.currencySymbol || CURRENCY_DEFAULT
+            })
+        );
+    }
+    if (!isUndefinedOrNull(event.convertedAmount) && event.currencySymbol !== currencySymbol) {
+        // eslint-disable-next-line no-console
+        console.log(
+            `convertedAmount: `, // eslint-disable-line quotes
+            formattingFunction(event.convertedAmount, {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: currencySymbol || CURRENCY_DEFAULT
             })
         );
     }
@@ -153,7 +165,7 @@ const conciseOutput = ({ event, terminalOptions }) => {
             maxDecimalDigits,
             locale,
             style,
-            currency
+            currency: currencySymbol || CURRENCY_DEFAULT
         })
     );
     // eslint-disable-next-line no-console
@@ -170,7 +182,7 @@ const verboseOutput = (event) => {
     console.log(event);
 };
 
-const eventsLogger = ({ events, terminalOptions }) => {
+const eventsLogger = ({ events, terminalOptions, currencySymbol }) => {
     switch (terminalOptions.mode) {
     case VERBOSE:
         events.forEach((event) => {
@@ -179,7 +191,7 @@ const eventsLogger = ({ events, terminalOptions }) => {
         break;
     case CONCISE:
         events.forEach((event) => {
-            conciseOutput({ event, terminalOptions });
+            conciseOutput({ event, terminalOptions, currencySymbol });
         });
         break;
     default:
@@ -202,8 +214,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
         minDecimalDigits,
         maxDecimalDigits,
         locale,
-        style,
-        currency
+        style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineHeading(
         ` beginBalance: ${formattingFunction(danielSan.beginBalance, {
@@ -212,7 +223,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
             maxDecimalDigits,
             locale,
             style,
-            currency
+            currency: danielSan.currencySymbol || CURRENCY_DEFAULT
         })} `
     );
     lineHeading(` dateStart: ${danielSan.dateStart} `);
@@ -229,7 +240,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
             lineHeading(` critical threshold: < ${terminalOptions.criticalThreshold} `);
         }
         lineSeparator(2);
-        eventsLogger({ events: criticalSnapshots, terminalOptions });
+        eventsLogger({ events: criticalSnapshots, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
         lineSeparator(2);
         lineHeading(' end critical snapshots ');
         lineSeparator(2);
@@ -243,7 +254,7 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
         lineHeading(' begin rules to retire ');
         lineHeading(' the following rules have obsolete dateEnd values ');
         lineSeparator(2);
-        eventsLogger({ events: rulesToRetire, terminalOptions });
+        eventsLogger({ events: rulesToRetire, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
         lineSeparator(2);
         lineHeading(' end rules to retire ');
         lineSeparator(2);
@@ -270,7 +281,7 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     lineSeparator(2);
     const relevantEvents = danielSan.events;
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions });
+        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
     } else {
         showNothingToDisplay();
     }
@@ -295,7 +306,7 @@ const displayEventsWithProperty = ({
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey });
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions });
+        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
     } else {
         showNothingToDisplay();
     }
@@ -316,7 +327,7 @@ const displayEventsByPropertyKeyAndValues = ({
     const { searchValues } = terminalOptions;
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, searchValues });
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions });
+        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
     } else {
         showNothingToDisplay();
     }
@@ -337,7 +348,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, substring });
     if (relevantEvents) {
-        eventsLogger({ events: relevantEvents, terminalOptions });
+        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
     } else {
         showNothingToDisplay();
     }

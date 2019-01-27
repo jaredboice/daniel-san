@@ -1,5 +1,6 @@
 const { TimeStream } = require('./timeStream');
 const { errorDisc } = require('./utility/errorHandling');
+const { isUndefinedOrNull } = require('./utility/validation');
 const { buildStandardEvent } = require('./standardEvents');
 const { nthWeekdaysOfMonth, weekdayOnDate } = require('./specialEvents');
 const {
@@ -9,7 +10,6 @@ const {
 } = require('./specialAdjustments');
 const { flagRuleForRetirement, retireRules } = require('./standardEvents/common');
 const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle/cycleModulusToDate');
-const { isUndefinedOrNull } = require('./utility/validation');
 const {
     DATE_DELIMITER,
     STANDARD_EVENT,
@@ -29,7 +29,8 @@ const {
     MODIFIED,
     RETIRING_RULES,
     STANDARD_EVENT_ROUTINE,
-    STANDARD_EVENT_REMINDER
+    STANDARD_EVENT_REMINDER,
+    CURRENCY_DEFAULT
 } = require('./constants');
 
 const buildEvents = ({ danielSan, rules, date }) => {
@@ -196,7 +197,18 @@ const prepareRules = ({ danielSan, dateStartString }) => {
     if (!danielSan.beginBalance) {
         danielSan.beginBalance = 0;
     }
+    if (isUndefinedOrNull(danielSan.currencyConversion)) {
+        danielSan.currencyConversion = ({ amount }) => {
+            return amount;
+        };
+    }
+    if (isUndefinedOrNull(danielSan.currencySymbol)) {
+        danielSan.currencySymbol = CURRENCY_DEFAULT;
+    }
     danielSan.rules.forEach((rule, index) => {
+        if (isUndefinedOrNull(rule.currencySymbol)) {
+            rule.currencySymbol = CURRENCY_DEFAULT;
+        }
         if (rule.type === STANDARD_EVENT || STANDARD_EVENT_ROUTINE) {
             try {
                 if (isUndefinedOrNull(rule.modulus) || isUndefinedOrNull(rule.cycle) || rule.frequency === ONCE) {
@@ -222,12 +234,17 @@ const prepareRules = ({ danielSan, dateStartString }) => {
 };
 
 const executeEvents = ({ danielSan }) => {
-    danielSan.events.forEach((rule, index) => {
+    danielSan.events.forEach((event, index) => {
         try {
-            rule.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
-            rule.endBalance = rule.amount ? rule.beginBalance + rule.amount : rule.beginBalance; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+            event.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
+            event.endBalance = event.beginBalance; // default value in case there is no amount field
+            if (!isUndefinedOrNull(event.amount)) {
+                const convertedAmount = danielSan.currencyConversion({ amount: event.amount, currentSymbol: event.currencySymbol, futureSymbol: danielSan.currencySymbol });
+                event.endBalance = event.beginBalance + convertedAmount; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+                event.convertedAmount = convertedAmount;
+            }
         } catch (err) {
-            throw errorDisc(err, 'error in executeEvents()', { rule, index });
+            throw errorDisc(err, 'error in executeEvents()', { event, index });
         }
     });
 };

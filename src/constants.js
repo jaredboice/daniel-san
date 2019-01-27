@@ -1,3 +1,5 @@
+const { decimalFormatterStandard } = require('./utility/formatting');
+
 const DATE_DELIMITER = '-';
 
 const appConstants = {
@@ -46,7 +48,14 @@ const appConstants = {
     DISPLAY_TIME_EVENTS: 'DISPLAY_TIME_EVENTS',
     DISPLAY_ROUTINE_EVENTS: 'DISPLAY_ROUTINE_EVENTS',
     DISPLAY_REMINDER_EVENTS: 'DISPLAY_REMINDER_EVENTS',
-    DISPLAY_RULES_TO_RETIRE: 'DISPLAY_RULES_TO_RETIRE'
+    DISPLAY_RULES_TO_RETIRE: 'DISPLAY_RULES_TO_RETIRE',
+    FORMATTING_FUNCTION_DEFAULT: decimalFormatterStandard,
+    MIN_INT_DIGITS_DEFAULT: 1,
+    MIN_DECIMAL_DIGITS_DEFAULT: 2,
+    MAX_DECIMAL_DIGITS_DEFAULT: 2,
+    LOCALE_DEFAULT: 'en-US',
+    STYLE_DEFAULT: 'currency',
+    CURRENCY_DEFAULT: 'USD'
 };
 
 module.exports = appConstants;

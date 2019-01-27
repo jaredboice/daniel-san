@@ -10,7 +10,7 @@ get the [full documentation](https://github.com/jaredboice/daniel-san) at gitHub
 
 ## Description
 
-**Daniel-San** is a node-based budget-projection engine that helps your finances find balance. The program offers multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates beyond holidays and weekends.
+**Daniel-San** is a node-based budget-projection engine that helps your finances find balance.  The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates beyond holidays and weekends.
 
 ## Install, Import & Execute
 

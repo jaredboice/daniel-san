@@ -8,7 +8,7 @@
 
 ## Description
 
-**Daniel-San** is a node-based budget-projection engine that helps your finances find balance. The program offers multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates beyond holidays and weekends.
+**Daniel-San** is a node-based budget-projection engine that helps your finances find balance.  The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates beyond holidays and weekends.
 
 ## Install, Import & Execute
 
@@ -326,6 +326,50 @@ const danielSan = {
 };
 ```
 
+## Multi-Currency
+
+**Currency Props**
+
+```javascript
+const danielSan = {
+    beginBalance: 1618.03,
+    endBalance: null,
+    dateStart: '2019-03-20',
+    dateEnd: '2019-12-13',
+    currencySymbol: 'USD', // the symbol that everything will be converted to (should be exact/case-sensitive!)
+    currencyConversion: ({ amount, currentSymbol, futureSymbol}) => {
+         // a global currency conversion function that will return the converted amount
+         // amount represents the rule amount
+         // currentSymbol represets the currencySymbol from the rule/event (as seen below)
+         // futureSymbol represents the currency you will be converting to (namely the 'USD' value above)
+        const symbolEnum = {
+            'USD': 1,
+            'EUR': 0.88 // 1 USD is worth 0.88 EUR
+            'CNY': 6.75 // 1 USD is worth 6.75 CNY
+        };
+        switch (futureSymbol) {
+        case 'USD': // converting amount (in this case the amount is in EUR) to USD
+            return amount * symbolEnum[currentSymbol];
+        default:
+            break;
+        }
+        return amount;
+    },
+    rules: [
+        { // rule 1
+            type: STANDARD_EVENT,
+            frequency: DAILY,
+            name: 'cafeteria breakfast',
+            amount: -5.00,
+            currencySymbol: 'EUR' // in this context, EUR will be converted to USD (the currencySymbol on the main trunk of danielSan above is 'USD')
+            dateStart: '2019-01-01',
+            dateEnd: null,
+        }
+    ],
+    events: [] // future balance projections stored here
+};
+```
+
 ## Terminal
 
 **Logging Results to the Command-Line**
@@ -422,6 +466,8 @@ if (eventResults.err) {
     }
 }
 ```
+
+currencyConversion({ amount: event.amount, currentSymbol: event.currencySymbol, futureSymbol: danielSan.currencySymbol });
 
 ## More Useful Features
 
