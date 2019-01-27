@@ -23,6 +23,7 @@ const findRulesToRetire = ({ danielSan }) => {
     });
     if (rulesToRetire.length > 0) {
         return rulesToRetire;
+        // eslint-disable-next-line no-else-return
     } else {
         return null;
     }
@@ -88,18 +89,18 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     return null; // this line satisfies another linting error
 };
 
-const snapshotsGreaterThanAmount = ({ collection = [], level = 0, propertyKey = 'endBalance' }) => {
+const snapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
     const newCollection = collection.filter((element) => {
-        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > level) {
+        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > amount) {
             return element;
         }
     });
     return newCollection;
 };
 
-const snapshotsLessThanAmount = ({ collection = [], level = 0, propertyKey = 'endBalance' }) => {
+const snapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
     const newCollection = collection.filter((element) => {
-        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] < level) {
+        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] < amount) {
             return element;
         }
     });

@@ -517,8 +517,8 @@ const {
 // see the source code for real example cases of the following exposed funtions
 // there are also useful functions in the utility directory
 const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold }); // uses the criticalThreshold field
-const bigSnapshots = snapshotsGreaterThanAmount({ collection: danielSan.events, level: 3000, propertyKey: 'endBalance' });
-const smallSnapshots = snapshotsLessThanAmount({ collection: danielSan.rules, level: 0, propertyKey: 'convertedAmount' }); 
+const bigSnapshots = snapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'endBalance' });
+const smallSnapshots = snapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' }); 
 // even if you do not add a currencyConversion function, it will be added for you and it will simply return to the convertedAmount exactly what is in the amount field
 const rulesToRetire = findRulesToRetire({ danielSan }); 
 // finds rules with a dateEnd lower than the dateStart value of the main danielSan tree trunk.

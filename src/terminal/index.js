@@ -4,7 +4,9 @@ const {
     findRulesToRetire,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
-    findEventsWithPropertyKeyContainingSubstring
+    findEventsWithPropertyKeyContainingSubstring,
+    snapshotsGreaterThanAmount,
+    snapshotsLessThanAmount
 } = require('../analytics');
 
 const {
@@ -21,6 +23,8 @@ const {
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
+    DISPLAY_END_BALANCES_GREATER_THAN_MAX_AMOUNT,
+    DISPLAY_END_BALANCES_LESS_THAN_MIN_AMOUNT,
     MIN_INT_DIGITS_DEFAULT,
     MIN_DECIMAL_DIGITS_DEFAULT,
     MAX_DECIMAL_DIGITS_DEFAULT,
@@ -142,7 +146,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.convertedAmount) && event.currencySymbol !== currencySymbol) {
+    if (!isUndefinedOrNull(event.convertedAmount)) {
         // eslint-disable-next-line no-console
         console.log(
             `convertedAmount: `, // eslint-disable-line quotes
@@ -271,6 +275,42 @@ const displayCriticalThresholdEvents = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     showCriticalSnapshots({ danielSan, terminalOptions });
+    terminalBoundary(5);
+};
+
+const displayEndBalancesGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
+    const collection = snapshotsGreaterThanAmount({ collection: danielSan.events, amount: terminalOptions.maxAmount || 0, propertyKey: 'endBalance' });
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    lineHeading(' begin events/routines/reminders ');
+    lineSeparator(2);
+    const relevantEvents = collection;
+    if (relevantEvents) {
+        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+    } else {
+        showNothingToDisplay();
+    }
+    lineSeparator(2);
+    lineHeading(' end events/routines/reminders ');
+    lineSeparator(2);
+    terminalBoundary(5);
+};
+
+const displayEndBalancesLessThanMinAmount = ({ danielSan, terminalOptions }) => {
+    const collection = snapshotsLessThanAmount({ collection: danielSan.events, amount: terminalOptions.minAmount || 0, propertyKey: 'endBalance' });
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    lineHeading(' begin events/routines/reminders ');
+    lineSeparator(2);
+    const relevantEvents = collection;
+    if (relevantEvents) {
+        eventsLogger({ events: relevantEvents, terminalOptions, currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT });
+    } else {
+        showNothingToDisplay();
+    }
+    lineSeparator(2);
+    lineHeading(' end events/routines/reminders ');
+    lineSeparator(2);
     terminalBoundary(5);
 };
 
@@ -428,6 +468,12 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 break;
             case DISPLAY_RULES_TO_RETIRE:
                 displayRulesToRetire({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_END_BALANCES_GREATER_THAN_MAX_AMOUNT:
+                displayEndBalancesGreaterThanMaxAmount({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_END_BALANCES_LESS_THAN_MIN_AMOUNT:
+                displayEndBalancesLessThanMinAmount({ danielSan, terminalOptions });
                 break;
             default:
                 break;
