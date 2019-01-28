@@ -167,7 +167,7 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineSeparator(1);
     // eslint-disable-next-line no-console
-    if (event.name) console.log(`name: `, event.name); // eslint-disable-line quotes
+    if (!isUndefinedOrNull(event.name)) console.log(`name: `, event.name); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
     if (!isUndefinedOrNull(event.amount) && currencySymbol === event.currencySymbol) {
         // eslint-disable-next-line no-console
@@ -228,9 +228,9 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineSeparator(1);
     // eslint-disable-next-line no-console
-    if (event.name) console.log(`name: `, event.name); // eslint-disable-line quotes
+    if (!isUndefinedOrNull(event.name)) console.log(`name: `, event.name); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
-    if (event.group) console.log(`group: `, event.group); // eslint-disable-line quotes
+    if (!isUndefinedOrNull(event.group)) console.log(`group: `, event.group); // eslint-disable-line quotes
     if (!isUndefinedOrNull(event.amount)) {
         // eslint-disable-next-line no-console
         console.log(
@@ -279,7 +279,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     // eslint-disable-next-line no-console
     if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
-    if (event.notes) console.log(`notes: `, event.notes); // eslint-disable-line quotes
+    if (!isUndefinedOrNull(event.notes)) console.log(`notes: `, event.notes); // eslint-disable-line quotes
     lineSeparator(1);
 };
 
@@ -298,14 +298,13 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             key !== 'type' &&
             key !== 'frequency' &&
             key !== 'processDate' &&
-            key !== 'dateStart' &&
-            key !== 'dateEnd' &&
             key !== 'modulus' &&
             key !== 'cycle' &&
             key !== 'syncDate' &&
             key !== 'specialAdjustments' &&
             key !== 'exclusions' &&
-            key !== 'sortPriority'
+            key !== 'sortPriority' &&
+            key !== 'currencyConversion'
         ) {
             if (key === 'name') {
                 // eslint-disable-next-line no-console
@@ -349,9 +348,6 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                         currency: currencySymbol || CURRENCY_DEFAULT
                     })
                 );
-            } else if (key === 'eventDate') {
-                // eslint-disable-next-line no-console
-                console.log(`eventDate: `, event.eventDate); // eslint-disable-line quotes
             } else {
                 // eslint-disable-next-line no-console
                 console.log(`${key}: ${value}`);
@@ -425,7 +421,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
     if (criticalSnapshots) {
         terminalBoundary(3);
         lineHeading(' begin critical snapshots ');
-        if (terminalOptions.criticalThreshold) {
+        if (!isUndefinedOrNull(terminalOptions.criticalThreshold)) {
             lineHeading(` critical threshold: < ${terminalOptions.criticalThreshold} `);
         }
         lineSeparator(2);
