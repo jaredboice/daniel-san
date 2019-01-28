@@ -345,7 +345,7 @@ const danielSan = {
          // even if you do not add a currencyConversion function, it will be added for you and it will simply 
          // return to the convertedAmount exactly what is in the amount field
         const symbolEnum = {
-            'USD': 1,
+            'USD': 1, // be sure that your currency converter computes the same exact amount when the symbols match, as is happening here
             'EUR': 0.88 // 1 USD is worth 0.88 EUR
             'CNY': 6.75 // 1 USD is worth 6.75 CNY
         };
@@ -353,6 +353,7 @@ const danielSan = {
         case 'USD': // converting amount (in this case the amount is in EUR since there is only one rule and its currencySymbol is EUR) to USD
             return amount * symbolEnum[currentSymbol];
         default:
+            // maybe you have switch cases for different calculations, when switching your primary output currency symbol to some other symbol
             break;
         }
         return amount;
