@@ -149,7 +149,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.convertedAmount)) {
+    if (!isUndefinedOrNull(event.convertedAmount) && event.currencySymbol !== currencySymbol) {
         // eslint-disable-next-line no-console
         console.log(
             `convertedAmount: `, // eslint-disable-line quotes
