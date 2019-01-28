@@ -350,7 +350,13 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                 );
             } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
                 // eslint-disable-next-line no-console
-                console.log(event.currencySymbol);
+                console.log(`currencySymbol: ${event.currencySymbol}`);
+            } else if (key === 'dateStart') {
+                // eslint-disable-next-line no-console
+                console.log(`dateStart: ${event.dateStart}`);
+            } else if (key === 'dateEnd') {
+                // eslint-disable-next-line no-console
+                console.log(`dateEnd: ${event.dateEnd}`);
             } else {
                 // eslint-disable-next-line no-console
                 console.log(`${key}: ${value}`);
