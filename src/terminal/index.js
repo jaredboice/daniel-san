@@ -335,6 +335,19 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                         currency: currencySymbol || CURRENCY_DEFAULT
                     })
                 );
+            } else if (key === 'beginBalance' && !isUndefinedOrNull(event.amount)) {
+                // eslint-disable-next-line no-console
+                console.log(
+                    `beginBalance: `, // eslint-disable-line quotes
+                    formattingFunction(event.beginBalance, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: currencySymbol || CURRENCY_DEFAULT
+                    })
+                );
             } else if (key === 'endBalance' && !isUndefinedOrNull(event.amount)) {
                 // eslint-disable-next-line no-console
                 console.log(
@@ -351,10 +364,10 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
                 // eslint-disable-next-line no-console
                 console.log(`currencySymbol: ${event.currencySymbol}`);
-            } else if (key === 'dateStart' && !isUndefinedOrNull(event.dateStart)) {
+            } else if (key === 'dateStart' && event.dateStart != null) {
                 // eslint-disable-next-line no-console
                 console.log(`dateStart: ${event.dateStart}`);
-            } else if (key === 'dateEnd' && !isUndefinedOrNull(event.dateEnd)) {
+            } else if (key === 'dateEnd' && event.dateEnd != null) {
                 // eslint-disable-next-line no-console
                 console.log(`dateEnd: ${event.dateEnd}`);
             } else {
