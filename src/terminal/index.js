@@ -542,6 +542,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
     if (error) {
         // eslint-disable-next-line no-console
         lineHeading(' something bad happened and a lot of robots died ');
+        // eslint-disable-next-line no-console
         console.log(error);
     } else if (danielSan) {
         try {
@@ -627,9 +628,13 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             default:
                 break;
             }
+            lineSeparator(2);
+            console.log(getRandomMiyagiQuote());
+            lineSeparator(2);
         } catch (err) {
+            lineHeading(' something bad happened and a lot of robots died ');
             // eslint-disable-next-line no-console
-            console.log(err);
+            console.log(error);
         }
     }
 };
