@@ -183,7 +183,7 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.convertedAmount) && currencySymbol !== event.currencySymbol) {
+    if (!isUndefinedOrNull(event.convertedAmount) && !isUndefinedOrNull(event.amount) && currencySymbol !== event.currencySymbol) {
         // eslint-disable-next-line no-console
         console.log(
             `convertedAmount: `, // eslint-disable-line quotes
@@ -245,7 +245,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.convertedAmount) && event.currencySymbol !== currencySymbol) {
+    if (!isUndefinedOrNull(event.convertedAmount) && !isUndefinedOrNull(event.amount) && event.currencySymbol !== currencySymbol) {
         // eslint-disable-next-line no-console
         console.log(
             `convertedAmount: `, // eslint-disable-line quotes
@@ -322,7 +322,7 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                         currency: event.currencySymbol || CURRENCY_DEFAULT
                     })
                 );
-            } else if (key === 'convertedAmount' && event.currencySymbol !== currencySymbol) {
+            } else if (key === 'convertedAmount' && !isUndefinedOrNull(event.amount) && event.currencySymbol !== currencySymbol) {
                 // eslint-disable-next-line no-console
                 console.log(
                     `convertedAmount: `, // eslint-disable-line quotes
@@ -335,7 +335,7 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                         currency: currencySymbol || CURRENCY_DEFAULT
                     })
                 );
-            } else if (key === 'endBalance') {
+            } else if (key === 'endBalance' && !isUndefinedOrNull(event.amount)) {
                 // eslint-disable-next-line no-console
                 console.log(
                     `endBalance: `, // eslint-disable-line quotes
@@ -351,10 +351,10 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
                 // eslint-disable-next-line no-console
                 console.log(`currencySymbol: ${event.currencySymbol}`);
-            } else if (key === 'dateStart') {
+            } else if (key === 'dateStart' && !isUndefinedOrNull(event.dateStart)) {
                 // eslint-disable-next-line no-console
                 console.log(`dateStart: ${event.dateStart}`);
-            } else if (key === 'dateEnd') {
+            } else if (key === 'dateEnd' && !isUndefinedOrNull(event.dateEnd)) {
                 // eslint-disable-next-line no-console
                 console.log(`dateEnd: ${event.dateEnd}`);
             } else {
