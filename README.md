@@ -383,21 +383,21 @@ terminal({ danielSan, terminalOptions, error });
 
 **Terminal Type Options**
 
--   `type: 'STANDARD_TERMINAL_OUTPUT'` _(standard command-line functionality)_
--   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical snapshots)_
 -   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy)_
+-   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
+-   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output critical snapshots if passed a criticalThreshold)_
+-   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest endBalance values, ordered by value)_
+-   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest endBalance values, ordered by value)_
+-   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the endBalance values greater than 1000)_
+-   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT'` _(pass minAmount: 100 to display all the endBalance values less than 1000)_
 -   `type: 'DISPLAY_EVENTS_BY_GROUPS'` _(passing searchValues: ['Group1', 'Group2'] into terminalOptions will search against the optional group property)_
 -   `type: 'DISPLAY_EVENTS_BY_NAMES'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
 -   `type: 'DISPLAY_EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
 -   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
--   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart)_
+-   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
 -   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
 -   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
 -   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on a non-processed danielSan object since findBalance retires rules (with obsolete dateEnd dates) automatically during the projection phase)_
--   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest endBalance values)_
--   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest endBalance values)_
--   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the endBalance values greater than 1000)_
--   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT'` _(pass minAmount: 100 to display all the endBalance values less than 1000)_
 
 **Terminal Mode Options**
 
@@ -521,18 +521,16 @@ const {
 // see the source code for real example cases of the following exposed funtions
 // there are also useful functions in the utility directory
 const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold }); // uses the criticalThreshold field
-const seventHighestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'endBalance', selectionAmount = 7, reverse = false });
-const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'endBalance', selectionAmount = 7, reverse = true }); // reverse sort gets the lowest values
+const seventHighestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'endBalance', selectionAmount: 7, reverse = false });
+const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'endBalance', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
 const bigSnapshots = findSnapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'endBalance' });
 const smallSnapshots = findSnapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' }); 
-// even if you do not add a currencyConversion function, it will be added for you and it will simply return to the convertedAmount exactly what is in the amount field
-const rulesToRetire = findRulesToRetire({ danielSan }); 
-// finds rules with a dateEnd lower than the dateStart value of the main danielSan tree trunk.
+const rulesToRetire = findRulesToRetire({ danielSan }); // finds rules with a dateEnd lower than the dateStart value of the main danielSan tree trunk.
 // rules are auto retired during the buget projection process however so if you want to find rules that you need to retire/
 // then make sure you perform it on a clean instance of danielSan prior to running it through findBalance()
-const eventsWithProperty = findEventsWithProperty({ events: danielSan.events, propertyKey }); // eg. propertyKey: 'timeStart'
-const eventsWithValues = findEventsByPropertyKeyAndValues({ events: danielSan.events, propertyKey, searchValues }); // eg. propertyKey: 'group', searchValues: ['Group 1', 'Group 2']
-const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubstring({ events: danielSan.events, propertyKey, substring }); // eg. propertyKey: 'type', substring: 'ROUTINE'
+const eventsWithProperty = findEventsWithProperty({ events: danielSan.events, propertyKey: 'youCouldEvenAddACustomProperty' }); // eg. propertyKey: 'timeStart'
+const eventsWithValues = findEventsByPropertyKeyAndValues({ events: danielSan.events, propertyKey: 'name', searchValues: ['groceries', 'movie tickets', 'concert tickets'] }); // eg. propertyKey: 'group', searchValues: ['Group 1', 'Group 2']
+const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubstring({ events: danielSan.events, propertyKey: 'name', substring: 'tickets' }); // eg. propertyKey: 'type', substring: 'ROUTINE'
 ```
 
 ## Constants
@@ -565,9 +563,13 @@ const {
     THURSDAY,
     FRIDAY,
     SATURDAY,
-    STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE,
+    STANDARD_TERMINAL_OUTPUT,
+    DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
+    DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
+    DISPLAY_LEAST_END_BALANCE_SNAPSHOTS,
     DISPLAY_EVENTS_BY_GROUPS,
     DISPLAY_EVENTS_BY_NAMES,
     DISPLAY_EVENTS_BY_TYPES,
@@ -578,9 +580,5 @@ const {
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
-    DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
-    DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
-    DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
-    DISPLAY_LEAST_END_BALANCE_SNAPSHOTS,
 } = require('daniel-san/constants');
 ```

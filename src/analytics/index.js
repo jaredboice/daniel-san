@@ -52,7 +52,12 @@ const findEventsByPropertyKeyAndValues = ({ events, propertyKey, searchValues })
         const eventsFound = [];
         events.forEach((event) => {
             searchValues.forEach((searchCriteriaValue) => {
-                if (event[propertyKey] && event[propertyKey] === searchCriteriaValue) {
+                let eventProperty = event[propertyKey];
+                if (eventProperty && typeof eventProperty === 'string') {
+                    eventProperty = eventProperty.toLowerCase();
+                }
+                const newSearchCriteriaValue = (typeof searchCriteriaValue === 'string') ? searchCriteriaValue.toLowerCase() : searchCriteriaValue;
+                if (eventProperty && eventProperty === newSearchCriteriaValue) {
                     eventsFound.push(event);
                 }
             });

@@ -505,6 +505,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
 const terminal = ({ danielSan, terminalOptions = {}, error }) => {
     if (error) {
         // eslint-disable-next-line no-console
+        lineHeading(' something bad happened and a lot of robots died ');
         console.log(error);
     } else if (danielSan) {
         try {
