@@ -41,18 +41,33 @@ const TERMINAL_BOUNDARY_LIMIT = 89;
 
 const getRandomMiyagiQuote = () => {
     const quotes = [
-        '\'First learn balance. Balance good, karate good, everything good. Balance bad, might as well pack up, go home.\'',
+        '\'First learn balance. Balance good, karate good, everything good.\nBalance bad, might as well pack up, go home.\'',
         '\'To make honey, young bee need young flower, not old prune.\'',
         '\'Look eye! Always look eye!\'',
         '\'Daniel-san, you much humor!\'',
         '\'First learn stand, then learn fly. Nature rule, Daniel-san, not mine.\'',
-        '\'You remember lesson about balance? Lesson not just karate only. Lesson for whole life. Whole life have a balance. Everything be better.\'',
+        '\'You remember lesson about balance? Lesson not just karate only.\nLesson for whole life. Whole life have a balance. Everything be better.\'',
         '\'Banzai, Daniel-san!\'',
         '\'In Okinawa, all Miyagi know two things: fish and karate.\'',
         '\'Show me, sand the floor\'',
         '\'Show me, wax on, wax off\'',
         '\'Show me, paint the fence\'',
-        '\'Called crane technique. If do right, no can defence.\''
+        '\'Called crane technique. If do right, no can defence.\'',
+        '\'License never replace eye, ear and brain.\'',
+        '\'Wax on... Wax off, wax on... wax off.\nBreath in through nose. Breath out through mouth.\'',
+        '\'Learn balance Daniel san... Wax-on... Wax-off.\'',
+        '\'It’s ok to lose to opponent. It’s never okay to lose to fear\'',
+        '\'Better learn balance. Balance is key. Balance good, karate good.\nEverything good. Balance bad, better pack up, go home. Understand?\'',
+        '\'Never put passion in front of principle, even if you win, you’ll lose\'',
+        '\'Either you karate do \'yes\' or karate do \'no\'\nYou karate do \'guess so,\' (get squished) just like grape.\'',
+        '\'Never trust spiritual leader who cannot dance.\'',
+        '\'If come from inside you, always right one.\'',
+        '\'Walk on road, hm? Walk left side, safe. Walk right side, safe.\nWalk middle, sooner or later...get squish just like grape\'',
+        '\'Daniel-San, lie become truth only if person wanna believe it.\'',
+        '\'Wax on, wax off. Wax on, wax off.\'',
+        '\'Man who catch fly with chopstick, accomplish anything.\'',
+        '\'If karate used defend honor, defend life, karate mean something.\nIf karate used defend plastic metal trophy, karate no mean nothing.\'',
+        '\'Wax-on, wax-off.\''
     ];
     const elementIndex = Math.floor(Math.random() * quotes.length);
     return `${quotes[elementIndex]} -Miyagi-`;
