@@ -402,8 +402,9 @@ terminal({ danielSan, terminalOptions, error });
 
 **Terminal Mode Options**
 
--   `mode: 'CONCISE'` \_(minimal output)\_
--   `mode: 'VERBOSE'` \_(maximum output)\_
+-   `mode: 'SHY'` _(minimal output)_
+-   `mode: 'CONCISE'` _(standard output)_
+-   `mode: 'VERBOSE'` _(maximum output - allows output for custom properties)_
 
 **Critical Snapshots**
 
@@ -566,6 +567,7 @@ const {
     SATURDAY,
     VERBOSE,
     CONCISE,
+    SHY,
     STANDARD_TERMINAL_OUTPUT,
     DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,

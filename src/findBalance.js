@@ -204,10 +204,14 @@ const prepareRules = ({ danielSan, dateStartString }) => {
     }
     if (isUndefinedOrNull(danielSan.currencySymbol)) {
         danielSan.currencySymbol = CURRENCY_DEFAULT;
+    } else {
+        danielSan.currencySymbol = danielSan.currencySymbol.toUpperCase();
     }
     danielSan.rules.forEach((rule, index) => {
         if (isUndefinedOrNull(rule.currencySymbol)) {
             rule.currencySymbol = CURRENCY_DEFAULT;
+        } else {
+            rule.currencySymbol = rule.currencySymbol.toUpperCase();
         }
         if (rule.type === STANDARD_EVENT || STANDARD_EVENT_ROUTINE) {
             try {
@@ -239,7 +243,7 @@ const executeEvents = ({ danielSan }) => {
             event.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
             event.endBalance = event.beginBalance; // default value in case there is no amount field
             if (!isUndefinedOrNull(event.amount)) {
-                const convertedAmount = danielSan.currencyConversion({ amount: event.amount, currentSymbol: event.currencySymbol, futureSymbol: danielSan.currencySymbol });
+                const convertedAmount = (danielSan.currencySymbol && event.currencySymbol && danielSan.currencySymbol !== event.currencySymbol) ? danielSan.currencyConversion({ amount: event.amount, currentSymbol: event.currencySymbol, futureSymbol: danielSan.currencySymbol }) : event.amount;
                 event.endBalance = event.beginBalance + convertedAmount; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
                 event.convertedAmount = convertedAmount;
             }

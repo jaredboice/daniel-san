@@ -14,6 +14,7 @@ const {
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE,
+    SHY,
     DISPLAY_EVENTS_BY_GROUPS,
     DISPLAY_EVENTS_BY_NAMES,
     DISPLAY_EVENTS_BY_TYPES,
@@ -41,33 +42,33 @@ const TERMINAL_BOUNDARY_LIMIT = 89;
 
 const getRandomMiyagiQuote = () => {
     const quotes = [
-        '\'First learn balance. Balance good, karate good, everything good.\nBalance bad, might as well pack up, go home.\'',
-        '\'To make honey, young bee need young flower, not old prune.\'',
-        '\'Look eye! Always look eye!\'',
-        '\'Daniel-san, you much humor!\'',
-        '\'First learn stand, then learn fly. Nature rule, Daniel-san, not mine.\'',
-        '\'You remember lesson about balance? Lesson not just karate only.\nLesson for whole life. Whole life have a balance. Everything be better.\'',
-        '\'Banzai, Daniel-san!\'',
-        '\'In Okinawa, all Miyagi know two things: fish and karate.\'',
-        '\'Show me, sand the floor\'',
-        '\'Show me, wax on, wax off\'',
-        '\'Show me, paint the fence\'',
-        '\'Called crane technique. If do right, no can defence.\'',
-        '\'License never replace eye, ear and brain.\'',
-        '\'Wax on... Wax off, wax on... wax off.\nBreath in through nose. Breath out through mouth.\'',
-        '\'Learn balance Daniel san... Wax-on... Wax-off.\'',
-        '\'It’s ok to lose to opponent. It’s never okay to lose to fear\'',
-        '\'Better learn balance. Balance is key. Balance good, karate good.\nEverything good. Balance bad, better pack up, go home. Understand?\'',
-        '\'Never put passion in front of principle, even if you win, you’ll lose\'',
-        '\'Either you karate do \'yes\' or karate do \'no\'\nYou karate do \'guess so,\' (get squished) just like grape.\'',
-        '\'Never trust spiritual leader who cannot dance.\'',
-        '\'If come from inside you, always right one.\'',
-        '\'Walk on road, hm? Walk left side, safe. Walk right side, safe.\nWalk middle, sooner or later...get squish just like grape\'',
-        '\'Daniel-San, lie become truth only if person wanna believe it.\'',
-        '\'Wax on, wax off. Wax on, wax off.\'',
-        '\'Man who catch fly with chopstick, accomplish anything.\'',
-        '\'If karate used defend honor, defend life, karate mean something.\nIf karate used defend plastic metal trophy, karate no mean nothing.\'',
-        '\'Wax-on, wax-off.\''
+        "'First learn balance. Balance good, karate good, everything good.\nBalance bad, might as well pack up, go home.'",
+        "'To make honey, young bee need young flower, not old prune.'",
+        "'Look eye! Always look eye!'",
+        "'Daniel-san, you much humor!'",
+        "'First learn stand, then learn fly. Nature rule, Daniel-san, not mine.'",
+        "'You remember lesson about balance? Lesson not just karate only.\nLesson for whole life. Whole life have a balance. Everything be better.'",
+        "'Banzai, Daniel-san!'",
+        "'In Okinawa, all Miyagi know two things: fish and karate.'",
+        "'Show me, sand the floor'",
+        "'Show me, wax on, wax off'",
+        "'Show me, paint the fence'",
+        "'Called crane technique. If do right, no can defence.'",
+        "'License never replace eye, ear and brain.'",
+        "'Wax on... Wax off, wax on... wax off.\nBreath in through nose. Breath out through mouth.'",
+        "'Learn balance Daniel san... Wax-on... Wax-off.'",
+        "'It’s ok to lose to opponent. It’s never okay to lose to fear'",
+        "'Better learn balance. Balance is key. Balance good, karate good.\nEverything good. Balance bad, better pack up, go home. Understand?'",
+        "'Never put passion in front of principle, even if you win, you’ll lose'",
+        "'Either you karate do 'yes' or karate do 'no'\nYou karate do 'guess so,' (get squished) just like grape.'",
+        "'Never trust spiritual leader who cannot dance.'",
+        "'If come from inside you, always right one.'",
+        "'Walk on road, hm? Walk left side, safe. Walk right side, safe.\nWalk middle, sooner or later...get squish just like grape'",
+        "'Daniel-San, lie become truth only if person wanna believe it.'",
+        "'Wax on, wax off. Wax on, wax off.'",
+        "'Man who catch fly with chopstick, accomplish anything.'",
+        "'If karate used defend honor, defend life, karate mean something.\nIf karate used defend plastic metal trophy, karate no mean nothing.'",
+        "'Wax-on, wax-off.'"
     ];
     const elementIndex = Math.floor(Math.random() * quotes.length);
     return `${quotes[elementIndex]} -Miyagi-`;
@@ -155,6 +156,67 @@ const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
     };
 };
 
+const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
+    const {
+        formattingFunction,
+        minIntegerDigits,
+        minDecimalDigits,
+        maxDecimalDigits,
+        locale,
+        style
+    } = getDefaultParamsForDecimalFormatter(terminalOptions);
+    lineSeparator(1);
+    // eslint-disable-next-line no-console
+    if (event.name) console.log(`name: `, event.name); // eslint-disable-line quotes
+    // eslint-disable-next-line no-console
+    if (!isUndefinedOrNull(event.amount) && currencySymbol === event.currencySymbol) {
+        // eslint-disable-next-line no-console
+        console.log(
+            `amount: `, // eslint-disable-line quotes
+            formattingFunction(event.amount, {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: event.currencySymbol || CURRENCY_DEFAULT
+            })
+        );
+    }
+    if (!isUndefinedOrNull(event.convertedAmount) && event.currencySymbol !== currencySymbol) {
+        // eslint-disable-next-line no-console
+        console.log(
+            `convertedAmount: `, // eslint-disable-line quotes
+            formattingFunction(event.convertedAmount, {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: currencySymbol || CURRENCY_DEFAULT
+            })
+        );
+    }
+    if (!isUndefinedOrNull(event.amount)) {
+        // eslint-disable-next-line no-console
+        console.log(
+            `endBalance: `, // eslint-disable-line quotes
+            formattingFunction(event.endBalance, {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: currencySymbol || CURRENCY_DEFAULT
+            })
+        );
+    }
+    // eslint-disable-next-line no-console
+    console.log(`eventDate: `, event.eventDate); // eslint-disable-line quotes
+    // eslint-disable-next-line no-console
+    lineSeparator(1);
+};
+
 const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     const {
         formattingFunction,
@@ -197,18 +259,21 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    // eslint-disable-next-line no-console
-    console.log(
-        `endBalance: `, // eslint-disable-line quotes
-        formattingFunction(event.endBalance, {
-            minIntegerDigits,
-            minDecimalDigits,
-            maxDecimalDigits,
-            locale,
-            style,
-            currency: currencySymbol || CURRENCY_DEFAULT
-        })
-    );
+    if (!isUndefinedOrNull(event.amount)) {
+        // eslint-disable-next-line no-console
+        console.log(
+            `endBalance: `, // eslint-disable-line quotes
+            formattingFunction(event.endBalance, {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: currencySymbol || CURRENCY_DEFAULT
+            })
+        );
+    }
+
     // eslint-disable-next-line no-console
     console.log(`eventDate: `, event.eventDate); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
@@ -218,25 +283,103 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     lineSeparator(1);
 };
 
-const verboseOutput = (event) => {
-    // eslint-disable-next-line no-console
-    console.log(event);
+const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
+    const {
+        formattingFunction,
+        minIntegerDigits,
+        minDecimalDigits,
+        maxDecimalDigits,
+        locale,
+        style
+    } = getDefaultParamsForDecimalFormatter(terminalOptions);
+    lineSeparator(1);
+    Object.defineProperties(event).forEach(([key, value]) => {
+        if (
+            key !== 'type' &&
+            key !== 'frequency' &&
+            key !== 'processDate' &&
+            key !== 'dateStart' &&
+            key !== 'dateEnd' &&
+            key !== 'modulus' &&
+            key !== 'cycle' &&
+            key !== 'syncDate' &&
+            key !== 'specialAdjustments' &&
+            key !== 'exclusions' &&
+            key !== 'sortPriority'
+        ) {
+            if (key === 'name') {
+                // eslint-disable-next-line no-console
+                console.log(`name: `, event.name); // eslint-disable-line quotes
+            } else if (key === 'amount') {
+                // eslint-disable-next-line no-console
+                console.log(
+                    `amount: `, // eslint-disable-line quotes
+                    formattingFunction(event.amount, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: event.currencySymbol || CURRENCY_DEFAULT
+                    })
+                );
+            } else if (key === 'convertedAmount') {
+                // eslint-disable-next-line no-console
+                console.log(
+                    `convertedAmount: `, // eslint-disable-line quotes
+                    formattingFunction(event.convertedAmount, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: currencySymbol || CURRENCY_DEFAULT
+                    })
+                );
+            } else if (key === 'endBalance') {
+                // eslint-disable-next-line no-console
+                console.log(
+                    `endBalance: `, // eslint-disable-line quotes
+                    formattingFunction(event.endBalance, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: currencySymbol || CURRENCY_DEFAULT
+                    })
+                );
+            } else if (key === 'eventDate') {
+                // eslint-disable-next-line no-console
+                console.log(`eventDate: `, event.eventDate); // eslint-disable-line quotes
+            } else {
+                // eslint-disable-next-line no-console
+                console.log(`${key}: ${value}`);
+            }
+        }
+    });
+    lineSeparator(1);
 };
 
 const eventsLogger = ({ events, terminalOptions, currencySymbol }) => {
     switch (terminalOptions.mode) {
-    case VERBOSE:
-        events.forEach((event) => {
-            verboseOutput(event);
-        });
-        break;
-    case CONCISE:
-        events.forEach((event) => {
-            conciseOutput({ event, terminalOptions, currencySymbol });
-        });
-        break;
-    default:
-        break;
+        case VERBOSE:
+            events.forEach((event) => {
+                verboseOutput({ event, terminalOptions, currencySymbol });
+            });
+            break;
+        case CONCISE:
+            events.forEach((event) => {
+                conciseOutput({ event, terminalOptions, currencySymbol });
+            });
+            break;
+        case SHY:
+            events.forEach((event) => {
+                shyOutput({ event, terminalOptions, currencySymbol });
+            });
+            break;
+        default:
+            break;
     }
 };
 
@@ -552,81 +695,81 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             // eslint-disable-next-line no-lonely-if
             if (!terminalOptions.type) terminalOptions.type = STANDARD_TERMINAL_OUTPUT;
             switch (terminalOptions.type) {
-            case DISPLAY_EVENTS:
-            case STANDARD_TERMINAL_OUTPUT:
-                standardTerminalOutput({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_EVENTS_BY_GROUPS:
-                displayEventsByPropertyKeyAndValues({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'group'
-                });
-                break;
-            case DISPLAY_EVENTS_BY_NAMES:
-                displayEventsByPropertyKeyAndValues({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'name'
-                });
-                break;
-            case DISPLAY_EVENTS_BY_TYPES:
-                displayEventsByPropertyKeyAndValues({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'type'
-                });
-                break;
-            case DISPLAY_CRITICAL_SNAPSHOTS:
-                displayCriticalSnapshots({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_IMPORTANT_EVENTS:
-                displayEventsWithProperty({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'important'
-                });
-                break;
-            case DISPLAY_TIME_EVENTS:
-                displayEventsWithProperty({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'timeStart'
-                });
-                break;
-            case DISPLAY_ROUTINE_EVENTS:
-                displayEventsWithPropertyKeyContainingSubstring({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'type',
-                    substring: 'ROUTINE'
-                });
-                break;
-            case DISPLAY_REMINDER_EVENTS:
-                displayEventsWithPropertyKeyContainingSubstring({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'type',
-                    substring: 'REMINDER'
-                });
-                break;
-            case DISPLAY_RULES_TO_RETIRE:
-                displayRulesToRetire({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
-                displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
-                displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
-                displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
-                displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
-                break;
-            default:
-                break;
+                case DISPLAY_EVENTS:
+                case STANDARD_TERMINAL_OUTPUT:
+                    standardTerminalOutput({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_EVENTS_BY_GROUPS:
+                    displayEventsByPropertyKeyAndValues({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'group'
+                    });
+                    break;
+                case DISPLAY_EVENTS_BY_NAMES:
+                    displayEventsByPropertyKeyAndValues({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'name'
+                    });
+                    break;
+                case DISPLAY_EVENTS_BY_TYPES:
+                    displayEventsByPropertyKeyAndValues({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'type'
+                    });
+                    break;
+                case DISPLAY_CRITICAL_SNAPSHOTS:
+                    displayCriticalSnapshots({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_IMPORTANT_EVENTS:
+                    displayEventsWithProperty({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'important'
+                    });
+                    break;
+                case DISPLAY_TIME_EVENTS:
+                    displayEventsWithProperty({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'timeStart'
+                    });
+                    break;
+                case DISPLAY_ROUTINE_EVENTS:
+                    displayEventsWithPropertyKeyContainingSubstring({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'type',
+                        substring: 'ROUTINE'
+                    });
+                    break;
+                case DISPLAY_REMINDER_EVENTS:
+                    displayEventsWithPropertyKeyContainingSubstring({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'type',
+                        substring: 'REMINDER'
+                    });
+                    break;
+                case DISPLAY_RULES_TO_RETIRE:
+                    displayRulesToRetire({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
+                    displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                    displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
+                    displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
+                    displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
+                    break;
+                default:
+                    break;
             }
             lineSeparator(2);
             console.log(getRandomMiyagiQuote());
