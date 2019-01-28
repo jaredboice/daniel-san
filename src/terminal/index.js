@@ -387,7 +387,7 @@ const standardTerminalHeader = ({ terminalOptions }) => {
     terminalBoundary(5);
     lineHeading(' must find balance, daniel-san ');
     lineHeading(` terminal type: ${terminalOptions.type} `);
-    lineHeading(` mode: ${terminalOptions.mode} `);
+    lineHeading(` terminal mode: ${terminalOptions.mode} `);
     lineSeparator(2);
     console.log(getRandomMiyagiQuote());
     lineSeparator(2);
