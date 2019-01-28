@@ -55,7 +55,7 @@ const getRandomMiyagiQuote = () => {
         "'Show me, paint the fence'",
         "'Called crane technique. If do right, no can defence.'",
         "'License never replace eye, ear and brain.'",
-        "'Wax on... Wax off, wax on... wax off.\nBreath in through nose. Breath out through mouth.'",
+        "'Wax on... Wax off, wax on... wax off.\nBreathe in through nose. Breathe out through mouth.'",
         "'Learn balance Daniel san... Wax-on... Wax-off.'",
         "'It’s ok to lose to opponent. It’s never okay to lose to fear'",
         "'Better learn balance. Balance is key. Balance good, karate good.\nEverything good. Balance bad, better pack up, go home. Understand?'",
