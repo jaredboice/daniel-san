@@ -5,9 +5,9 @@ const {
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,
-    snapshotsGreaterThanAmount,
-    snapshotsLessThanAmount,
-    greatestEndBalanceSnapshots
+    findSnapshotsGreaterThanAmount,
+    findSnapshotsLessThanAmount,
+    findGreatestValueSnapshots
 } = require('../analytics');
 
 const {
@@ -293,7 +293,7 @@ const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
 };
 
 const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
-    const collection = snapshotsGreaterThanAmount({
+    const collection = findSnapshotsGreaterThanAmount({
         collection: danielSan.events,
         amount: terminalOptions.maxAmount || 0,
         propertyKey: 'endBalance'
@@ -319,7 +319,7 @@ const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOpt
 };
 
 const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOptions }) => {
-    const collection = snapshotsLessThanAmount({
+    const collection = findSnapshotsLessThanAmount({
         collection: danielSan.events,
         amount: terminalOptions.minAmount || 0,
         propertyKey: 'endBalance'
@@ -344,8 +344,8 @@ const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOption
     terminalBoundary(5);
 };
 
-const displayGreatestEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
-    const collection = greatestEndBalanceSnapshots({
+const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
+    const collection = findGreatestValueSnapshots({
         collection: danielSan.events,
         propertyKey: 'endBalance',
         selectionAmount: terminalOptions.selectionAmount || 7,
@@ -353,7 +353,7 @@ const displayGreatestEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin displayGreatestEndBalanceSnapshots ');
+    lineHeading(' begin displayfindGreatestValueSnapshots ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -366,13 +366,13 @@ const displayGreatestEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end displayGreatestEndBalanceSnapshots ');
+    lineHeading(' end displayfindGreatestValueSnapshots ');
     lineSeparator(2);
     terminalBoundary(5);
 };
 
 const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
-    const collection = greatestEndBalanceSnapshots({
+    const collection = findGreatestValueSnapshots({
         collection: danielSan.events,
         propertyKey: 'endBalance',
         selectionAmount: terminalOptions.selectionAmount || 7,
@@ -582,7 +582,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
                 break;
             case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
-                displayGreatestEndBalanceSnapshots({ danielSan, terminalOptions });
+                displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
                 break;
             case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
                 displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });

@@ -87,7 +87,7 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     return null; // this line satisfies another linting error
 };
 
-const snapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
+const findSnapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
     const newCollection = collection.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > amount) {
             return element;
@@ -96,7 +96,7 @@ const snapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey =
     return newCollection;
 };
 
-const snapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
+const findSnapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
     const newCollection = collection.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] < amount) {
             return element;
@@ -105,7 +105,7 @@ const snapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'e
     return newCollection;
 };
 
-const greatestEndBalanceSnapshots = ({
+const findGreatestValueSnapshots = ({
     collection = [],
     propertyKey = 'endBalance',
     selectionAmount = 7,
@@ -128,12 +128,12 @@ const greatestEndBalanceSnapshots = ({
 };
 
 module.exports = {
-    snapshotsGreaterThanAmount,
-    snapshotsLessThanAmount,
+    findSnapshotsGreaterThanAmount,
+    findSnapshotsLessThanAmount,
     findCriticalSnapshots,
     findRulesToRetire,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,
-    greatestEndBalanceSnapshots
+    findGreatestValueSnapshots
 };
