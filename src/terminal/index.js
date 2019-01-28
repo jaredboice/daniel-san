@@ -39,6 +39,25 @@ const {
 
 const TERMINAL_BOUNDARY_LIMIT = 89;
 
+const getRandomMiyagiQuote = () => {
+    const quotes = [
+        '\'First learn balance. Balance good, karate good, everything good. Balance bad, might as well pack up, go home.\'',
+        '\'To make honey, young bee need young flower, not old prune.\'',
+        '\'Look eye! Always look eye!\'',
+        '\'Daniel-san, you much humor!\'',
+        '\'First learn stand, then learn fly. Nature rule, Daniel-san, not mine.\'',
+        '\'You remember lesson about balance? Lesson not just karate only. Lesson for whole life. Whole life have a balance. Everything be better.\'',
+        '\'Banzai, Daniel-san!\'',
+        '\'In Okinawa, all Miyagi know two things: fish and karate.\'',
+        '\'Show me, sand the floor\'',
+        '\'Show me, wax on, wax off\'',
+        '\'Show me, paint the fence\'',
+        '\'Called crane technique. If do right, no can defence.\''
+    ];
+    const elementIndex = Math.floor(Math.random() * quotes.length);
+    return `${quotes[elementIndex]} -Miyagi-`;
+};
+
 const rightPadToBoundary = ({ leftSideOfHeading, character }) => {
     let rightSideOfHeading = '';
     const length =
@@ -211,6 +230,8 @@ const standardTerminalHeader = ({ terminalOptions }) => {
     lineHeading(' must find balance, daniel-san ');
     lineHeading(` terminal type: ${terminalOptions.type} `);
     lineHeading(` mode: ${terminalOptions.mode} `);
+    lineSeparator(2);
+    console.log(getRandomMiyagiQuote());
     lineSeparator(2);
 };
 
