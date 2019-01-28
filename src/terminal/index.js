@@ -322,7 +322,7 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                         currency: event.currencySymbol || CURRENCY_DEFAULT
                     })
                 );
-            } else if (key === 'convertedAmount') {
+            } else if (key === 'convertedAmount' && event.currencySymbol !== currencySymbol) {
                 // eslint-disable-next-line no-console
                 console.log(
                     `convertedAmount: `, // eslint-disable-line quotes
@@ -348,6 +348,9 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                         currency: currencySymbol || CURRENCY_DEFAULT
                     })
                 );
+            } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
+                // eslint-disable-next-line no-console
+                console.log(event.currencySymbol);
             } else {
                 // eslint-disable-next-line no-console
                 console.log(`${key}: ${value}`);
