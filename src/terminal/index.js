@@ -183,7 +183,7 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.convertedAmount) && event.currencySymbol !== currencySymbol) {
+    if (!isUndefinedOrNull(event.convertedAmount) && currencySymbol !== event.currencySymbol) {
         // eslint-disable-next-line no-console
         console.log(
             `convertedAmount: `, // eslint-disable-line quotes
