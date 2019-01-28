@@ -293,7 +293,7 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
         style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineSeparator(1);
-    Object.defineProperties(event).forEach(([key, value]) => {
+    Object.entries(event).forEach(([key, value]) => {
         if (
             key !== 'type' &&
             key !== 'frequency' &&
