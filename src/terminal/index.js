@@ -398,7 +398,14 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             } else if (key === 'dateEnd' && event.dateEnd != null) {
                 // eslint-disable-next-line no-console
                 console.log(`dateEnd: ${event.dateEnd}`);
-            } else {
+            } else if (
+                key !== 'convertedAmount' &&
+                key !== 'beginBalance' &&
+                key !== 'endBalance' &&
+                key !== 'currencySymbol' &&
+                key !== 'dateStart' &&
+                key !== 'dateEnd'
+            ) {
                 // eslint-disable-next-line no-console
                 console.log(`${key}: ${value}`);
             }
