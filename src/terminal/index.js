@@ -68,7 +68,23 @@ const getRandomMiyagiQuote = () => {
         "'Wax on, wax off. Wax on, wax off.'",
         "'Man who catch fly with chopstick, accomplish anything.'",
         "'If karate used defend honor, defend life, karate mean something.\nIf karate used defend plastic metal trophy, karate no mean nothing.'",
-        "'Wax-on, wax-off.'"
+        "'Wax-on, wax-off.'",
+        "'You trust the quality of what you know, not quantity.'",
+        "'For person with no forgiveness in heart, living even worse punishment than death.'",
+        "'In Okinawa, belt mean no need rope to hold up pants.'",
+        "'Miyagi have hope for you.'",
+        "'First, wash all car. Then wax. Wax on...'",
+        "'Wax on, right hand. Wax off, left hand. Wax on, wax off. \nBreathe in through nose, out the mouth. Wax on, wax off.\nDon't forget to breathe, very important.'",
+        "'Karate come from China, sixteenth century, called te, 'hand.'\nHundred year later, Miyagi ancestor bring to Okinawa,\ncall *kara*-te, 'empty hand.''",
+        "'No such thing as bad student, only bad teacher. Teacher say, student do.'",
+        "'Now use head for something other than target.'",
+        "'Make block. Left, right. Up, down. Side, side.\nBreathe in, breathe out. And no scare fish.'",
+        "'Ah, not everything is as seems...'",
+        "'What'sa matter, you some kind of girl or something?'",
+        "'Punch! Drive a punch! Not just arm, whole body! \nHip, leg, drive a punch! Make 'kiai.' Kiai! Kiai!\nGive you power. Now, try punch.'",
+        "'I tell you what Miyagi think! I think you *dance around* too much!\nI think you *talk* too much! I think you not concentrate enough!\nLots of work to be done! Tournament just around the corner!\nCome. Stand up! Now, ready. Concentrate. Focus power.'",
+        "'We make sacred pact. I promise teach karate to you, you promise learn.\nI say, you do, no questions.'",
+        "'Choose.'"
     ];
     const elementIndex = Math.floor(Math.random() * quotes.length);
     return `${quotes[elementIndex]} -Miyagi-`;
@@ -183,7 +199,11 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.convertedAmount) && !isUndefinedOrNull(event.amount) && currencySymbol !== event.currencySymbol) {
+    if (
+        !isUndefinedOrNull(event.convertedAmount) &&
+        !isUndefinedOrNull(event.amount) &&
+        currencySymbol !== event.currencySymbol
+    ) {
         // eslint-disable-next-line no-console
         console.log(
             `convertedAmount: `, // eslint-disable-line quotes
@@ -245,7 +265,11 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.convertedAmount) && !isUndefinedOrNull(event.amount) && event.currencySymbol !== currencySymbol) {
+    if (
+        !isUndefinedOrNull(event.convertedAmount) &&
+        !isUndefinedOrNull(event.amount) &&
+        event.currencySymbol !== currencySymbol
+    ) {
         // eslint-disable-next-line no-console
         console.log(
             `convertedAmount: `, // eslint-disable-line quotes
@@ -322,7 +346,11 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                         currency: event.currencySymbol || CURRENCY_DEFAULT
                     })
                 );
-            } else if (key === 'convertedAmount' && !isUndefinedOrNull(event.amount) && event.currencySymbol !== currencySymbol) {
+            } else if (
+                key === 'convertedAmount' &&
+                !isUndefinedOrNull(event.amount) &&
+                event.currencySymbol !== currencySymbol
+            ) {
                 // eslint-disable-next-line no-console
                 console.log(
                     `convertedAmount: `, // eslint-disable-line quotes
