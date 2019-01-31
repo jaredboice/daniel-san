@@ -41,8 +41,8 @@ const danielSan = {
             processDate: '30', // for MONTHLY events, this string represents the day within that month
             dateStart: '2019-01-01' // date to start evaluating and processing this account
             dateEnd: null, // null dateEnd represents an ongoing account
-            modulus: 1, // not required - see "Modulus/Cycle" to review this advanced feature
-            cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
+            modulus: 1, // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
+            cycle: 1 // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
         },
         { // rule 2
             name: 'shenanigans',
@@ -254,6 +254,8 @@ const danielSan = {
 ```
 
 ## Modulus/Cycle _(only for STANDARD_EVENT)_
+
+**Custom BIWEEKLY / BIMONTHLY Event Types**
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents

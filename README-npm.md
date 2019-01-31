@@ -43,8 +43,8 @@ const danielSan = {
             processDate: '30', // for MONTHLY events, this string represents the day within that month
             dateStart: '2019-01-01' // date to start evaluating and processing this account
             dateEnd: null, // null dateEnd represents an ongoing account
-            modulus: 1, // not required - see "Modulus/Cycle" to review this advanced feature
-            cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
+            modulus: 1, // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
+            cycle: 1 // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
         },
         { // rule 2
             name: 'shenanigans',
