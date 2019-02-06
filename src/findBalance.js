@@ -1,6 +1,7 @@
 const { TimeStream } = require('./timeStream');
 const { errorDisc } = require('./utility/errorHandling');
 const { isUndefinedOrNull } = require('./utility/validation');
+const { deepCopy } = require('./utility/dataStructures');
 const { buildStandardEvent } = require('./standardEvents');
 const { nthWeekdaysOfMonth, weekdayOnDate } = require('./specialEvents');
 const {
@@ -277,29 +278,30 @@ const checkForInputErrors = ({ danielSan, dateStartString, dateEndString }) => {
 };
 
 const findBalance = (danielSan = {}) => {
+    const newDanielSan = deepCopy(danielSan);
     try {
-        const dateStartString = danielSan.dateStart;
-        const dateEndString = danielSan.dateEnd;
-        checkForInputErrors({ danielSan, dateStartString, dateEndString });
+        const dateStartString = newDanielSan.dateStart;
+        const dateEndString = newDanielSan.dateEnd;
+        checkForInputErrors({ danielSan: newDanielSan, dateStartString, dateEndString });
         deleteIrrelevantRules({
-            danielSan,
+            danielSan: newDanielSan,
             dateStartString
         });
-        prepareRules({ danielSan, dateStartString });
+        prepareRules({ danielSan: newDanielSan, dateStartString });
         const timeStream = new TimeStream({ dateStartString, dateEndString });
         do {
             buildEvents({
-                danielSan,
-                rules: danielSan.rules,
+                danielSan: newDanielSan,
+                rules: newDanielSan.rules,
                 date: timeStream.looperDate
             });
         } while (timeStream.stream1DayForward());
-        sortDanielSan(danielSan); // note: danielSan must be sorted prior to executing events
-        executeEvents({ danielSan });
-        danielSan.endBalance = danielSan.events[danielSan.events.length - 1].endBalance;
+        sortDanielSan(newDanielSan); // note: newDanielSan must be sorted prior to executing events
+        executeEvents({ danielSan: newDanielSan });
+        newDanielSan.endBalance = newDanielSan.events[newDanielSan.events.length - 1].endBalance;
         return {
             error: null,
-            danielSan
+            danielSan: newDanielSan
         };
     } catch (err) {
         const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died');

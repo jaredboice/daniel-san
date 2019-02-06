@@ -13,6 +13,22 @@ const isUndefinedOrNull = (something) => {
     }
 };
 
+const isArray = (entity) => {
+    return Array.isArray(entity);
+};
+
+const isMap = (entity) => {
+    return entity instanceof Map && entity.constructor === Map;
+};
+
+const isSet = (entity) => {
+    return entity instanceof Set && entity.constructor === Set;
+};
+
+const isObject = (entity) => {
+    return entity instanceof Object && entity.constructor === Object;
+};
+
 module.exports = {
-    isUndefinedOrNull
+    isUndefinedOrNull, isArray, isMap, isSet, isObject
 };
