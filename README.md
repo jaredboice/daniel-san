@@ -344,7 +344,7 @@ const danielSan = {
          // amount represents the rule amount
          // currentSymbol represents the currencySymbol from the rule/event (as seen below)
          // futureSymbol represents the currency you will be converting to (namely the 'USD' value above)
-         // even if you do not add a currencyConversion function, a default function is added for you 
+         // even if you do not add a currencyConversion function, a default function is added to the danielSan object for you 
          // (as the currencyConversion function is used in every calculation regardless)
          // the default currencyConversion returns the same amount passed in
         const symbolEnum = {
@@ -352,10 +352,13 @@ const danielSan = {
             'EUR': 0.88 // 1 USD is worth 0.88 EUR
             'CNY': 6.75 // 1 USD is worth 6.75 CNY
         };
+        // maybe you have switch cases for different calculations
+        // eg. when switching your primary output currency symbol to some other symbol, you would need different calculations since the futureSymbol parameter would change
+        // (in this scneario, the futureSymbol parameters would no longer be 'USD', it would be whatever new currencySymbol you choose to use instead)
         switch (futureSymbol) {
         case 'USD': // converting amount (in this case the amount is in EUR since there is only one rule and its currencySymbol is EUR) to USD
             return amount * symbolEnum[currentSymbol];
-        default: // maybe you have switch cases for different calculations (when switching your primary output currency symbol to some other symbol)
+        default:
             break;
         }
         return amount;
