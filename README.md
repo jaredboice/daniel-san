@@ -347,17 +347,19 @@ const danielSan = {
          // even if you do not add a currencyConversion function, a default function is added to the danielSan object for you 
          // (as the currencyConversion function is used in every calculation regardless)
          // the default currencyConversion returns the same amount passed in
-        const symbolEnum = {
-            'USD': 1, // be sure that your currency converter computes the same exact amount (1) when the symbols match, as is happening here
+        const UsdSymbolEnum = {
+            'USD': 1,   // since this symbol matches the primary-output currency symbol ('USD'), its conversion factor should be 1
+                        // that way, since the input currency symbol is identical to the output currency symbol, there is no change
+                        // be sure that your currency converter computes the same exact amount as the input when both input and output symbols are the same
             'EUR': 0.88 // 1 USD is worth 0.88 EUR
             'CNY': 6.75 // 1 USD is worth 6.75 CNY
         };
-        // you may have a need for multiple switch-case blocks that execute conditionally based on different primary output current symbols
-        // eg. when switching your primary output currency symbol to some other symbol, you would need different calculations since the futureSymbol parameter would change
+        // you may have a need for multiple switch case rules (and matching symbol enums) that execute based on different primary-output current symbols
+        // eg. when switching your primary-output currency symbol to some other symbol, you would need different calculations since the futureSymbol parameter would change
         // (in this scneario, the futureSymbol parameters would no longer be 'USD', it would be whatever new currencySymbol you choose to use instead)
         switch (futureSymbol) {
         case 'USD': // converting amount (in this case the amount is in EUR since there is only one rule and its currencySymbol is EUR) to USD
-            return amount * symbolEnum[currentSymbol];
+            return amount * UsdSymbolEnum[currentSymbol];
         default:
             break;
         }
