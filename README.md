@@ -354,7 +354,7 @@ const danielSan = {
             'EUR': 0.88 // 1 USD is worth 0.88 EUR
             'CNY': 6.75 // 1 USD is worth 6.75 CNY
         };
-        // you may have a need for multiple switch case rules (and matching symbol enums) that execute based on different primary-output current symbols
+        // you may have a need for multiple switch-case rules (and matching symbol enums) that execute based on different primary-output current symbols
         // eg. when switching your primary-output currency symbol to some other symbol, you would need different calculations since the futureSymbol parameter would change
         // (in this scneario, the futureSymbol parameters would no longer be 'USD', it would be whatever new currencySymbol you choose to use instead)
         switch (futureSymbol) {
