@@ -445,7 +445,7 @@ const standardTerminalHeader = ({ terminalOptions }) => {
     lineSeparator(2);
 };
 
-const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
+const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrEndBalanceKey = 'beginBalance') => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -455,7 +455,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
         style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineHeading(
-        ` beginBalance: ${formattingFunction(danielSan.beginBalance, {
+        ` ${beginOrEndBalanceKey}: ${formattingFunction(danielSan[beginOrEndBalanceKey], {
             minIntegerDigits,
             minDecimalDigits,
             maxDecimalDigits,
@@ -823,6 +823,8 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 default:
                     break;
             }
+            lineSeparator(2);
+            standardTerminalSubheader({ danielSan, terminalOptions }, 'endBalance');
             lineSeparator(2);
             console.log(getRandomMiyagiQuote());
             lineSeparator(2);

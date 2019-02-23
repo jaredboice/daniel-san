@@ -422,7 +422,7 @@ searchValues: [string1, string2, string3] is used for the DISPLAY_EVENTS_BY_* te
 **Formatting**
 
 See the terminal option configuration example below. If passing a custom formatting function, it must take the form shown below. 
-The default formattingFunction utilizes javascripts built-in toLocaleString() 
+The default formattingFunction utilizes javascripts built-in toLocaleString() function - via the Intl api
 
 ```javascript
 const decimalFormatterCustom = (number, { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }) => { /* return formatted */ };
@@ -430,14 +430,15 @@ const terminalOptions = {
         type: STANDARD_TERMINAL_OUTPUT,
         mode: CONCISE,
         criticalThreshold: 577.00,
-        // the formatting object is optional as the following values are defaulted for you which will format amount, beginBalance, and endBalance in mode: CONCISE
+        // the formatting object is optional as the following values are defaulted for you
+        // which will format amount, beginBalance, and endBalance
         formatting: {
             formattingFunction: decimalFormatterCustom
             minIntegerDigits: 1,
             minDecimalDigits: 2,
             maxDecimalDigits: 2,
             locale: 'en-US',
-            style: 'currency', // change to 'decimal' to remove the prepended currency symbol if using the default formattingFunction
+            style: 'currency', // change to 'decimal' to remove the prepended currency symbol (if using the default formattingFunction)
             currency: 'USD'
         }
 ```
