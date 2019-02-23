@@ -338,7 +338,7 @@ const danielSan = {
     endBalance: null,
     dateStart: '2019-03-20',
     dateEnd: '2019-12-13',
-    currencySymbol: 'USD', // the symbol that everything will be converted to (should be exact/case-sensitive as respected by javascripts built-in toLocaleString() function)
+    currencySymbol: 'USD', // the primary output symbol that everything will be converted to (when using the terminalOptions, this parameter, and all currency symbol parameters, should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
     currencyConversion: ({ amount, currentSymbol, futureSymbol}) => {
          // a global currency conversion function that will return the converted amount
          // amount represents the rule amount
