@@ -338,7 +338,7 @@ const danielSan = {
     endBalance: null,
     dateStart: '2019-03-20',
     dateEnd: '2019-12-13',
-    currencySymbol: 'USD', // the primary output symbol that everything will be converted to (when using the terminalOptions, this parameter, and all currency symbol parameters, should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
+    currencySymbol: 'USD', // the primary-output currency symbol that everything will be converted to (when using the terminalOptions, this parameter, and all currency symbol parameters, should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
     currencyConversion: ({ amount, currentSymbol, futureSymbol}) => {
          // a global currency conversion function that will return the converted amount
          // amount represents the rule amount
@@ -352,7 +352,7 @@ const danielSan = {
             'EUR': 0.88 // 1 USD is worth 0.88 EUR
             'CNY': 6.75 // 1 USD is worth 6.75 CNY
         };
-        // you may have a need for multiple switch-case blocks for different currency calculations
+        // you may have a need for multiple switch-case blocks that execute conditionally based on different primary output current symbols
         // eg. when switching your primary output currency symbol to some other symbol, you would need different calculations since the futureSymbol parameter would change
         // (in this scneario, the futureSymbol parameters would no longer be 'USD', it would be whatever new currencySymbol you choose to use instead)
         switch (futureSymbol) {
