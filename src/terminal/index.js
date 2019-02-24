@@ -487,6 +487,8 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
             currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
         });
         lineSeparator(2);
+        lineHeading(` snapshot count: ${criticalSnapshots.length} `);
+        lineSeparator(2);
         lineHeading(' end critical snapshots ');
         lineSeparator(2);
     }
