@@ -132,33 +132,34 @@ const showNothingToDisplay = () => {
 };
 
 const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
+    const formattingOptions = terminalOptions.formatting || {};
     const formattingFunction =
-        terminalOptions.formatting && terminalOptions.formattingFunction
-            ? terminalOptions.formattingFunction
+        formattingOptions && formattingOptions.formattingFunction
+            ? formattingOptions.formattingFunction
             : FORMATTING_FUNCTION_DEFAULT;
     const minIntegerDigits =
-        terminalOptions.formatting && terminalOptions.formatting.minIntegerDigits
-            ? terminalOptions.formatting.minIntegerDigits
+        formattingOptions && formattingOptions.minIntegerDigits
+            ? formattingOptions.minIntegerDigits
             : MIN_INT_DIGITS_DEFAULT;
     const minDecimalDigits =
-        terminalOptions.formatting && terminalOptions.formatting.minDecimalDigits
-            ? terminalOptions.formatting.minDecimalDigits
+        formattingOptions && formattingOptions.minDecimalDigits
+            ? formattingOptions.minDecimalDigits
             : MIN_DECIMAL_DIGITS_DEFAULT;
     const maxDecimalDigits =
-        terminalOptions.formatting && terminalOptions.formatting.maxDecimalDigits
-            ? terminalOptions.formatting.maxDecimalDigits
+        formattingOptions && formattingOptions.maxDecimalDigits
+            ? formattingOptions.maxDecimalDigits
             : MAX_DECIMAL_DIGITS_DEFAULT;
     const locale =
-        terminalOptions.formatting && terminalOptions.formatting.locale
-            ? terminalOptions.formatting.locale
+        formattingOptions && formattingOptions.locale
+            ? formattingOptions.locale
             : LOCALE_DEFAULT;
     const style =
-        terminalOptions.formatting && terminalOptions.formatting.style
-            ? terminalOptions.formatting.style
+        formattingOptions && formattingOptions.style
+            ? formattingOptions.style
             : STYLE_DEFAULT;
     const currency =
-        terminalOptions.formatting && terminalOptions.formatting.currency
-            ? terminalOptions.formatting.currency
+        formattingOptions && formattingOptions.currency
+            ? formattingOptions.currency
             : CURRENCY_DEFAULT;
     return {
         formattingFunction,
@@ -475,10 +476,27 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
         criticalThreshold: terminalOptions.criticalThreshold
     });
     if (criticalSnapshots) {
+        const {
+            formattingFunction,
+            minIntegerDigits,
+            minDecimalDigits,
+            maxDecimalDigits,
+            locale,
+            style
+        } = getDefaultParamsForDecimalFormatter(terminalOptions);
         terminalBoundary(3);
         lineHeading(' begin critical snapshots ');
         if (!isUndefinedOrNull(terminalOptions.criticalThreshold)) {
-            lineHeading(` critical threshold: < ${terminalOptions.criticalThreshold} `);
+            lineHeading(
+                ` critical threshold: < ${formattingFunction(terminalOptions.criticalThreshold, {
+                    minIntegerDigits,
+                    minDecimalDigits,
+                    maxDecimalDigits,
+                    locale,
+                    style,
+                    currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+                })} `
+            );
         }
         lineSeparator(2);
         eventsLogger({
@@ -490,6 +508,18 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
         lineHeading(` snapshot count: ${criticalSnapshots.length} `);
         lineSeparator(2);
         lineHeading(' end critical snapshots ');
+        if (!isUndefinedOrNull(terminalOptions.criticalThreshold)) {
+            lineHeading(
+                ` critical threshold: < ${formattingFunction(terminalOptions.criticalThreshold, {
+                    minIntegerDigits,
+                    minDecimalDigits,
+                    maxDecimalDigits,
+                    locale,
+                    style,
+                    currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+                })} `
+            );
+        }
         lineSeparator(2);
     }
 };
