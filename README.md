@@ -8,7 +8,7 @@
 
 ## Description
 
-**Daniel-San** is a node-based budget-projection engine that helps your finances find balance.  The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates beyond holidays and weekends. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+**Daniel-San** is a node-based budget-projection engine that helps your finances find balance.  The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
 
 ## Install, Import & Execute
 
@@ -176,9 +176,11 @@ const danielSan = {
 
 **Special Adjustments**
 
--   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS'` _(delay processing after specific weekdays)_
--   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES'` _(delay processing after specific dates of the month)_
--   `type: 'ADJUST_AMOUNT_ON_THESE_DATES'` _(add/subtract to/from the amount on a very specific date)_
+-   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS'` _(prepay: move processing before specific weekdays)_
+-   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES'` _(prepay: move processing before specific dates of the month)_
+-   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS'` _(postpay: delay processing after specific weekdays)_
+-   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES'` _(postpay: delay processing after specific dates of the month)_
+-   `type: 'ADJUST_AMOUNT_ON_THESE_DATES'` _(add/subtract to/from the amount on a specific date)_
 
 ```javascript
 const danielSan = {
@@ -199,7 +201,7 @@ const danielSan = {
             cycle: 1, // not required - see "Modulus/Cycle" to review this advanced feature
             specialAdjustments: [
                 { 
-                    type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
+                    type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS, // to prepay before the specified days, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS
                     weekdays: [SATURDAY, SUNDAY] 
                 }
             ]
@@ -217,7 +219,7 @@ const danielSan = {
             syncDate: '2019-08-12', // specific to "Modulus/Cycle" - read that section for instructions,
             specialAdjustments: [
                 {
-                    type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
+                    type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES, // to prepay before the specified dates, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES
                     dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it rolls over them
                     weekdays: [SATURDAY, SUNDAY] // weekdays are optional
                 }
@@ -558,6 +560,8 @@ const {
     WEEKDAY_ON_DATE,
     WEEKDAY_ON_DATE_ROUTINE,
     WEEKDAY_ON_DATE_REMINDER,
+    MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS,
+    MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
     ADJUST_AMOUNT_ON_THESE_DATES,

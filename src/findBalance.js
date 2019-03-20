@@ -5,6 +5,8 @@ const { deepCopy } = require('./utility/dataStructures');
 const { buildStandardEvent } = require('./standardEvents');
 const { nthWeekdaysOfMonth, weekdayOnDate } = require('./specialEvents');
 const {
+    moveThisProcessDateBeforeTheseWeekdays,
+    moveThisProcessDateBeforeTheseDates,
     moveThisProcessDateAfterTheseWeekdays,
     moveThisProcessDateAfterTheseDates,
     adjustAmountOnTheseDates
@@ -20,6 +22,8 @@ const {
     WEEKDAY_ON_DATE,
     WEEKDAY_ON_DATE_ROUTINE,
     WEEKDAY_ON_DATE_REMINDER,
+    MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS,
+    MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
     ADJUST_AMOUNT_ON_THESE_DATES,
@@ -64,6 +68,18 @@ const buildEvents = ({ danielSan, rules, date }) => {
                 processPhase = EXECUTING_SPECIAL_ADJUSTMENT;
                 danielSan.events[danielSan.events.length - 1].specialAdjustments.forEach((specialAdjustment) => {
                     switch (specialAdjustment.type) {
+                    case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS:
+                        moveThisProcessDateBeforeTheseWeekdays({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
+                        moveThisProcessDateBeforeTheseDates({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
                     case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
                         moveThisProcessDateAfterTheseWeekdays({
                             rule: danielSan.events[danielSan.events.length - 1],
