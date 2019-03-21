@@ -261,8 +261,10 @@ const danielSan = {
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
-the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific date (either forwards or backwards).
-By syncing a cycle of 1 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 1/2 cycle to that date (cycling backward or forward depending on whether the syncDate is in the past or the future). This will keep that account/rule moduluating as you expect without any further adjustments.
+the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). The cycle fires when it loops back around to 1.
+As an example, if the cycle started at 3 prior to/on the startDate (in this scenario) then the next match for the processDate would trigger the operation as it would have circled back around to 1. If your cycle/modulus isn't getting expected results, try modifying the cycle.
+
+Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific date (either forwards or backwards). By syncing a cycle of 1 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 1/2 cycle to that date (cycling backward or forward depending on whether the syncDate is in the past or the future). So whatever the cycle value is on that syncDate will lock its position in time and dictate how the cycle should moduluate into both the past and the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed.
 
 
 ```javascript
@@ -280,8 +282,8 @@ const danielSan = {
             processDate: '30', // for MONTHLY events, this string represents the day within that month
             dateStart: '2019-01-01' // date to start evaluating and processing this account
             dateEnd: null, // null dateEnd represents an ongoing account
-            modulus: 3, // not required - see "Modulus/Cycle" to review this advanced feature
-            cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
+            modulus: 3,
+            cycle: 1
         },
         { // rule 2
             name: 'shenanigans',
@@ -293,7 +295,7 @@ const danielSan = {
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
             cycle: 1,
-            syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
+            syncDate: '2019-08-12'
         }
     ],
     events: [] // future balance projections stored here
