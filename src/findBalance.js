@@ -45,61 +45,61 @@ const buildEvents = ({ danielSan, rules, date }) => {
             danielSan.cashflowRetiredRuleIndices = [];
             processPhase = DISCOVERING_EVENT_TYPE;
             switch (rule.type) {
-                case STANDARD_EVENT:
-                case STANDARD_EVENT_ROUTINE:
-                case STANDARD_EVENT_REMINDER:
-                    processPhase = buildStandardEvent({ danielSan, rule, date });
-                    break;
-                case NTH_WEEKDAYS_OF_MONTH:
-                case NTH_WEEKDAYS_OF_MONTH_ROUTINE:
-                case NTH_WEEKDAYS_OF_MONTH_REMINDER:
-                    processPhase = nthWeekdaysOfMonth({ danielSan, rule, date });
-                    break;
-                case WEEKDAY_ON_DATE:
-                case WEEKDAY_ON_DATE_ROUTINE:
-                case WEEKDAY_ON_DATE_REMINDER:
-                    processPhase = weekdayOnDate({ danielSan, rule, date });
-                    break;
-                default:
-                    break;
+            case STANDARD_EVENT:
+            case STANDARD_EVENT_ROUTINE:
+            case STANDARD_EVENT_REMINDER:
+                processPhase = buildStandardEvent({ danielSan, rule, date });
+                break;
+            case NTH_WEEKDAYS_OF_MONTH:
+            case NTH_WEEKDAYS_OF_MONTH_ROUTINE:
+            case NTH_WEEKDAYS_OF_MONTH_REMINDER:
+                processPhase = nthWeekdaysOfMonth({ danielSan, rule, date });
+                break;
+            case WEEKDAY_ON_DATE:
+            case WEEKDAY_ON_DATE_ROUTINE:
+            case WEEKDAY_ON_DATE_REMINDER:
+                processPhase = weekdayOnDate({ danielSan, rule, date });
+                break;
+            default:
+                break;
             }
             if (processPhase === MODIFIED && danielSan.events[danielSan.events.length - 1].specialAdjustments) {
                 // note: execute specialAdjustments if exists
                 processPhase = EXECUTING_SPECIAL_ADJUSTMENT;
                 danielSan.events[danielSan.events.length - 1].specialAdjustments.forEach((specialAdjustment) => {
                     switch (specialAdjustment.type) {
-                        case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS:
-                            moveThisProcessDateBeforeTheseWeekdays({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
-                            moveThisProcessDateBeforeTheseDates({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
-                            moveThisProcessDateAfterTheseWeekdays({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
-                            moveThisProcessDateAfterTheseDates({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        case ADJUST_AMOUNT_ON_THESE_DATES:
-                            adjustAmountOnTheseDates({
-                                rule: danielSan.events[danielSan.events.length - 1],
-                                specialAdjustment
-                            });
-                            break;
-                        default:
-                            break;
+                    case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS:
+                        moveThisProcessDateBeforeTheseWeekdays({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
+                        moveThisProcessDateBeforeTheseDates({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
+                        moveThisProcessDateAfterTheseWeekdays({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
+                        moveThisProcessDateAfterTheseDates({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    case ADJUST_AMOUNT_ON_THESE_DATES:
+                        adjustAmountOnTheseDates({
+                            rule: danielSan.events[danielSan.events.length - 1],
+                            specialAdjustment
+                        });
+                        break;
+                    default:
+                        break;
                     }
                 });
             }
@@ -279,10 +279,10 @@ const executeEvents = ({ danielSan }) => {
                     event.currencySymbol &&
                     danielSan.currencySymbol !== event.currencySymbol
                         ? danielSan.currencyConversion({
-                              amount: event.amount,
-                              currentSymbol: event.currencySymbol,
-                              futureSymbol: danielSan.currencySymbol
-                          })
+                            amount: event.amount,
+                            currentSymbol: event.currencySymbol,
+                            futureSymbol: danielSan.currencySymbol
+                        })
                         : event.amount;
                 event.endBalance = event.beginBalance + convertedAmount; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
                 event.convertedAmount = convertedAmount;
