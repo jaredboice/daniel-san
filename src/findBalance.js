@@ -113,9 +113,9 @@ const buildEvents = ({ danielSan, rules, date }) => {
 };
 
 const compareByPropertyKey = (a, b, propertyKey) => {
+    const paramA = typeof a[propertyKey] === 'string' ? a[propertyKey].toLowerCase() : a[propertyKey];
+    const paramB = typeof b[propertyKey] === 'string' ? b[propertyKey].toLowerCase() : b[propertyKey];
     if (a[propertyKey] && b[propertyKey]) {
-        const paramA = typeof a[propertyKey] === 'string' ? a[propertyKey].toLowerCase() : a[propertyKey];
-        const paramB = typeof b[propertyKey] === 'string' ? b[propertyKey].toLowerCase() : b[propertyKey];
         if (paramA > paramB) {
             return 1;
         } else if (paramA < paramB) {
@@ -124,10 +124,10 @@ const compareByPropertyKey = (a, b, propertyKey) => {
         } else {
             return 0;
         }
-    } else if (a && !b) {
-        return 1;
-    } else if (b && !a) {
+    } else if (paramA && !paramB) {
         return -1;
+    } else if (paramB && !paramA) {
+        return 1;
     } else {
         return 0;
     }
@@ -146,8 +146,14 @@ const compareTime = (a, b) => {
         } else if (paramA < paramB) {
             return -1;
             // eslint-disable-next-line no-else-return
-        } else {
-            return 0;
+        } else { // the times are equal so check if there is a sortPriority to sort against
+            // eslint-disable-next-line no-lonely-if
+            if (a.sortPriority || b.sortPriority) {
+                return compareByPropertyKey(a, b, 'sortPriority');
+                // eslint-disable-next-line no-else-return
+            } else {
+                return 0;
+            }
         }
     } else if (a && !b) {
         return 1;
@@ -171,7 +177,13 @@ const sortDanielSan = (danielSan) => {
                 return compareTime(a.timeStart, b.timeStart);
                 // eslint-disable-next-line no-else-return
             } else {
-                return compareByPropertyKey(a, b, 'sortPriority');
+                // eslint-disable-next-line no-lonely-if
+                if (a.sortPriority || b.sortPriority) {
+                    return compareByPropertyKey(a, b, 'sortPriority'); // TODO: fix this
+                    // eslint-disable-next-line no-else-return
+                } else {
+                    return 0;
+                }
             }
         } else {
             return 0;
@@ -260,7 +272,16 @@ const executeEvents = ({ danielSan }) => {
             event.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
             event.endBalance = event.beginBalance; // default value in case there is no amount field
             if (!isUndefinedOrNull(event.amount)) {
-                const convertedAmount = (danielSan.currencySymbol && event.currencySymbol && danielSan.currencySymbol !== event.currencySymbol) ? danielSan.currencyConversion({ amount: event.amount, currentSymbol: event.currencySymbol, futureSymbol: danielSan.currencySymbol }) : event.amount;
+                const convertedAmount =
+                    danielSan.currencySymbol &&
+                    event.currencySymbol &&
+                    danielSan.currencySymbol !== event.currencySymbol
+                        ? danielSan.currencyConversion({
+                            amount: event.amount,
+                            currentSymbol: event.currencySymbol,
+                            futureSymbol: danielSan.currencySymbol
+                        })
+                        : event.amount;
                 event.endBalance = event.beginBalance + convertedAmount; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
                 event.convertedAmount = convertedAmount;
             }
