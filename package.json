@@ -50,6 +50,7 @@
         "test:c": "NODE_PATH=src jest --verbose --coverage"
     },
     "dependencies": {
+        "@babel/runtime": "^7.4.5",
         "moment": "^2.23.0"
     },
     "devDependencies": {
