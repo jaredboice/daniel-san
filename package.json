@@ -2,7 +2,7 @@
     "name": "daniel-san",
     "author": "jared boice",
     "description": "daniel-san is a node-based budget-projection engine that helps your finances find balance. The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay",
-    "version": "1.6.0",
+    "version": "1.7.0",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -53,25 +53,24 @@
         "moment": "^2.23.0"
     },
     "devDependencies": {
-        "babel-cli": "^6.26.0",
-        "babel-eslint": "^8.2.3",
-        "babel-plugin-transform-runtime": "^6.23.0",
-        "babel-preset-es2015": "^6.24.1",
-        "babel-preset-es2016": "^6.24.1",
-        "babel-preset-es2017": "^6.24.1",
-        "babel-preset-stage-1": "^6.24.1",
+        "@babel/cli": "~7.4.4",
+        "@babel/core": "~7.4.5",
+        "@babel/plugin-transform-runtime": "~7.4.4",
+        "@babel/preset-env": "~7.4.5",
         "eslint": "^4.19.1",
         "eslint-config-airbnb": "^16.1.0",
         "eslint-plugin-import": "^2.11.0",
         "eslint-plugin-jsx-a11y": "^6.0.3",
         "eslint-plugin-react": "^7.7.0",
-        "jest": "^22.4.3",
-        "nodemon": "^1.17.3",
+        "jest": "~22.4.3",
+        "nodemon": "~1.19.1",
         "npm-run-all": "^4.1.2"
     },
     "jest": {
+        "verbose": true,
         "collectCoverageFrom": [
             "src/**/*.js"
-        ]
+        ],
+        "testURL": "http://localhost/"
     }
 }
