@@ -409,7 +409,7 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
 -   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
 -   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
--   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object (not the processed one that is returned) since findBalance retires rules (with obsolete dateEnd dates) automatically during the projection phase)_
+-   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing - since findBalance retires rules [with obsolete dateEnd dates] automatically during the projection phase)_
 
 **Terminal Mode Options**
 
