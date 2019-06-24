@@ -30,8 +30,8 @@ const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = req
 const danielSan = {
     beginBalance: 1618.03,
     endBalance: null, // future end balance is stored here
-    dateStart: '2019-03-20', // always required
-    dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE
+    dateStart: '2019-03-20', // always required - inclusive
+    dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE - exclusive (events on this date are not included)
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
@@ -395,9 +395,11 @@ terminal({ danielSan, terminalOptions, error });
 
 **Terminal Type Options**
 
--   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy)_
+-   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy, and will also display discarded events if they exist)_
+-   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the dateStart and dateEnd range, they can be displayed with this terminal type )_
 -   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
--   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output critical snapshots if passed a criticalThreshold)_
+-   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_
+-   `type: 'DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS'` _(displays the sum of all event amounts, and will also display discarded events if they exist)_
 -   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest endBalance values, ordered by value)_
 -   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest endBalance values, ordered by value)_
 -   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the endBalance values greater than 1000)_
@@ -583,6 +585,7 @@ const {
     CONCISE,
     SHY,
     STANDARD_TERMINAL_OUTPUT,
+    DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS
     DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
@@ -592,6 +595,7 @@ const {
     DISPLAY_EVENTS_BY_TYPES,
     DISPLAY_EVENTS,
     DISPLAY_CRITICAL_SNAPSHOTS,
+    DISPLAY_DISCARDED_EVENTS,
     DISPLAY_IMPORTANT_EVENTS,
     DISPLAY_TIME_EVENTS,
     DISPLAY_ROUTINE_EVENTS,

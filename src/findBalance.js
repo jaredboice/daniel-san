@@ -38,6 +38,23 @@ const {
     CURRENCY_DEFAULT
 } = require('./constants');
 
+const discardEventsOutsideDateRange = (danielSan) => {
+    const eventsToDiscard = [];
+    const newEventList = [];
+    danielSan.events.forEach((event) => {
+        if (event.eventDate < danielSan.dateStart || event.eventDate >= danielSan.dateEnd) {
+            eventsToDiscard.push(event);
+        } else {
+            newEventList.push(event);
+        }
+    });
+    danielSan.discardedEvents = eventsToDiscard;
+    // we only need to re-reference danielSan.events if we are discarding anything
+    if (eventsToDiscard.length > 0) {
+        danielSan.events = newEventList;
+    }
+};
+
 const buildEvents = ({ danielSan, rules, date }) => {
     let processPhase;
     try {
@@ -181,7 +198,7 @@ const sortDanielSan = (danielSan) => {
             } else {
                 // eslint-disable-next-line no-lonely-if
                 if (a.sortPriority || b.sortPriority) {
-                    return compareByPropertyKey(a, b, 'sortPriority'); // TODO: fix this
+                    return compareByPropertyKey(a, b, 'sortPriority');
                     // eslint-disable-next-line no-else-return
                 } else {
                     return 0;
@@ -224,6 +241,9 @@ const prepareRules = ({ danielSan, dateStartString }) => {
     // to avoid unnecessary future checks to see if certain properties exist, we will add them with default values
     if (!danielSan.events) {
         danielSan.events = [];
+    }
+    if (!danielSan.discardedEvents) {
+        danielSan.discardedEvents = [];
     }
     if (!danielSan.beginBalance) {
         danielSan.beginBalance = 0;
@@ -336,6 +356,7 @@ const findBalance = (danielSan = {}) => {
             });
         } while (timeStream.stream1DayForward());
         sortDanielSan(newDanielSan); // note: newDanielSan must be sorted prior to executing events
+        discardEventsOutsideDateRange(newDanielSan);
         executeEvents({ danielSan: newDanielSan });
         newDanielSan.endBalance = newDanielSan.events[newDanielSan.events.length - 1].endBalance;
         return {

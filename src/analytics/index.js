@@ -56,7 +56,8 @@ const findEventsByPropertyKeyAndValues = ({ events, propertyKey, searchValues })
                 if (eventProperty && typeof eventProperty === 'string') {
                     eventProperty = eventProperty.toLowerCase();
                 }
-                const newSearchCriteriaValue = (typeof searchCriteriaValue === 'string') ? searchCriteriaValue.toLowerCase() : searchCriteriaValue;
+                const newSearchCriteriaValue =
+                    typeof searchCriteriaValue === 'string' ? searchCriteriaValue.toLowerCase() : searchCriteriaValue;
                 if (eventProperty && eventProperty === newSearchCriteriaValue) {
                     eventsFound.push(event);
                 }
@@ -132,6 +133,26 @@ const findGreatestValueSnapshots = ({
     return finalCollection;
 };
 
+const sumAllEventAmounts = (danielSan) => {
+    let sum = 0;
+    danielSan.events.forEach((event) => {
+        if (!isUndefinedOrNull(event.amount)) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+            const convertedAmount =
+                danielSan.currencySymbol &&
+                event.currencySymbol &&
+                danielSan.currencySymbol !== event.currencySymbol
+                    ? danielSan.currencyConversion({
+                        amount: event.amount,
+                        currentSymbol: event.currencySymbol,
+                        futureSymbol: danielSan.currencySymbol
+                    })
+                    : event.amount;
+            sum += convertedAmount;
+        }
+    });
+    return sum;
+};
+
 module.exports = {
     findSnapshotsGreaterThanAmount,
     findSnapshotsLessThanAmount,
@@ -140,5 +161,6 @@ module.exports = {
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,
-    findGreatestValueSnapshots
+    findGreatestValueSnapshots,
+    sumAllEventAmounts
 };

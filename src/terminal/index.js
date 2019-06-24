@@ -7,7 +7,8 @@ const {
     findEventsWithPropertyKeyContainingSubstring,
     findSnapshotsGreaterThanAmount,
     findSnapshotsLessThanAmount,
-    findGreatestValueSnapshots
+    findGreatestValueSnapshots,
+    sumAllEventAmounts
 } = require('../analytics');
 
 const {
@@ -20,11 +21,13 @@ const {
     DISPLAY_EVENTS_BY_TYPES,
     DISPLAY_EVENTS,
     DISPLAY_CRITICAL_SNAPSHOTS,
+    DISPLAY_DISCARDED_EVENTS,
     DISPLAY_IMPORTANT_EVENTS,
     DISPLAY_TIME_EVENTS,
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
+    DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS,
     DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
@@ -149,18 +152,9 @@ const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
         formattingOptions && formattingOptions.maxDecimalDigits
             ? formattingOptions.maxDecimalDigits
             : MAX_DECIMAL_DIGITS_DEFAULT;
-    const locale =
-        formattingOptions && formattingOptions.locale
-            ? formattingOptions.locale
-            : LOCALE_DEFAULT;
-    const style =
-        formattingOptions && formattingOptions.style
-            ? formattingOptions.style
-            : STYLE_DEFAULT;
-    const currency =
-        formattingOptions && formattingOptions.currency
-            ? formattingOptions.currency
-            : CURRENCY_DEFAULT;
+    const locale = formattingOptions && formattingOptions.locale ? formattingOptions.locale : LOCALE_DEFAULT;
+    const style = formattingOptions && formattingOptions.style ? formattingOptions.style : STYLE_DEFAULT;
+    const currency = formattingOptions && formattingOptions.currency ? formattingOptions.currency : CURRENCY_DEFAULT;
     return {
         formattingFunction,
         minIntegerDigits,
@@ -217,7 +211,7 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.amount)) {
+    if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.endBalance)) {
         // eslint-disable-next-line no-console
         console.log(
             `endBalance: `, // eslint-disable-line quotes
@@ -283,7 +277,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.amount)) {
+    if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.endBalance)) {
         // eslint-disable-next-line no-console
         console.log(
             `endBalance: `, // eslint-disable-line quotes
@@ -416,23 +410,23 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
 
 const eventsLogger = ({ events, terminalOptions, currencySymbol }) => {
     switch (terminalOptions.mode) {
-        case VERBOSE:
-            events.forEach((event) => {
-                verboseOutput({ event, terminalOptions, currencySymbol });
-            });
-            break;
-        case CONCISE:
-            events.forEach((event) => {
-                conciseOutput({ event, terminalOptions, currencySymbol });
-            });
-            break;
-        case SHY:
-            events.forEach((event) => {
-                shyOutput({ event, terminalOptions, currencySymbol });
-            });
-            break;
-        default:
-            break;
+    case VERBOSE:
+        events.forEach((event) => {
+            verboseOutput({ event, terminalOptions, currencySymbol });
+        });
+        break;
+    case CONCISE:
+        events.forEach((event) => {
+            conciseOutput({ event, terminalOptions, currencySymbol });
+        });
+        break;
+    case SHY:
+        events.forEach((event) => {
+            shyOutput({ event, terminalOptions, currencySymbol });
+        });
+        break;
+    default:
+        break;
     }
 };
 
@@ -442,6 +436,7 @@ const standardTerminalHeader = ({ terminalOptions }) => {
     lineHeading(` terminal type: ${terminalOptions.type} `);
     lineHeading(` terminal mode: ${terminalOptions.mode} `);
     lineSeparator(2);
+    // eslint-disable-next-line no-console
     console.log(getRandomMiyagiQuote());
     lineSeparator(2);
 };
@@ -468,6 +463,26 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrEndBal
     lineHeading(` dateStart: ${danielSan.dateStart} `);
     lineHeading(` dateEnd:   ${danielSan.dateEnd} `);
     lineSeparator(2);
+};
+
+const showDiscardedEvents = ({ danielSan, terminalOptions }) => {
+    const discardedEvents = danielSan.discardedEvents;
+    if (discardedEvents && discardedEvents.length > 0) {
+        terminalBoundary(3);
+        lineHeading(' begin discarded events ');
+        lineHeading(' these events were excluded for lying beyond the provided date range ');
+        lineSeparator(2);
+        eventsLogger({
+            events: discardedEvents,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
+        lineSeparator(2);
+        lineHeading(` discarded event count: ${discardedEvents.length} `);
+        lineSeparator(2);
+        lineHeading(' end discarded events ');
+        lineSeparator(2);
+    }
 };
 
 const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
@@ -552,6 +567,35 @@ const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     showCriticalSnapshots({ danielSan, terminalOptions });
+    terminalBoundary(5);
+};
+
+const displaySumOfAllEventAmounts = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    lineHeading(' begin displaySumOfAllEventAmounts ');
+    const sum = sumAllEventAmounts(danielSan);
+    const {
+        formattingFunction,
+        minIntegerDigits,
+        minDecimalDigits,
+        maxDecimalDigits,
+        locale,
+        style
+    } = getDefaultParamsForDecimalFormatter(terminalOptions);
+    lineSeparator(1);
+    // eslint-disable-next-line no-console
+    console.log(
+        `total sum: `, // eslint-disable-line quotes
+        formattingFunction(sum, {
+            minIntegerDigits,
+            minDecimalDigits,
+            maxDecimalDigits,
+            locale,
+            style,
+            currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+        })
+    );
     terminalBoundary(5);
 };
 
@@ -779,85 +823,94 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             // eslint-disable-next-line no-lonely-if
             if (!terminalOptions.type) terminalOptions.type = STANDARD_TERMINAL_OUTPUT;
             switch (terminalOptions.type) {
-                case DISPLAY_EVENTS:
-                case STANDARD_TERMINAL_OUTPUT:
-                    standardTerminalOutput({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_EVENTS_BY_GROUPS:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'group'
-                    });
-                    break;
-                case DISPLAY_EVENTS_BY_NAMES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'name'
-                    });
-                    break;
-                case DISPLAY_EVENTS_BY_TYPES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type'
-                    });
-                    break;
-                case DISPLAY_CRITICAL_SNAPSHOTS:
-                    displayCriticalSnapshots({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_IMPORTANT_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'important'
-                    });
-                    break;
-                case DISPLAY_TIME_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'timeStart'
-                    });
-                    break;
-                case DISPLAY_ROUTINE_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type',
-                        substring: 'ROUTINE'
-                    });
-                    break;
-                case DISPLAY_REMINDER_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type',
-                        substring: 'REMINDER'
-                    });
-                    break;
-                case DISPLAY_RULES_TO_RETIRE:
-                    displayRulesToRetire({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
-                    displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
-                    displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
-                    displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
-                    displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
-                    break;
-                default:
-                    break;
+            case DISPLAY_EVENTS:
+            case STANDARD_TERMINAL_OUTPUT:
+                standardTerminalOutput({ danielSan, terminalOptions });
+                showDiscardedEvents({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_EVENTS_BY_GROUPS:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'group'
+                });
+                break;
+            case DISPLAY_EVENTS_BY_NAMES:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'name'
+                });
+                break;
+            case DISPLAY_EVENTS_BY_TYPES:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type'
+                });
+                break;
+            case DISPLAY_CRITICAL_SNAPSHOTS:
+                displayCriticalSnapshots({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_DISCARDED_EVENTS:
+                showDiscardedEvents({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_IMPORTANT_EVENTS:
+                displayEventsWithProperty({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'important'
+                });
+                break;
+            case DISPLAY_TIME_EVENTS:
+                displayEventsWithProperty({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'timeStart'
+                });
+                break;
+            case DISPLAY_ROUTINE_EVENTS:
+                displayEventsWithPropertyKeyContainingSubstring({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type',
+                    substring: 'ROUTINE'
+                });
+                break;
+            case DISPLAY_REMINDER_EVENTS:
+                displayEventsWithPropertyKeyContainingSubstring({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type',
+                    substring: 'REMINDER'
+                });
+                break;
+            case DISPLAY_RULES_TO_RETIRE:
+                displayRulesToRetire({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS:
+                displaySumOfAllEventAmounts({ danielSan, terminalOptions });
+                showDiscardedEvents({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
+                displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
+                displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
+                displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
+                break;
+            default:
+                break;
             }
             lineSeparator(2);
             standardTerminalSubheader({ danielSan, terminalOptions }, 'endBalance');
             lineSeparator(2);
+            // eslint-disable-next-line no-console
             console.log(getRandomMiyagiQuote());
             lineSeparator(2);
         } catch (err) {
