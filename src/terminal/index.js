@@ -967,7 +967,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
         } catch (err) {
             lineHeading(' something bad happened and a lot of robots died ');
             // eslint-disable-next-line no-console
-            console.log(error);
+            console.log(err);
         }
     }
 };
