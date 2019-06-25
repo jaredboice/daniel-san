@@ -559,23 +559,8 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
     }
 };
 
-const displayRulesToRetire = ({ danielSan, terminalOptions }) => {
-    standardTerminalHeader({ terminalOptions });
-    showRulesToRetire({ danielSan, terminalOptions });
-    terminalBoundary(5);
-};
-
-const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
-    standardTerminalHeader({ terminalOptions });
-    standardTerminalSubheader({ danielSan, terminalOptions });
-    showCriticalSnapshots({ danielSan, terminalOptions });
-    terminalBoundary(5);
-};
-
-const displaySumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
-    standardTerminalHeader({ terminalOptions });
-    standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin displaySumOfAllPositiveEventAmounts ');
+const showSumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
+    lineHeading(' begin showSumOfAllPositiveEventAmounts ');
     const sum = sumAllPositiveEventAmounts(danielSan);
     const {
         formattingFunction,
@@ -598,14 +583,13 @@ const displaySumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => 
             currency: danielSan.currencySymbol || CURRENCY_DEFAULT
         })
     );
-    terminalBoundary(5);
+    terminalBoundary(2);
+    showDiscardedEvents({ danielSan, terminalOptions });
 };
 
 
-const displaySumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
-    standardTerminalHeader({ terminalOptions });
-    standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin displaySumOfAllNegativeEventAmounts ');
+const showSumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
+    lineHeading(' begin showSumOfAllNegativeEventAmounts ');
     const sum = sumAllNegativeEventAmounts(danielSan);
     const {
         formattingFunction,
@@ -628,6 +612,39 @@ const displaySumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => 
             currency: danielSan.currencySymbol || CURRENCY_DEFAULT
         })
     );
+    terminalBoundary(2);
+    showDiscardedEvents({ danielSan, terminalOptions });
+};
+
+const displaySumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    showSumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
+    terminalBoundary(5);
+};
+
+const displaySumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    showSumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
+    terminalBoundary(5);
+};
+
+const displayRulesToRetire = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    showRulesToRetire({ danielSan, terminalOptions });
+    terminalBoundary(5);
+};
+
+const displayDiscardedEvents = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    showDiscardedEvents({ danielSan, terminalOptions });
+    terminalBoundary(5);
+};
+
+const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    showCriticalSnapshots({ danielSan, terminalOptions });
     terminalBoundary(5);
 };
 
@@ -758,6 +775,7 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     if (terminalOptions.type !== DISPLAY_EVENTS) {
         showCriticalSnapshots({ danielSan, terminalOptions });
     }
+    showDiscardedEvents({ danielSan, terminalOptions });
     terminalBoundary(5);
 };
 
@@ -858,7 +876,6 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             case DISPLAY_EVENTS:
             case STANDARD_TERMINAL_OUTPUT:
                 standardTerminalOutput({ danielSan, terminalOptions });
-                showDiscardedEvents({ danielSan, terminalOptions });
                 break;
             case DISPLAY_EVENTS_BY_GROUPS:
                 displayEventsByPropertyKeyAndValues({
@@ -885,7 +902,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 displayCriticalSnapshots({ danielSan, terminalOptions });
                 break;
             case DISPLAY_DISCARDED_EVENTS:
-                showDiscardedEvents({ danielSan, terminalOptions });
+                displayDiscardedEvents({ danielSan, terminalOptions });
                 break;
             case DISPLAY_IMPORTANT_EVENTS:
                 displayEventsWithProperty({
@@ -922,11 +939,9 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 break;
             case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
                 displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
-                showDiscardedEvents({ danielSan, terminalOptions });
                 break;
             case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
                 displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
-                showDiscardedEvents({ danielSan, terminalOptions });
                 break;
             case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
                 displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
