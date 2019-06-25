@@ -399,7 +399,8 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the dateStart and dateEnd range, they can be displayed with this terminal type )_
 -   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
 -   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_
--   `type: 'DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS'` _(displays the sum of all event amounts, and will also display discarded events if they exist)_
+-   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS'` _(displays the sum of all positive event amounts, and will also display discarded events if they exist)_
+-   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS'` _(displays the sum of all negative event amounts, and will also display discarded events if they exist)_
 -   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest endBalance values, ordered by value)_
 -   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest endBalance values, ordered by value)_
 -   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the endBalance values greater than 1000)_
@@ -585,7 +586,8 @@ const {
     CONCISE,
     SHY,
     STANDARD_TERMINAL_OUTPUT,
-    DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS
+    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
+    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS
     DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,

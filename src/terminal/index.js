@@ -8,7 +8,8 @@ const {
     findSnapshotsGreaterThanAmount,
     findSnapshotsLessThanAmount,
     findGreatestValueSnapshots,
-    sumAllEventAmounts
+    sumAllPositiveEventAmounts,
+    sumAllNegativeEventAmounts
 } = require('../analytics');
 
 const {
@@ -27,7 +28,8 @@ const {
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
-    DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS,
+    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
+    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
     DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
@@ -570,11 +572,41 @@ const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
     terminalBoundary(5);
 };
 
-const displaySumOfAllEventAmounts = ({ danielSan, terminalOptions }) => {
+const displaySumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin displaySumOfAllEventAmounts ');
-    const sum = sumAllEventAmounts(danielSan);
+    lineHeading(' begin displaySumOfAllPositiveEventAmounts ');
+    const sum = sumAllPositiveEventAmounts(danielSan);
+    const {
+        formattingFunction,
+        minIntegerDigits,
+        minDecimalDigits,
+        maxDecimalDigits,
+        locale,
+        style
+    } = getDefaultParamsForDecimalFormatter(terminalOptions);
+    lineSeparator(1);
+    // eslint-disable-next-line no-console
+    console.log(
+        `total sum: `, // eslint-disable-line quotes
+        formattingFunction(sum, {
+            minIntegerDigits,
+            minDecimalDigits,
+            maxDecimalDigits,
+            locale,
+            style,
+            currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+        })
+    );
+    terminalBoundary(5);
+};
+
+
+const displaySumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    standardTerminalSubheader({ danielSan, terminalOptions });
+    lineHeading(' begin displaySumOfAllNegativeEventAmounts ');
+    const sum = sumAllNegativeEventAmounts(danielSan);
     const {
         formattingFunction,
         minIntegerDigits,
@@ -888,8 +920,12 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             case DISPLAY_RULES_TO_RETIRE:
                 displayRulesToRetire({ danielSan, terminalOptions });
                 break;
-            case DISPLAY_SUM_OF_ALL_EVENT_AMOUNTS:
-                displaySumOfAllEventAmounts({ danielSan, terminalOptions });
+            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
+                displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
+                showDiscardedEvents({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
+                displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
                 showDiscardedEvents({ danielSan, terminalOptions });
                 break;
             case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:

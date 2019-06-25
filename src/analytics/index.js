@@ -133,10 +133,30 @@ const findGreatestValueSnapshots = ({
     return finalCollection;
 };
 
-const sumAllEventAmounts = (danielSan) => {
+const sumAllPositiveEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
-        if (!isUndefinedOrNull(event.amount)) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+        if (!isUndefinedOrNull(event.amount) && event.amount > 0) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+            const convertedAmount =
+                danielSan.currencySymbol &&
+                event.currencySymbol &&
+                danielSan.currencySymbol !== event.currencySymbol
+                    ? danielSan.currencyConversion({
+                        amount: event.amount,
+                        currentSymbol: event.currencySymbol,
+                        futureSymbol: danielSan.currencySymbol
+                    })
+                    : event.amount;
+            sum += convertedAmount;
+        }
+    });
+    return sum;
+};
+
+const sumAllNegativeEventAmounts = (danielSan) => {
+    let sum = 0;
+    danielSan.events.forEach((event) => {
+        if (!isUndefinedOrNull(event.amount) && event.amount < 0) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
             const convertedAmount =
                 danielSan.currencySymbol &&
                 event.currencySymbol &&
@@ -162,5 +182,6 @@ module.exports = {
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,
     findGreatestValueSnapshots,
-    sumAllEventAmounts
+    sumAllPositiveEventAmounts,
+    sumAllNegativeEventAmounts
 };
