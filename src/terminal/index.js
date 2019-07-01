@@ -472,7 +472,7 @@ const showDiscardedEvents = ({ danielSan, terminalOptions }) => {
     if (discardedEvents && discardedEvents.length > 0) {
         terminalBoundary(3);
         lineHeading(' begin discarded events ');
-        lineHeading(' these events were excluded for lying beyond the provided date range ');
+        lineHeading(' these events were excluded for residing beyond the provided date range ');
         lineSeparator(2);
         eventsLogger({
             events: discardedEvents,
