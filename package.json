@@ -2,7 +2,7 @@
     "name": "daniel-san",
     "author": "jared boice",
     "description": "daniel-san is a node-based budget-projection engine that helps your finances find balance. The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay",
-    "version": "1.9.3",
+    "version": "1.9.4",
     "license": "MIT",
     "repository": {
         "type": "git",
@@ -50,23 +50,23 @@
         "test:c": "NODE_PATH=src jest --verbose --coverage"
     },
     "dependencies": {
-        "@babel/runtime": "~7.4.5",
-        "moment": "~2.23.0"
+        "@babel/runtime": "^7.5.4",
+        "moment": "^2.24.0"
     },
     "devDependencies": {
-        "@babel/cli": "~7.4.4",
-        "@babel/core": "~7.4.5",
-        "@babel/plugin-transform-runtime": "~7.4.4",
-        "@babel/preset-env": "~7.4.5",
+        "@babel/cli": "^7.5.0",
+        "@babel/core": "^7.4.5",
+        "@babel/plugin-transform-runtime": "^7.5.0",
+        "@babel/preset-env": "^7.5.4",
         "babel-eslint": "^10.0.2",
-        "eslint": "^4.19.1",
-        "eslint-config-airbnb": "^16.1.0",
-        "eslint-plugin-import": "^2.11.0",
-        "eslint-plugin-jsx-a11y": "^6.0.3",
-        "eslint-plugin-react": "^7.7.0",
-        "jest": "~22.4.3",
-        "nodemon": "~1.19.1",
-        "npm-run-all": "^4.1.2"
+        "eslint": "^6.0.1",
+        "eslint-config-airbnb": "^17.1.1",
+        "eslint-plugin-import": "^2.18.0",
+        "eslint-plugin-jsx-a11y": "^6.2.3",
+        "eslint-plugin-react": "^7.14.2",
+        "jest": "^24.8.0",
+        "nodemon": "^1.19.1",
+        "npm-run-all": "^4.1.5"
     },
     "jest": {
         "verbose": true,
