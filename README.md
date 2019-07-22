@@ -39,7 +39,7 @@ const danielSan = {
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: MONTHLY,
             processDate: '30', // for MONTHLY events, this string represents the day within that month
-            dateStart: '2019-01-01' // date to start evaluating and processing this account
+            dateStart: '2019-01-01' // date to start evaluating and processing this account, if there is no start date, daniel-san will number crunch to determine the first process date
             dateEnd: null, // null dateEnd represents an ongoing account
             modulus: 1, // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
             cycle: 1 // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
