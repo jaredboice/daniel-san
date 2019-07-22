@@ -200,7 +200,7 @@ const danielSan = {
             modulus: 1, // not required - see "Modulus/Cycle" to review this advanced feature
             cycle: 1, // not required - see "Modulus/Cycle" to review this advanced feature
             specialAdjustments: [
-                { 
+                { // the moving of process dates should generally come last in the array of adjustments
                     type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS, // to prepay before the specified days, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS
                     weekdays: [SATURDAY, SUNDAY] 
                 }
@@ -218,7 +218,7 @@ const danielSan = {
             cycle: 1,
             syncDate: '2019-08-12', // specific to "Modulus/Cycle" - read that section for instructions,
             specialAdjustments: [
-                {
+                { // the moving of process dates should generally come last in the array of adjustments
                     type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES, // to prepay before the specified dates, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES
                     dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it rolls over them
                     weekdays: [SATURDAY, SUNDAY] // weekdays are optional
@@ -304,7 +304,7 @@ const danielSan = {
 
 ## Exclusions
 
-Exclusions will skip an event trigger entirely. 
+Exclusions will skip an event trigger entirely. If an exclusion is triggered, not even special adjustments will fire as exclusions precede them.
 _(When making use of the modulus/cycle operators on STANDARD_EVENT, exclusion hits will still cycle the modulus)_
 
 
