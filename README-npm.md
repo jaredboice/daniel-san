@@ -9,7 +9,7 @@ get the [full documentation](https://github.com/jaredboice/daniel-san) at gitHub
 ## Donations - Bitcoin: 19XgiRojJnv9VDhyW9HmF6oKQeVc7k9McU (use this address until 2020)
 
 ## Starter Kit
-click [here](https://github.com/jaredboice/daniel-san-starter-kit] "Daniel-San-Starter-Kit" )
+click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-Starter-Kit")
 
 ## Description
 
