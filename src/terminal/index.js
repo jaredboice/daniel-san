@@ -645,7 +645,7 @@ const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     showCriticalSnapshots({ danielSan, terminalOptions });
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
@@ -964,6 +964,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             // eslint-disable-next-line no-console
             console.log(getRandomMiyagiQuote());
             lineSeparator(2);
+            terminalBoundary(5);
         } catch (err) {
             lineHeading(' something bad happened and a lot of robots died ');
             // eslint-disable-next-line no-console
