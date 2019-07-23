@@ -8,7 +8,7 @@
 (use this address until 2022)
 
 ## Starter Kit
-click [here](https://github.com/jaredboice/daniel-san-starter-kit] "Daniel-San-Starter-Kit" )
+click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-Starter-Kit")
 
 ## Description
 
