@@ -6,7 +6,8 @@ get the [full documentation](https://github.com/jaredboice/daniel-san) at gitHub
 
 ![Daniel-San](screenshots/daniel-san-logo.png 'Daniel-San')
 
-## Donations - Bitcoin: 19XgiRojJnv9VDhyW9HmF6oKQeVc7k9McU (use this address until 2020)
+## Donations - Bitcoin: 19XgiRojJnv9VDhyW9HmF6oKQeVc7k9McU 
+(use this address until 2022)
 
 ## Starter Kit
 click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-Starter-Kit")
