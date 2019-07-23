@@ -619,26 +619,26 @@ const showSumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
 const displaySumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     showSumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displaySumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     showSumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayRulesToRetire = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     showRulesToRetire({ danielSan, terminalOptions });
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayDiscardedEvents = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     showDiscardedEvents({ danielSan, terminalOptions });
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
@@ -671,7 +671,7 @@ const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOpt
     lineSeparator(2);
     lineHeading(' end displayEndBalanceSnapshotsGreaterThanMaxAmount ');
     lineSeparator(2);
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOptions }) => {
@@ -697,7 +697,7 @@ const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOption
     lineSeparator(2);
     lineHeading(' end displayEndBalanceSnapshotsLessThanMinAmount ');
     lineSeparator(2);
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
@@ -724,7 +724,7 @@ const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
     lineSeparator(2);
     lineHeading(' end displayfindGreatestValueSnapshots ');
     lineSeparator(2);
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
@@ -751,7 +751,7 @@ const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
     lineSeparator(2);
     lineHeading(' end displayLeastEndBalanceSnapshots ');
     lineSeparator(2);
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
@@ -776,7 +776,7 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
         showCriticalSnapshots({ danielSan, terminalOptions });
     }
     showDiscardedEvents({ danielSan, terminalOptions });
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayEventsWithProperty = ({
@@ -802,7 +802,7 @@ const displayEventsWithProperty = ({
     lineSeparator(2);
     lineHeading(' end displayEventsWithProperty ');
     lineSeparator(2);
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayEventsByPropertyKeyAndValues = ({
@@ -829,7 +829,7 @@ const displayEventsByPropertyKeyAndValues = ({
     lineSeparator(2);
     lineHeading(' end displayEventsByPropertyKeyAndValues ');
     lineSeparator(2);
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const displayEventsWithPropertyKeyContainingSubstring = ({
@@ -856,7 +856,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
     lineSeparator(2);
     lineHeading(' end displayEventsWithPropertyKeyContainingSubstring ');
     lineSeparator(2);
-    terminalBoundary(5);
+    terminalBoundary(3);
 };
 
 const terminal = ({ danielSan, terminalOptions = {}, error }) => {
