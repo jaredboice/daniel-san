@@ -409,8 +409,8 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest endBalance values, ordered by value)_
 -   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the endBalance values greater than 1000)_
 -   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT'` _(pass minAmount: 100 to display all the endBalance values less than 1000)_
--   `type: 'DISPLAY_EVENTS_BY_GROUPS'` _(passing searchValues: ['Group1', 'Group2'] into terminalOptions will search against the optional group property)_
--   `type: 'DISPLAY_EVENTS_BY_NAMES'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
+-   `type: 'DISPLAY_EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into terminalOptions will search against the optional group property)_
+-   `type: 'DISPLAY_EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
 -   `type: 'DISPLAY_EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
 -   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
 -   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
@@ -509,7 +509,7 @@ const danielSan = {
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
-            group: 'investments' // optional: assign a group category and filter the results with DISPLAY_EVENTS_BY_GROUPS
+            group: 'investments' // optional: assign a group category and filter the results with DISPLAY_EVENTS_BY_GROUP
             amount: -79.83, 
             type: STANDARD_EVENT,
             frequency: MONTHLY,
@@ -596,9 +596,9 @@ const {
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
     DISPLAY_LEAST_END_BALANCE_SNAPSHOTS,
-    DISPLAY_EVENTS_BY_GROUPS,
-    DISPLAY_EVENTS_BY_NAMES,
-    DISPLAY_EVENTS_BY_TYPES,
+    DISPLAY_EVENTS_BY_GROUP,
+    DISPLAY_EVENTS_BY_NAME,
+    DISPLAY_EVENTS_BY_TYPE,
     DISPLAY_EVENTS,
     DISPLAY_CRITICAL_SNAPSHOTS,
     DISPLAY_DISCARDED_EVENTS,

@@ -17,8 +17,11 @@ const {
     VERBOSE,
     CONCISE,
     SHY,
+    DISPLAY_EVENTS_BY_GROUP,
     DISPLAY_EVENTS_BY_GROUPS,
+    DISPLAY_EVENTS_BY_NAME,
     DISPLAY_EVENTS_BY_NAMES,
+    DISPLAY_EVENTS_BY_TYPE,
     DISPLAY_EVENTS_BY_TYPES,
     DISPLAY_EVENTS,
     DISPLAY_CRITICAL_SNAPSHOTS,
@@ -877,6 +880,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             case STANDARD_TERMINAL_OUTPUT:
                 standardTerminalOutput({ danielSan, terminalOptions });
                 break;
+            case DISPLAY_EVENTS_BY_GROUP:
             case DISPLAY_EVENTS_BY_GROUPS:
                 displayEventsByPropertyKeyAndValues({
                     danielSan,
@@ -884,6 +888,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                     propertyKey: 'group'
                 });
                 break;
+            case DISPLAY_EVENTS_BY_NAME:
             case DISPLAY_EVENTS_BY_NAMES:
                 displayEventsByPropertyKeyAndValues({
                     danielSan,
@@ -891,6 +896,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                     propertyKey: 'name'
                 });
                 break;
+            case DISPLAY_EVENTS_BY_TYPE:
             case DISPLAY_EVENTS_BY_TYPES:
                 displayEventsByPropertyKeyAndValues({
                     danielSan,
