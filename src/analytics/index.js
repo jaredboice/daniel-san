@@ -143,8 +143,8 @@ const sumAllPositiveEventAmounts = (danielSan) => {
                 danielSan.currencySymbol !== event.currencySymbol
                     ? danielSan.currencyConversion({
                         amount: event.amount,
-                        currentSymbol: event.currencySymbol,
-                        futureSymbol: danielSan.currencySymbol
+                        inputSymbol: event.currencySymbol,
+                        outputSymbol: danielSan.currencySymbol
                     })
                     : event.amount;
             sum += convertedAmount;
@@ -163,8 +163,8 @@ const sumAllNegativeEventAmounts = (danielSan) => {
                 danielSan.currencySymbol !== event.currencySymbol
                     ? danielSan.currencyConversion({
                         amount: event.amount,
-                        currentSymbol: event.currencySymbol,
-                        futureSymbol: danielSan.currencySymbol
+                        inputSymbol: event.currencySymbol,
+                        outputSymbol: danielSan.currencySymbol
                     })
                     : event.amount;
             sum += convertedAmount;

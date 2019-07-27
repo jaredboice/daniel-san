@@ -300,8 +300,8 @@ const executeEvents = ({ danielSan }) => {
                     danielSan.currencySymbol !== event.currencySymbol
                         ? danielSan.currencyConversion({
                             amount: event.amount,
-                            currentSymbol: event.currencySymbol,
-                            futureSymbol: danielSan.currencySymbol
+                            inputSymbol: event.currencySymbol,
+                            outputSymbol: danielSan.currencySymbol
                         })
                         : event.amount;
                 event.endBalance = event.beginBalance + convertedAmount; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field

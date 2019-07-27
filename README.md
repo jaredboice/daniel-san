@@ -346,19 +346,18 @@ const danielSan = {
     endBalance: null,
     dateStart: '2019-03-20',
     dateEnd: '2019-12-13',
-    currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represetns the futureSymbol parameter in the currencyConversion function
+    currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represetns the outputSymbol parameter in the currencyConversion function
     // (when using the terminalOptions, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
-    currencyConversion: ({ amount, currentSymbol, futureSymbol}) => {
+    currencyConversion: ({ amount, inputSymbol, outputSymbol}) => {
          // a global currency conversion function that will return the converted amount
          // the amount parameter represents the rule amount (as defined below for each provided rule)
-         // the currentSymbol parameter here represents the currencySymbol property field from the rule
-         // futureSymbol represents the output currency you will be converting to (the primary-output USD value above)
+         // the inputSymbol parameter here represents the currencySymbol property field from the rule
+         // outputSymbol represents the output currency you will be converting to (the primary-output USD value above)
          // even if you do not add a currencyConversion function, a default function is added to the danielSan object for you 
          // (so a currencyConversion function is used in every calculation regardless)
          // the default currencyConversion returns the same amount that is passed in
         const UsdSymbolEnum = {
-            'USD': 1,   // in this case, USD represents the root field of this enum and will therefore match the output symbol (futureSymbol), so its conversion factor should be 1
-                        // ie. when the input currency symbol is identical to the output currency symbol, there is no change at all when we multiply them (below)
+            'USD': 1,   // in this case, USD represents the root field of this usd enum so its conversion factor should be 1, since 1 USD is worth 1 USD
             'EUR': 0.88 // 1 USD is worth 0.88 EUR
             'CNY': 6.75 // 1 USD is worth 6.75 CNY
         };
@@ -370,12 +369,12 @@ const danielSan = {
         };
         // you may have a need for multiple switch-case rules (and associated  enums) that execute based on different primary-output currency symbols
         // eg. when switching your primary-output currency symbol to some other symbol, (as shown above the currencyConversion function) 
-        // so for each possible primary-output, you need to define different calculations/enums for each primary-output/futureSymbol (notice the EUR case example below)
-        switch (futureSymbol) {
+        // so for each possible primary-output, you need to define different enums for potential output and/or input symbol (notice the EUR case example below)
+        switch (outputSymbol) {
         case 'USD': // since our primary-output is USD, this case will convert the rule amount symbol (CNY) to USD
-            return amount * (UsdSymbolEnum[currentSymbol] || 1); // defensive programming example in cases when currentSymbol is null/undefined
+            return amount * (UsdSymbolEnum[inputSymbol] || 1); // defensive programming example in cases when inputSymbol is null/undefined
         case 'EUR': // this case would only execute if you changed your primary-output symbol to EUR
-            return amount * (EurSymbolEnum[currentSymbol] || 1);
+            return amount * (EurSymbolEnum[inputSymbol] || 1);
         default:
             return amount;
         }
@@ -504,8 +503,6 @@ if (eventResults.err) {
     }
 }
 ```
-
-currencyConversion({ amount: event.amount, currentSymbol: event.currencySymbol, futureSymbol: danielSan.currencySymbol });
 
 ## More Useful Features
 
