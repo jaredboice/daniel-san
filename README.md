@@ -348,7 +348,7 @@ const danielSan = {
     dateEnd: '2019-12-13',
     currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represetns the outputSymbol parameter in the currencyConversion function
     // (when using the terminalOptions, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
-    currencyConversion: ({ amount, inputSymbol, outputSymbol}) => {
+    currencyConversion: ({ amount, inputSymbol, outputSymbol }) => {
         // a global currency conversion function that will return the converted amount
         // the amount parameter represents the rule amount (as defined below for each provided rule)
         // the inputSymbol parameter here represents the currencySymbol property field from the rule
