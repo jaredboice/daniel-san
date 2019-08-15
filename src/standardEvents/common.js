@@ -44,11 +44,12 @@ const getRelevantDateSegmentByFrequency = ({ frequency, date }) => {
     }
 };
 
+// flags rule that is no longer relevant for active budget-projection calculations
 const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
     try {
         // if dateEnd has been reached, flag the rule for retirement
         if (!isUndefinedOrNull(rule.dateEnd) && date.format(DATE_FORMAT_STRING) >= rule.dateEnd) {
-            danielSan.cashflowRetiredRuleIndices.push(index);
+            danielSan.retiredRuleIndices.push(index);
         }
     } catch (err) {
         throw errorDisc(err, 'error in flagRuleForRetirement()', { date, rule, index });
@@ -60,18 +61,18 @@ const retireRules = ({ danielSan }) => {
     try {
         // retire obsolete rules
         let indexOffset = 0;
-        if (danielSan.cashflowRetiredRuleIndices.length > 0) {
-            for (looper = 0; looper < danielSan.cashflowRetiredRuleIndices.length; looper++) {
+        if (danielSan.retiredRuleIndices.length > 0) {
+            for (looper = 0; looper < danielSan.retiredRuleIndices.length; looper++) {
                 const looperIndex = looper - indexOffset;
-                danielSan.rules.splice(danielSan.cashflowRetiredRuleIndices[looperIndex], 1);
+                danielSan.rules.splice(danielSan.retiredRuleIndices[looperIndex], 1);
                 indexOffset++;
             }
-            danielSan.cashflowRetiredRuleIndices = [];
+            danielSan.retiredRuleIndices = [];
         }
     } catch (err) {
         throw errorDisc(err, 'error in retireRules()', {
             looper,
-            cashflowRetiredRuleIndices: danielSan.cashflowRetiredRuleIndices
+            retiredRuleIndices: danielSan.retiredRuleIndices
         });
     }
 };

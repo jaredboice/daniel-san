@@ -19,14 +19,15 @@ class TimeStream {
     }
 
     stream1DayForward() {
-        this.looperDate = this.looperDate.add(1, 'day');
-        const looperIsNotOnTheEdge = moment.max([this.looperDate, this.dateEnd]) !== this.looperDate;
-        return looperIsNotOnTheEdge;
+        this.looperDate = streamForward(this.looperDate);
+        // const looperIsNotOnTheEdge = moment.max([this.looperDate, this.dateEnd]) !== this.looperDate;
+        const looperIsNotBeyondTheEdge = !this.looperDate.isAfter(this.dateEnd);
+        return looperIsNotBeyondTheEdge;
     }
     stream1DayBackward() {
-        this.looperDate = this.looperDate.add(-1, 'day');
-        const looperIsNotOnTheEdge = moment.min([this.looperDate, this.dateStart]) !== this.looperDate;
-        return looperIsNotOnTheEdge;
+        this.looperDate = streamBackward(this.looperDate);
+        const looperIsNotBeyondTheEdge = !this.looperDate.isBefore(this.dateEnd);
+        return looperIsNotBeyondTheEdge;
     }
 }
 
