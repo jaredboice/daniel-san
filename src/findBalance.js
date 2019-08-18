@@ -302,6 +302,7 @@ const prepareRules = ({ danielSan, dateStartString }) => {
             }
         }
     });
+};
 
 const executeEvents = ({ danielSan }) => {
     danielSan.events.forEach((event, index) => {
