@@ -3,7 +3,7 @@ const cycleModulusUp = (rule) => {
     rule.cycle = newCycle;
 };
 
-const cycleModulusDown = ({ rule }) => {
+const cycleModulusDown = (rule) => {
     let newCycle = rule.cycle - 1;
     if (newCycle === 0) newCycle = rule.modulus;
     rule.cycle = newCycle;

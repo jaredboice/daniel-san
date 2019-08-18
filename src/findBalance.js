@@ -269,19 +269,48 @@ const prepareRules = ({ danielSan, dateStartString }) => {
         } else {
             rule.currencySymbol = rule.currencySymbol.toUpperCase();
         }
-        if (rule.type === STANDARD_EVENT || STANDARD_EVENT_ROUTINE || STANDARD_EVENT_REMINDER) {
+        if (
+            rule.type === STANDARD_EVENT ||
+            rule.type === STANDARD_EVENT_ROUTINE ||
+            rule.type === STANDARD_EVENT_REMINDER
+        ) {
             try {
                 if (isUndefinedOrNull(rule.modulus) || isUndefinedOrNull(rule.cycle) || rule.frequency === ONCE) {
                     rule.modulus = 0;
                     rule.cycle = 0;
                 } else {
-                    // bring modulus/cycle up-to-date for each rule
-                    // eslint-disable-next-line no-lonely-if
-                    const relevantDateStartString = (rule.dateStart && rule.dateStart > dateStartString) ? rule.dateStart : dateStartString;
-                    if (rule.syncDate && rule.syncDate < relevantDateStartString) {
-                        cycleModulusUpToDate({ rule, dateStartString: relevantDateStartString });
-                    } else if (rule.syncDate && rule.syncDate >= relevantDateStartString) {
-                        cycleModulusDownToDate({ rule, dateStartString: relevantDateStartString });
+                    let relevantDateStartString;
+                    // for the following conditions, there is no reason to modify the modulus cycle
+                    if (((dateStartString > rule.syncDate && dateStartString > rule.dateStart && rule.syncDate === rule.dateStart)) ||
+                        !(
+                            ((rule.syncDate === dateStartString) && (!rule.dateStart || (rule.dateStart && rule.dateStart <= dateStartString))) ||
+                            (rule.dateStart && (rule.syncDate === rule.dateStart && rule.dateStart <= dateStartString))
+                        )
+                    ) {
+                        if (rule.syncDate <= dateStartString || rule.syncDate <= rule.dateStart) {
+                            if (rule.dateStart && dateStartString <= rule.dateStart) {
+                                relevantDateStartString = rule.dateStart;
+                            } else {
+                                relevantDateStartString = dateStartString;
+                            }
+                            cycleModulusUpToDate({
+                                rule,
+                                dateStartString: relevantDateStartString,
+                                globalDateStartString: dateStartString
+                            });
+                        } else {
+                            // note: else syncDate > start date
+                            if (rule.dateStart && dateStartString < rule.dateStart) {
+                                relevantDateStartString = rule.dateStart;
+                            } else {
+                                relevantDateStartString = dateStartString;
+                            }
+                            cycleModulusDownToDate({
+                                rule,
+                                dateStartString: relevantDateStartString,
+                                globalDateStartString: dateStartString
+                            });
+                        }
                     }
                 }
                 if (rule.frequency === DAILY) {
