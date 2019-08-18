@@ -287,7 +287,7 @@ const prepareRules = ({ danielSan, dateStartString }) => {
                         } else if (rule.dateStart && rule.dateStart < dateStartString){
                             rule.syncDate = rule.dateStart;
                         }
-                        // if rule.dateStart === dateStartString in this context, pre-modulation is not necessary
+                        // if rule.dateStart === dateStartString in this context, pre-modulation is not necessary since we shouldn't even be here
                         // if the following condition is not true, modulation will not proceed
                         if (rule.syncDate < dateStartString) {
                             cycleModulusUpToDate({
