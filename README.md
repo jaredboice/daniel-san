@@ -60,8 +60,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
-            cycle: 1,
-            syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
+            cycle: 1
         },
         { // rule 3
             type: STANDARD_EVENT,
@@ -144,7 +143,7 @@ const danielSan = {
 -   `type: 'WEEKDAY_ON_DATE_ROUTINE'` _(same as above but does not need an amount field)_
 -   `type: 'WEEKDAY_ON_DATE_REMINDER'` _(same as above but does not need an amount field)_
 
-_special events do not utilize the frequency attribute, nor modulus/cycle/syncDate_
+_special events do not utilize the modulus/cycle/syncDate attributes_
 
 ```javascript
 const danielSan = {
@@ -221,9 +220,6 @@ const danielSan = {
             processDate: 0, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
             dateStart: '2019-01-01',
             dateEnd: null,
-            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
-            cycle: 1,
-            syncDate: '2019-08-12', // specific to "Modulus/Cycle" - read that section for instructions,
             specialAdjustments: [
                 { // the moving of process dates should generally come last in the array of adjustments
                     type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES, // to prepay before the specified dates, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES
@@ -269,16 +265,18 @@ const danielSan = {
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
 the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). The cycle fires on the modulus, and then it loops back around to 1.
-If your cycle/modulus isn't getting expected results, try modifying the cycle (a syncDate can also modify results as explained below). If you are confused it will make sense after trying a couple different settings.
+If your cycle/modulus isn't getting expected results, try modifying the cycle (a syncDate can also modify results as explained below). If you are confused, it will make sense after trying a couple different settings.
 
-Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process execution date (either forwards or backwards). For example, by syncing a cycle of 2 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling backward or forward depending on whether the syncDate is in the past or the future). So whatever the cycle value is on that syncDate will lock its position in time and dictate how the cycle should moduluate into both the past and/or the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the syncDate every so often will increase performance since this feature requires more computation. Adding a dateStart attribute to the rule is optional in this case, however, it can be used as long as it (like syncDate) is set to an executing event date (ie. a date that triggers the operation process).
+Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process execution date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that syncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the syncDate every so often will increase performance since this feature requires more computation.  
+
+Adding a dateStart on the rule object will nullify the syncDate. If you want to "sync" the starting date for the cycle in the future (after the start date of the projections) then use the dateStart attribute on the rule instead of a syncDate.
 
 
 ```javascript
 const danielSan = {
     beginBalance: 1618.03,
     endBalance: null, // future end balance is stored here
-    dateStart: '2019-03-20', // always required
+    dateStart: '2020-09-17', // always required
     dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE
     rules: [
         { // rule 1
@@ -288,6 +286,7 @@ const danielSan = {
             frequency: MONTHLY,
             processDate: '30', // for MONTHLY events, this string represents the day within that month
             dateStart: '2019-01-01' // date to start evaluating and processing this account
+            // since it is before the global date start of all the projections, the cycle will start on 2019-09-17
             dateEnd: null, // null dateEnd represents an ongoing account
             modulus: 3,
             cycle: 1
@@ -298,11 +297,10 @@ const danielSan = {
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
             processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
-            dateStart: '2019-01-01',
+            syncDate: '2019-08-12',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
-            cycle: 1,
-            syncDate: '2019-08-12'
+            cycle: 1
         }
     ],
     events: [] // future balance projections stored here

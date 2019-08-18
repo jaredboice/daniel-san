@@ -279,36 +279,17 @@ const prepareRules = ({ danielSan, dateStartString }) => {
                     rule.modulus = 0;
                     rule.cycle = 0;
                 } else {
-                    let relevantDateStartString;
-                    // for the following conditions, there is no reason to modify the modulus cycle
-                    if (((dateStartString > rule.syncDate && dateStartString > rule.dateStart && rule.syncDate === rule.dateStart)) ||
-                        !(
-                            ((rule.syncDate === dateStartString) && (!rule.dateStart || (rule.dateStart && rule.dateStart <= dateStartString))) ||
-                            (rule.dateStart && (rule.syncDate === rule.dateStart && rule.dateStart <= dateStartString))
-                        )
-                    ) {
-                        if (rule.syncDate <= dateStartString || rule.syncDate <= rule.dateStart) {
-                            if (rule.dateStart && dateStartString <= rule.dateStart) {
-                                relevantDateStartString = rule.dateStart;
-                            } else {
-                                relevantDateStartString = dateStartString;
-                            }
+                    if (rule.dateStart) {
+                        rule.syncDate = null; // automatically nullify syncDate if there is a dateStart on the rule
+                    }
+                    // for the following condition, there is no reason to modify the modulus cycle
+                    // eslint-disable-next-line no-lonely-if
+                    if (rule.syncDate && rule.syncDate !== dateStartString) {
+                        // if the following condition is not true, modulation cannot continue
+                        if (rule.syncDate < dateStartString) {
                             cycleModulusUpToDate({
                                 rule,
-                                dateStartString: relevantDateStartString,
-                                globalDateStartString: dateStartString
-                            });
-                        } else {
-                            // note: else syncDate > start date
-                            if (rule.dateStart && dateStartString < rule.dateStart) {
-                                relevantDateStartString = rule.dateStart;
-                            } else {
-                                relevantDateStartString = dateStartString;
-                            }
-                            cycleModulusDownToDate({
-                                rule,
-                                dateStartString: relevantDateStartString,
-                                globalDateStartString: dateStartString
+                                dateStartString
                             });
                         }
                     }
@@ -321,7 +302,6 @@ const prepareRules = ({ danielSan, dateStartString }) => {
             }
         }
     });
-};
 
 const executeEvents = ({ danielSan }) => {
     danielSan.events.forEach((event, index) => {

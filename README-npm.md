@@ -62,8 +62,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
-            cycle: 1,
-            syncDate: '2019-08-12' // specific to "Modulus/Cycle" - read that section for instructions
+            cycle: 1
         },
         { // rule 3
             type: STANDARD_EVENT,
