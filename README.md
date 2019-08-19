@@ -168,7 +168,7 @@ const danielSan = {
             name: 'jasons birthday party',
             amount: -66.6,
             type: WEEKDAY_ON_DATE, // see "Event Types" - import from constants.js
-            frequency: FRIDAY,
+            weekday: FRIDAY, // for backwards compatibility, you can still use the frequency key instead of weekday (with same type of value)
             processDate: '13',
             dateStart: '2019-01-01',
             dateEnd: null
