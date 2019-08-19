@@ -279,18 +279,15 @@ const prepareRules = ({ danielSan, dateStartString }) => {
                     rule.modulus = 0;
                     rule.cycle = 0;
                 } else {
-                    // for the following condition, there is no reason to modify the modulus cycle
+                    // if the following condition is not true, there is no reason to modify the modulus cycle
                     // eslint-disable-next-line no-lonely-if
                     if (rule.syncDate && rule.syncDate !== dateStartString) {
-                        if (rule.dateStart && rule.dateStart > dateStartString) {
+                        if (rule.syncDate > dateStartString) {
+                            // pre-modulation is not necessary here since we will simply start the cycle in the future
+                            rule.dateStart = rule.syncDate; // future date
                             rule.syncDate = null;
-                        } else if (rule.dateStart && rule.dateStart < dateStartString){
-                            rule.syncDate = rule.dateStart;
-                        }
-                        // if rule.dateStart === dateStartString in this context, pre-modulation is not necessary since we shouldn't even be here
-                        // if the following condition is not true, modulation will not proceed
-                        // check again to see if syncDate exists since we might have nullified it above
-                        if (rule.syncDate && rule.syncDate < dateStartString) {
+                        } else {
+                            rule.dateStart = null;
                             cycleModulusUpToDate({
                                 rule,
                                 dateStartString
