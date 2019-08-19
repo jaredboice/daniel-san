@@ -265,11 +265,13 @@ const danielSan = {
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
 the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). The cycle fires on the modulus, and then it loops back around to 1.
-If your cycle/modulus isn't getting expected results, try modifying the cycle (a syncDate can also modify results as explained below). If you are confused, it will make sense after trying a couple different settings.
+If your cycle/modulus isn't getting expected results, try modifying the cycle (a syncDate can also modify results as explained below, which you should definitely use if you are apply the modulus/cycle attributes). If you are confused, it will make sense after trying a couple different settings.
 
 Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process execution date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that syncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the syncDate every so often will increase performance since this feature requires more computation.  
 
 Adding a dateStart with a syncDate is meaningless to daniel-san. You can, however, still start the cycle in the future. When you set a syncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the dateStart attribute for that rule so it will begin its forward-moving cycle at that time. When that same syncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
+
+The bottom line is this: if you are using modulus/cycle of anything other than 1/1 (which would equate to normal behavior for any STANDARD_EVENT), you should also be using a syncDate.
 
 
 ```javascript
