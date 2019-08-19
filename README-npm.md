@@ -40,7 +40,7 @@ const danielSan = {
     beginBalance: 1618.03,
     endBalance: null, // future end balance is stored here
     dateStart: '2019-03-20', // always required - inclusive (dateStart is included in the budget projection)
-    dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE - inclusive (dateEnd is included in the budget projection)
+    dateEnd: '2019-12-13', // always required - inclusive (dateEnd is included in the budget projection)
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',

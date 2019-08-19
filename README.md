@@ -35,10 +35,10 @@ const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = req
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
+    beginBalance: 1618.03, // always required
     endBalance: null, // future end balance is stored here
     dateStart: '2019-03-20', // always required - inclusive (dateStart is included in the budget projection)
-    dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE - inclusive (dateEnd is included in the budget projection)
+    dateEnd: '2019-12-13', // always required - inclusive (dateEnd is included in the budget projection)
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
@@ -70,7 +70,7 @@ const danielSan = {
             dateStart: '2019-01-01',
             dateEnd: null,
             exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENT)
-                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
+                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays (you could have also just imported the WEEKENDS constant and spreaded it within the array here)
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
         }
@@ -95,7 +95,7 @@ const craneKick = findBalance(danielSan);
 
 -   `type: 'STANDARD_EVENT'` _(see "Modulus/Cycle" to review an advanced feature exclusive to Standard Events)_
 -   `type: 'STANDARD_EVENT_ROUTINE'` _(same as above but does not need an amount field)_
--   `type: 'STANDARD_EVENT_REMINDER'` _(same as above but does not need an amount field)_
+-   `type: 'STANDARD_EVENT_REMINDER'` _(same as above but does not need an amount field, solely for semantic differentiation)_
 
 _includes all standard frequencies: 'ANNUALLY', 'MONTHLY', 'WEEKLY', 'DAILY', and 'ONCE'_
 
@@ -138,10 +138,10 @@ const danielSan = {
 
 -   `type: 'NTH_WEEKDAYS_OF_MONTH'` _(trigger an event process every 1st and 3rd Friday)_
 -   `type: 'NTH_WEEKDAYS_OF_MONTH_ROUTINE'` _(same as above but does not need an amount field)_
--   `type: 'NTH_WEEKDAYS_OF_MONTH_REMINDER'` _(same as above but does not need an amount field)_
+-   `type: 'NTH_WEEKDAYS_OF_MONTH_REMINDER'` _(same as above but does not need an amount field, solely for semantic differentiation)_
 -   `type: 'WEEKDAY_ON_DATE'` _(trigger an event process every Friday the 13th)_
 -   `type: 'WEEKDAY_ON_DATE_ROUTINE'` _(same as above but does not need an amount field)_
--   `type: 'WEEKDAY_ON_DATE_REMINDER'` _(same as above but does not need an amount field)_
+-   `type: 'WEEKDAY_ON_DATE_REMINDER'` _(same as above but does not need an amount field, solely for semantic differentiation)_
 
 _special events do not utilize the modulus/cycle/syncDate attributes_
 
@@ -183,10 +183,10 @@ const danielSan = {
 **Special Adjustments**
 
 -   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS'` _(prepay: move processing before specific weekdays)_
--   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES'` _(prepay: move processing before specific dates of the month)_
+-   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES' or simply 'PRE_PAY'` _(prepay: move processing before specific dates of the month with an optional weekdays attribute)_
 -   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS'` _(postpay: delay processing after specific weekdays)_
--   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES'` _(postpay: delay processing after specific dates of the month)_
--   `type: 'ADJUST_AMOUNT_ON_THESE_DATES'` _(add/subtract to/from the amount on a specific date)_
+-   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES' or simply 'POST_PAY'` _(postpay: delay processing after specific dates of the month with an optional weekdays attribute)_
+-   `type: 'ADJUST_AMOUNT_ON_THESE_DATES' or simply 'ADJUST_AMOUNT'` _(add/subtract to/from the amount on a specific date)_
 
 ```javascript
 const danielSan = {
@@ -196,6 +196,23 @@ const danielSan = {
     dateEnd: '2019-12-13',
     rules: [
         { // rule 1
+            name: 'le cinema',
+            amount: -23.57,
+            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
+            frequency: WEEKLY,
+            processDate: 0, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
+            dateStart: '2019-01-01',
+            dateEnd: null,
+            specialAdjustments: [
+                { // the moving of process dates should generally come last in the array of adjustments
+                    // the below type is synonymous with POST_PAY
+                    type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES, // to prepay before the specified dates, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES or the equivalent constant, PRE_PAY
+                    dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it rolls over them
+                    weekdays: [SATURDAY, SUNDAY] // weekdays are optional
+                }
+            ]
+        },
+        { // rule 2, this specific specialAdjustment example focuses on weekdays ONLY
             name: 'fortress mortgage',
             amount: -2357.11,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
@@ -209,22 +226,6 @@ const danielSan = {
                 { // the moving of process dates should generally come last in the array of adjustments
                     type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS, // to prepay before the specified days, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS
                     weekdays: [SATURDAY, SUNDAY] 
-                }
-            ]
-        },
-        { // rule 2
-            name: 'le cinema',
-            amount: -23.57,
-            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
-            frequency: WEEKLY,
-            processDate: 0, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
-            dateStart: '2019-01-01',
-            dateEnd: null,
-            specialAdjustments: [
-                { // the moving of process dates should generally come last in the array of adjustments
-                    type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES, // to prepay before the specified dates, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES
-                    dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it rolls over them
-                    weekdays: [SATURDAY, SUNDAY] // weekdays are optional
                 }
             ]
         },
@@ -265,21 +266,23 @@ const danielSan = {
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
 the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). The cycle fires on the modulus, and then it loops back around to 1.
-If your cycle/modulus isn't getting expected results, try modifying the cycle (a syncDate can also modify results as explained below, which you should definitely use if you are apply the modulus/cycle attributes). If you are confused, it will make sense after trying a couple different settings.
+If your cycle/modulus isn't getting expected results, try modifying the cycle (a syncDate can also modify results as explained below, which is used if you are applying the modulus/cycle attributes). If you are confused, it will make sense after trying a couple different settings.
+
+As of daniel-san version 6.1.0, adding a dateStart to any rule with modulus/cycle attributes will automatically assign that dateStart value to syncDate. So manuallly adding syncDate is no longer required. If the date is in the future, it will simply treat it as dateStart as explained below. Read on, however, to understand the functionality of syncDate.
 
 Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process execution date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that syncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the syncDate every so often will increase performance since this feature requires more computation.  
 
-Adding a dateStart with a syncDate is meaningless to daniel-san. You can, however, still start the cycle in the future. When you set a syncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the dateStart attribute for that rule so it will begin its forward-moving cycle at that time. When that same syncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
+Adding a dateStart WITH a syncDate is redundant to daniel-san. You can, however, still start the cycle in the future. When you set a syncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the dateStart attribute for that rule (while assigning null to syncDate) so it will begin its forward-moving cycle at that time. When that same syncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
 
-The bottom line is this: if you are using modulus/cycle of anything other than 1/1 (which would equate to normal behavior for any STANDARD_EVENT), you should also be using a syncDate.
+The bottom line is this: if you are using modulus/cycle values of anything other than 1/1 (which would equate to normal behavior for any STANDARD_EVENT), you should also be using a syncDate.
 
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
+    beginBalance: 1618.03, // always required
     endBalance: null, // future end balance is stored here
     dateStart: '2020-09-17', // always required
-    dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE
+    dateEnd: '2019-12-13', // always required
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
@@ -317,10 +320,10 @@ _(When making use of the modulus/cycle operators on STANDARD_EVENT, exclusion hi
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
+    beginBalance: 1618.03, // always required
     endBalance: null, // future end balance is stored here
     dateStart: '2019-03-20', // always required
-    dateEnd: '2019-12-13', // required except when using the STANDARD_EVENT with a frequency of ONCE
+    dateEnd: '2019-12-13', // always required
     rules: [
         { // rule 1
             type: STANDARD_EVENT,
@@ -416,8 +419,8 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the dateStart and dateEnd range, they can be displayed with this terminal type )_
 -   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
 -   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_
--   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS'` _(displays the sum of all positive event flows, and will also display discarded events if they exist)_
--   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS'` _(displays the sum of all negative event flows, and will also display discarded events if they exist)_
+-   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events if they exist)_
+-   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events if they exist)_
 -   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest endBalance values, ordered by value)_
 -   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest endBalance values, ordered by value)_
 -   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the endBalance values greater than 1000)_
@@ -540,7 +543,9 @@ const danielSan = {
 };
 ```
 
-**Useful Functions**
+**Useful Functions**  
+  
+You can always use any exported function found in the program by simply requiring it. However, a few such useful functions are shown below.
 
 ```javascript
 const {     
@@ -582,9 +587,12 @@ const {
     WEEKDAY_ON_DATE_REMINDER,
     MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES,
+    PRE_PAY,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
+    POST_PAY,
     ADJUST_AMOUNT_ON_THESE_DATES,
+    ADJUST_AMOUNT,
     ANNUALLY,
     MONTHLY,
     WEEKLY,
@@ -597,12 +605,15 @@ const {
     THURSDAY,
     FRIDAY,
     SATURDAY,
+    WEEKENDS, // an array containing [SATURDAY, SUNDAY]
     VERBOSE,
     CONCISE,
     SHY,
     STANDARD_TERMINAL_OUTPUT,
     DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS
+    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
+    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
+    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
     DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,

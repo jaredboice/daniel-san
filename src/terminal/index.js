@@ -327,7 +327,8 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             key !== 'specialAdjustments' &&
             key !== 'exclusions' &&
             key !== 'sortPriority' &&
-            key !== 'currencyConversion'
+            key !== 'currencyConversion' &&
+            key !== 'weekday'
         ) {
             if (key === 'name') {
                 // eslint-disable-next-line no-console
@@ -944,9 +945,11 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 displayRulesToRetire({ danielSan, terminalOptions });
                 break;
             case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
+            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
                 displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
                 break;
             case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
+            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
                 displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
                 break;
             case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:

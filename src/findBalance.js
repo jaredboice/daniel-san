@@ -25,9 +25,12 @@ const {
     WEEKDAY_ON_DATE_REMINDER,
     MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES,
+    PRE_PAY,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS,
     MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES,
+    POST_PAY,
     ADJUST_AMOUNT_ON_THESE_DATES,
+    ADJUST_AMOUNT,
     DAILY,
     ONCE,
     DISCOVERING_EVENT_TYPE,
@@ -93,6 +96,7 @@ const buildEvents = ({ danielSan, rules, date }) => {
                                 });
                                 break;
                             case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
+                            case PRE_PAY:
                                 moveThisProcessDateBeforeTheseDates({
                                     rule: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment
@@ -105,12 +109,14 @@ const buildEvents = ({ danielSan, rules, date }) => {
                                 });
                                 break;
                             case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
+                            case POST_PAY:
                                 moveThisProcessDateAfterTheseDates({
                                     rule: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment
                                 });
                                 break;
                             case ADJUST_AMOUNT_ON_THESE_DATES:
+                            case ADJUST_AMOUNT:
                                 adjustAmountOnTheseDates({
                                     rule: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment
@@ -279,6 +285,18 @@ const prepareRules = ({ danielSan, dateStartString }) => {
                     rule.modulus = 0;
                     rule.cycle = 0;
                 } else {
+                    // if we made it to this block of code then at least a modulus or cycle attribute is present
+                    //  check for input errors to modulus/cycle attributes
+                    if(!rule.modulus){
+                        rule.modulus = 1;
+                    }
+                    if(!rule.cycle){
+                        rule.cycle = 1;
+                    }
+                    // if there is a dateStart without a syncDate, then just assign it to the syncDate
+                    if(!rule.syncDate && rule.dateStart){
+                        rule.syncDate = rule.dateStart;
+                    }
                     // if the following condition is not true, there is no reason to modify the modulus cycle
                     // eslint-disable-next-line no-lonely-if
                     if (rule.syncDate && rule.syncDate !== dateStartString) {

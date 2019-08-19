@@ -1,5 +1,6 @@
 const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
+const { isUndefinedOrNull } = require('../utility/validation');
 const { streamForward } = require('../timeStream');
 const {
     getRelevantDateSegmentByFrequency,
@@ -144,6 +145,10 @@ const weekdayOnDate = ({ danielSan, rule, date }) => {
             frequency: WEEKLY,
             date
         });
+        // this block ensures backward compatibility when frequency was used for the weekday
+        if(!isUndefinedOrNull(rule.weekday)){
+            rule.frequency = rule.weekday;
+        }
         if (rule.processDate === thisProcessDate && rule.frequency === thisWeekday) {
             processPhase = EXECUTING_RULE_INSERTION;
             processPhase = exclusionsPhase({ rule, date, processPhase });
