@@ -628,6 +628,6 @@ const {
     DISPLAY_TIME_EVENTS,
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
-    DISPLAY_RULES_TO_RETIRE,
+    DISPLAY_RULES_TO_RETIRE
 } = require('daniel-san/constants');
 ```

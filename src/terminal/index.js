@@ -32,7 +32,9 @@ const {
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
     DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
+    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
     DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
+    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
     DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
     DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
@@ -949,7 +951,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
                 displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
                 break;
             case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
-            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
+            case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
                 displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
                 break;
             case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
