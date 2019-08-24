@@ -205,10 +205,10 @@ const danielSan = {
             dateEnd: null,
             specialAdjustments: [
                 { // the moving of process dates should generally come last in the array of adjustments
-                    // the below type is synonymous with POST_PAY
-                    type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES, // to prepay before the specified dates, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES or the equivalent constant, PRE_PAY
-                    dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it rolls over them
-                    weekdays: [SATURDAY, SUNDAY] // weekdays are optional
+                    // the below type is synonymous with MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES
+                    type: PRE_PAY, // to postpay after the specified dates, use POST_PAY or the equivalent constant, MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES 
+                    dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it will roll back to precede it
+                    weekdays: [SATURDAY, SUNDAY] // weekdays are optional for both PRE_PAY and POST_PAY. If falling on a provided weekday, it will roll back to precede it
                 }
             ]
         },
@@ -242,7 +242,7 @@ const danielSan = {
             dateEnd: null, // null dateEnd represents an ongoing account
             specialAdjustments: [
                 { 
-                    type: ADJUST_AMOUNT_ON_THESE_DATES,
+                    type: ADJUST_AMOUNT,
                     dates: [
                         '2019-09-17', 
                         '2019-12-25'
@@ -259,7 +259,7 @@ const danielSan = {
 };fs
 ```
 
-## Modulus/Cycle _(only for STANDARD_EVENT)_
+## Modulus/Cycle _(only for STANDARD_EVENT, STANDARD_EVENT_ROUTINE and STANDARD_EVENT_REMINDER)_
 
 **Custom BIWEEKLY / BIMONTHLY Event Types**
 
