@@ -67,7 +67,7 @@ const retireRules = ({ danielSan }) => {
                 danielSan.rules.splice(danielSan.retiredRuleIndices[looperIndex], 1);
                 indexOffset++;
             }
-            danielSan.retiredRuleIndices = [];
+            danielSan.retiredRuleIndices = []; // reset retiredRuleIndices
         }
     } catch (err) {
         throw errorDisc(err, 'error in retireRules()', {

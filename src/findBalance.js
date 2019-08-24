@@ -129,7 +129,7 @@ const buildEvents = ({ danielSan, rules, date }) => {
                 }
                 processPhase = RETIRING_RULES;
                 flagRuleForRetirement({ danielSan, rule, date, index });
-                retireRules({ danielSan });
+                retireRules({ danielSan }); // TODO: should we move this outside of the loop ? this reusable funciton can retire multiple rules, but in this case it only retires the current rule
             }
         });
     } catch (err) {
