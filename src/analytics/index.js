@@ -138,18 +138,8 @@ const sumAllPositiveEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
         if (!isUndefinedOrNull(event.amount) && event.amount > 0) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
-            const convertedAmount =
-                danielSan.currencySymbol &&
-                event.currencySymbol &&
-                danielSan.currencySymbol !== event.currencySymbol
-                    ? danielSan.currencyConversion({
-                        amount: event.amount,
-                        inputSymbol: event.currencySymbol,
-                        outputSymbol: danielSan.currencySymbol
-                    })
-                    : event.amount;
-            sum += convertedAmount;
-        }
+            sum += event.convertedAmount; // note: every rule has its amount converted to conversionAmount by default
+        } // note continued: if there is no actual currency conversion applied, currencyAmount is assigned the same value as the amount field
     });
     return sum;
 };
@@ -158,18 +148,8 @@ const sumAllNegativeEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
         if (!isUndefinedOrNull(event.amount) && event.amount < 0) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
-            const convertedAmount =
-                danielSan.currencySymbol &&
-                event.currencySymbol &&
-                danielSan.currencySymbol !== event.currencySymbol
-                    ? danielSan.currencyConversion({
-                        amount: event.amount,
-                        inputSymbol: event.currencySymbol,
-                        outputSymbol: danielSan.currencySymbol
-                    })
-                    : event.amount;
-            sum += convertedAmount;
-        }
+            sum += event.convertedAmount; // note: every rule has its amount converted to conversionAmount by default
+        }// note continued: if there is no actual currency conversion applied, currencyAmount is assigned the same value as the amount field
     });
     return sum;
 };

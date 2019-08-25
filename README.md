@@ -188,6 +188,8 @@ const danielSan = {
 -   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES' or simply 'POST_PAY'` _(postpay: delay processing after specific dates of the month with an optional weekdays attribute)_
 -   `type: 'ADJUST_AMOUNT_ON_THESE_DATES' or simply 'ADJUST_AMOUNT'` _(add/subtract to/from the amount on a specific date)_
 
+_note: if you are applying a multi-currency conversion function, ADJUST_AMOUNT executes in the context of itself with regards to its own currencySymbol (no currency conversion)_ 
+
 ```javascript
 const danielSan = {
     beginBalance: 1618.03,
@@ -408,6 +410,9 @@ const danielSan = {
 
 **Logging Results to the Command-Line**
 
+_note: the terminal options are executed in the context of events (not rules), with exception to DISPLAY_RULES_TO_RETIRE_
+  
+
 ```javascript
 // passing a non-null value for error will log it to the console and bypass all other terminal functionality
 terminal({ danielSan, terminalOptions, error });
@@ -417,7 +422,7 @@ terminal({ danielSan, terminalOptions, error });
 
 -   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy, and will also display discarded events if they exist)_
 -   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the dateStart and dateEnd range, they can be displayed with this terminal type )_
--   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
+-   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical endBalance snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
 -   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_
 -   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events if they exist)_
 -   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events if they exist)_
@@ -545,7 +550,7 @@ const danielSan = {
 
 **Useful Functions**  
   
-You can always use any exported function found in the program by simply requiring it. However, a few such useful functions are shown below.
+You can always use any exported function found in the program by simply requiring it. However, a few such useful functions are shown below. The analytic functions, with exception to findRulesToRetire, are executed on events. If using multi-currency conversion, the analysis takes place in the context of the global currencySymbol at the root of the danielSan object.
 
 ```javascript
 const {     
