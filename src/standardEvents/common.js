@@ -1,4 +1,4 @@
-const moment = ('moment');
+const moment = require('moment');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
 const { errorDisc } = require('../utility/errorHandling');
