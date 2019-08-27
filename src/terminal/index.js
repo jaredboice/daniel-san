@@ -870,7 +870,11 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
         // eslint-disable-next-line no-console
         lineHeading(' something bad happened and a lot of robots died ');
         // eslint-disable-next-line no-console
-        console.log(error);
+        Object.entries(error).forEach(([key, value]) => {
+            console.log(`### ${key}`); // eslint-disable-line no-console
+            console.log(`${JSON.stringify(value, null, 4)}`); // eslint-disable-line no-console
+            console.log('\n'); // eslint-disable-line no-console
+        });
     } else if (danielSan) {
         try {
             if (!terminalOptions) terminalOptions = { type: STANDARD_TERMINAL_OUTPUT, mode: CONCISE };

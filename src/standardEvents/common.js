@@ -1,4 +1,4 @@
-let moment = 'moment';
+const moment = ('moment');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
 const { errorDisc } = require('../utility/errorHandling');
@@ -86,9 +86,6 @@ const _28DayCondition = ({ processDate, date, frequency }) => {
             frequency: MONTHLY, // we are going to compare dates like this '2019-06-28' === '2019-06-31'
             date
         });
-        if(isUndefinedOrNull(moment)){ // todo or note: for some reason, moment is not defined here
-            moment = require('moment');
-        }
         const fullDateOfLastDayOfMonth = moment(date).endOf('month');
         const dateStringOfLastDayOfMonth = getRelevantDateSegmentByFrequency({
             frequency: MONTHLY,
