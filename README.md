@@ -182,13 +182,14 @@ const danielSan = {
 
 **Special Adjustments**
 
+When using timezones or multi-currency conversions, special adjustments take place in the context of the rule.
+
 -   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS'` _(prepay: move processing before specific weekdays)_
 -   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES' or simply 'PRE_PAY'` _(prepay: move processing before specific dates of the month with an optional weekdays attribute)_
 -   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS'` _(postpay: delay processing after specific weekdays)_
 -   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES' or simply 'POST_PAY'` _(postpay: delay processing after specific dates of the month with an optional weekdays attribute)_
 -   `type: 'ADJUST_AMOUNT_ON_THESE_DATES' or simply 'ADJUST_AMOUNT'` _(add/subtract to/from the amount on a specific date)_
 
-_note: if you are applying a multi-currency conversion function, ADJUST_AMOUNT executes in the context of itself with regards to its own currencySymbol (no currency conversion)_ 
 
 ```javascript
 const danielSan = {
