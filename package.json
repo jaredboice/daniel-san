@@ -1,7 +1,7 @@
 {
     "name": "daniel-san",
     "author": "jared boice",
-    "description": "daniel-san is a node-based budget-projection engine that helps your finances find balance. The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay",
+    "description": "maximize your potential with daniel-san, a node-based budget-projection engine that helps your routines and finances find balance. The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. TimeZones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay",
     "version": "6.2.4",
     "license": "MIT",
     "repository": {

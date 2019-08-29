@@ -12,7 +12,7 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-St
 
 ## Description
 
-**Daniel-San** is a node-based budget-projection engine that helps your finances find balance.  The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. And special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. TimeZones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
 
 ## Breaking Change in v3.0
 In v3.0, the currencyConversion function parameters have changed from currentSymbol and futureSymbol to inputSymbol and outputSymbol, respectively. Because naming things is hard.
@@ -406,6 +406,34 @@ const danielSan = {
 };
 ```
 
+## Time Zones
+
+**TimeZone Props**
+
+```javascript
+const danielSan = {
+    beginBalance: 1618.03,
+    endBalance: null,
+    dateStart: '2019-03-20',
+    dateEnd: '2019-12-13',
+    timeZone: 'America_New_York', // the timezone that every rule will be converted to; see moment-timezone for a complete list timezones
+    timeZoneType: LOCAL, // LOCAL or UTC are available to be imported as constants
+    rules: [
+        { // rule 1
+            type: STANDARD_EVENT,
+            frequency: DAILY,
+            name: 'vacation lunch',
+            amount: -20.00,
+            dateStart: '2019-03-20',
+            dateEnd: '2019-04-01',
+            timeZone: 'Greenwich', // run the following for a list of timezones: const moment = require('moment-timezone; moment.tz.names().forEach(name => console.log(name));
+            timeZoneType: UTC
+        }
+    ],
+    events: [] // future balance projections stored here
+};
+```
+
 ## Terminal
 
 **Logging Results to the Command-Line**
@@ -581,6 +609,11 @@ const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubs
 
 ```javascript
 const { 
+    UTC,
+    LOCAL,
+    GREENWICH,
+    AM,
+    PM,
     STANDARD_EVENT,
     STANDARD_EVENT_ROUTINE,
     STANDARD_EVENT_REMINDER,
