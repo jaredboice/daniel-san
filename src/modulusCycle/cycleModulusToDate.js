@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { createTimeZone } = require('../timeZone');
 const { cycleModulusUp, cycleModulusDown } = require('./index.js');
 const { streamForward, streamBackward } = require('../timeStream');
 const { isUndefinedOrNull } = require('../utility/validation');
@@ -10,7 +11,7 @@ const {
 
 const cycleModulusUpToDate = ({ rule, dateStartString }) => {
     // note: for when syncDate input is less than dateStartString
-    let looperDate = moment(rule.syncDate, DATE_FORMAT_STRING);
+    let looperDate = createTimeZone({ timeZone: rule.timeZone, timeZoneType: rule.timeZoneType, dateString: rule.syncDate });
     let looperDateFormatted = looperDate.format(DATE_FORMAT_STRING);
     switch (rule.frequency) {
     case DAILY:

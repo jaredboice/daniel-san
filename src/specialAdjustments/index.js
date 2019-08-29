@@ -1,6 +1,7 @@
 const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
 const { streamForward, streamBackward } = require('../timeStream');
+const { createTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const {
     DATE_FORMAT_STRING,
@@ -19,21 +20,21 @@ const {
     ];
 
 */
-const moveThisProcessDateBeforeTheseWeekdays = ({ rule, specialAdjustment }) => {
+const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment }) => {
     let processPhase;
     try {
         const { weekdays } = specialAdjustment;
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         let thisWeekday = getRelevantDateSegmentByFrequency({
             frequency: WEEKLY,
-            date: moment(rule.eventDate, DATE_FORMAT_STRING)
+            date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
         });
         while (weekdays.includes(thisWeekday)) {
-            const looperDate = streamBackward(moment(rule.eventDate, DATE_FORMAT_STRING));
-            rule.eventDate = looperDate.format(DATE_FORMAT_STRING);
+            const looperDate = streamBackward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
+            event.eventDate = looperDate.format(DATE_FORMAT_STRING);
             thisWeekday = getRelevantDateSegmentByFrequency({
                 frequency: WEEKLY,
-                date: moment(rule.eventDate, DATE_FORMAT_STRING)
+                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
             });
             processPhase = MODIFIED;
         }
@@ -41,7 +42,7 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ rule, specialAdjustment }) => 
     } catch (err) {
         throw errorDisc(err, 'error in moveThisProcessDateBeforeTheseWeekdays()', {
             processPhase,
-            rule,
+            event,
             specialAdjustment
         });
     }
@@ -57,21 +58,21 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ rule, specialAdjustment }) => 
     ];
 
 */
-const moveThisProcessDateAfterTheseWeekdays = ({ rule, specialAdjustment }) => {
+const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment }) => {
     let processPhase;
     try {
         const { weekdays } = specialAdjustment;
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         let thisWeekday = getRelevantDateSegmentByFrequency({
             frequency: WEEKLY,
-            date: moment(rule.eventDate, DATE_FORMAT_STRING)
+            date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
         });
         while (weekdays.includes(thisWeekday)) {
-            const looperDate = streamForward(moment(rule.eventDate, DATE_FORMAT_STRING));
-            rule.eventDate = looperDate.format(DATE_FORMAT_STRING);
+            const looperDate = streamForward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
+            event.eventDate = looperDate.format(DATE_FORMAT_STRING);
             thisWeekday = getRelevantDateSegmentByFrequency({
                 frequency: WEEKLY,
-                date: moment(rule.eventDate, DATE_FORMAT_STRING)
+                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
             });
             processPhase = MODIFIED;
         }
@@ -79,7 +80,7 @@ const moveThisProcessDateAfterTheseWeekdays = ({ rule, specialAdjustment }) => {
     } catch (err) {
         throw errorDisc(err, 'error in moveThisProcessDateAfterTheseWeekdays()', {
             processPhase,
-            rule,
+            event,
             specialAdjustment
         });
     }
@@ -95,7 +96,7 @@ const moveThisProcessDateAfterTheseWeekdays = ({ rule, specialAdjustment }) => {
         ]
 
 */
-const moveThisProcessDateBeforeTheseDates = ({ rule, specialAdjustment }) => {
+const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment }) => {
     let processPhase;
     try {
         const { dates } = specialAdjustment;
@@ -103,31 +104,31 @@ const moveThisProcessDateBeforeTheseDates = ({ rule, specialAdjustment }) => {
         if (specialAdjustment.dates) {
             let currentProcessDate = getRelevantDateSegmentByFrequency({
                 frequency: ONCE,
-                date: moment(rule.eventDate, DATE_FORMAT_STRING)
+                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
             });
             while (dates.includes(currentProcessDate)) {
-                const looperDate = streamBackward(moment(rule.eventDate, DATE_FORMAT_STRING));
-                rule.eventDate = looperDate.format(DATE_FORMAT_STRING);
+                const looperDate = streamBackward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
+                event.eventDate = looperDate.format(DATE_FORMAT_STRING);
                 currentProcessDate = getRelevantDateSegmentByFrequency({
                     frequency: ONCE,
-                    date: moment(rule.eventDate, DATE_FORMAT_STRING)
+                    date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
                 });
             }
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateBeforeTheseWeekdays({
-                rule,
+                event,
                 specialAdjustment
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateBeforeTheseDates({ rule, specialAdjustment });
+                processPhase = moveThisProcessDateBeforeTheseDates({ event, specialAdjustment });
             }
         }
         return processPhase;
     } catch (err) {
         throw errorDisc(err, 'error in moveThisProcessDateBeforeTheseDates()', {
             processPhase,
-            rule,
+            event,
             specialAdjustment
         });
     }
@@ -143,7 +144,7 @@ const moveThisProcessDateBeforeTheseDates = ({ rule, specialAdjustment }) => {
         ]
 
 */
-const moveThisProcessDateAfterTheseDates = ({ rule, specialAdjustment }) => {
+const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment }) => {
     let processPhase;
     try {
         const { dates } = specialAdjustment;
@@ -151,31 +152,31 @@ const moveThisProcessDateAfterTheseDates = ({ rule, specialAdjustment }) => {
         if (specialAdjustment.dates) {
             let currentProcessDate = getRelevantDateSegmentByFrequency({
                 frequency: ONCE,
-                date: moment(rule.eventDate, DATE_FORMAT_STRING)
+                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
             });
             while (dates.includes(currentProcessDate)) {
-                const looperDate = streamForward(moment(rule.eventDate, DATE_FORMAT_STRING));
-                rule.eventDate = looperDate.format(DATE_FORMAT_STRING);
+                const looperDate = streamForward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
+                event.eventDate = looperDate.format(DATE_FORMAT_STRING);
                 currentProcessDate = getRelevantDateSegmentByFrequency({
                     frequency: ONCE,
-                    date: moment(rule.eventDate, DATE_FORMAT_STRING)
+                    date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
                 });
             }
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateAfterTheseWeekdays({
-                rule,
+                event,
                 specialAdjustment
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateAfterTheseDates({ rule, specialAdjustment });
+                processPhase = moveThisProcessDateAfterTheseDates({ event, specialAdjustment });
             }
         }
         return processPhase;
     } catch (err) {
         throw errorDisc(err, 'error in moveThisProcessDateAfterTheseDates()', {
             processPhase,
-            rule,
+            event,
             specialAdjustment
         });
     }
@@ -197,12 +198,12 @@ const moveThisProcessDateAfterTheseDates = ({ rule, specialAdjustment }) => {
         }
     ]
 */
-const adjustAmountOnTheseDates = ({ rule, specialAdjustment }) => {
+const adjustAmountOnTheseDates = ({ event, specialAdjustment }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     try {
         specialAdjustment.dates.forEach((looperDate, looperDateIndex) => {
-            if (looperDate === rule.eventDate && rule.amount) {
-                rule.amount += specialAdjustment.amounts[looperDateIndex];
+            if (looperDate === event.eventDate && event.amount) {
+                event.amount += specialAdjustment.amounts[looperDateIndex];
             }
             processPhase = MODIFIED;
         });
@@ -210,7 +211,7 @@ const adjustAmountOnTheseDates = ({ rule, specialAdjustment }) => {
     } catch (err) {
         throw errorDisc(err, 'error in adjustAmountOnTheseDates()', {
             processPhase,
-            rule,
+            event,
             specialAdjustment
         });
     }

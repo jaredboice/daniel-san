@@ -418,23 +418,23 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
 
 const eventsLogger = ({ events, terminalOptions, currencySymbol }) => {
     switch (terminalOptions.mode) {
-    case VERBOSE:
-        events.forEach((event) => {
-            verboseOutput({ event, terminalOptions, currencySymbol });
-        });
-        break;
-    case CONCISE:
-        events.forEach((event) => {
-            conciseOutput({ event, terminalOptions, currencySymbol });
-        });
-        break;
-    case SHY:
-        events.forEach((event) => {
-            shyOutput({ event, terminalOptions, currencySymbol });
-        });
-        break;
-    default:
-        break;
+        case VERBOSE:
+            events.forEach((event) => {
+                verboseOutput({ event, terminalOptions, currencySymbol });
+            });
+            break;
+        case CONCISE:
+            events.forEach((event) => {
+                conciseOutput({ event, terminalOptions, currencySymbol });
+            });
+            break;
+        case SHY:
+            events.forEach((event) => {
+                shyOutput({ event, terminalOptions, currencySymbol });
+            });
+            break;
+        default:
+            break;
     }
 };
 
@@ -458,16 +458,25 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrEndBal
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
-    lineHeading(
-        ` ${beginOrEndBalanceKey}: ${formattingFunction(danielSan[beginOrEndBalanceKey], {
-            minIntegerDigits,
-            minDecimalDigits,
-            maxDecimalDigits,
-            locale,
-            style,
-            currency: danielSan.currencySymbol || CURRENCY_DEFAULT
-        })} `
-    );
+    if (!isUndefinedOrNull(danielSan[beginOrEndBalanceKey])) {
+        lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
+        lineHeading(
+            ` ${beginOrEndBalanceKey}: ${formattingFunction(danielSan[beginOrEndBalanceKey], {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+            })} `
+        );
+    }
+    if (!isUndefinedOrNull(danielSan.timeZoneType)) {
+        lineHeading(` timeZoneType: ${danielSan.timeZoneType} `);
+    }
+    if (!isUndefinedOrNull(danielSan.timeZone)) {
+        lineHeading(` timeZone: ${danielSan.timeZone} `);
+    }
     lineHeading(` dateStart: ${danielSan.dateStart} `);
     lineHeading(` dateEnd:   ${danielSan.dateEnd} `);
     lineSeparator(2);
@@ -592,7 +601,6 @@ const showSumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
     terminalBoundary(2);
     showDiscardedEvents({ danielSan, terminalOptions });
 };
-
 
 const showSumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
     lineHeading(' begin showSumOfAllNegativeEventAmounts ');
@@ -865,14 +873,18 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
     terminalBoundary(3);
 };
 
-const terminal = ({ danielSan, terminalOptions = {}, error }) => {
+const terminal = ({ danielSan, terminalOptions = {}, error = null }) => {
     if (error) {
         // eslint-disable-next-line no-console
         lineHeading(' something bad happened and a lot of robots died ');
         // eslint-disable-next-line no-console
         Object.entries(error).forEach(([key, value]) => {
             console.log(`### ${key}`); // eslint-disable-line no-console
-            console.log(`${JSON.stringify(value, null, 4)}`); // eslint-disable-line no-console
+            if (typeof key === 'object') {
+                console.log(`${JSON.stringify(value, null, 4)}`); // eslint-disable-line no-console
+            } else {
+                console.log(value); // eslint-disable-line no-console
+            }
             console.log('\n'); // eslint-disable-line no-console
         });
     } else if (danielSan) {
@@ -883,95 +895,95 @@ const terminal = ({ danielSan, terminalOptions = {}, error }) => {
             // eslint-disable-next-line no-lonely-if
             if (!terminalOptions.type) terminalOptions.type = STANDARD_TERMINAL_OUTPUT;
             switch (terminalOptions.type) {
-            case DISPLAY_EVENTS:
-            case STANDARD_TERMINAL_OUTPUT:
-                standardTerminalOutput({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_EVENTS_BY_GROUP:
-            case DISPLAY_EVENTS_BY_GROUPS:
-                displayEventsByPropertyKeyAndValues({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'group'
-                });
-                break;
-            case DISPLAY_EVENTS_BY_NAME:
-            case DISPLAY_EVENTS_BY_NAMES:
-                displayEventsByPropertyKeyAndValues({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'name'
-                });
-                break;
-            case DISPLAY_EVENTS_BY_TYPE:
-            case DISPLAY_EVENTS_BY_TYPES:
-                displayEventsByPropertyKeyAndValues({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'type'
-                });
-                break;
-            case DISPLAY_CRITICAL_SNAPSHOTS:
-                displayCriticalSnapshots({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_DISCARDED_EVENTS:
-                displayDiscardedEvents({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_IMPORTANT_EVENTS:
-                displayEventsWithProperty({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'important'
-                });
-                break;
-            case DISPLAY_TIME_EVENTS:
-                displayEventsWithProperty({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'timeStart'
-                });
-                break;
-            case DISPLAY_ROUTINE_EVENTS:
-                displayEventsWithPropertyKeyContainingSubstring({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'type',
-                    substring: 'ROUTINE'
-                });
-                break;
-            case DISPLAY_REMINDER_EVENTS:
-                displayEventsWithPropertyKeyContainingSubstring({
-                    danielSan,
-                    terminalOptions,
-                    propertyKey: 'type',
-                    substring: 'REMINDER'
-                });
-                break;
-            case DISPLAY_RULES_TO_RETIRE:
-                displayRulesToRetire({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
-            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
-                displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
-            case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
-                displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
-                displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
-                displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
-                displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
-                break;
-            case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
-                displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
-                break;
-            default:
-                break;
+                case DISPLAY_EVENTS:
+                case STANDARD_TERMINAL_OUTPUT:
+                    standardTerminalOutput({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_EVENTS_BY_GROUP:
+                case DISPLAY_EVENTS_BY_GROUPS:
+                    displayEventsByPropertyKeyAndValues({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'group'
+                    });
+                    break;
+                case DISPLAY_EVENTS_BY_NAME:
+                case DISPLAY_EVENTS_BY_NAMES:
+                    displayEventsByPropertyKeyAndValues({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'name'
+                    });
+                    break;
+                case DISPLAY_EVENTS_BY_TYPE:
+                case DISPLAY_EVENTS_BY_TYPES:
+                    displayEventsByPropertyKeyAndValues({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'type'
+                    });
+                    break;
+                case DISPLAY_CRITICAL_SNAPSHOTS:
+                    displayCriticalSnapshots({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_DISCARDED_EVENTS:
+                    displayDiscardedEvents({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_IMPORTANT_EVENTS:
+                    displayEventsWithProperty({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'important'
+                    });
+                    break;
+                case DISPLAY_TIME_EVENTS:
+                    displayEventsWithProperty({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'timeStart'
+                    });
+                    break;
+                case DISPLAY_ROUTINE_EVENTS:
+                    displayEventsWithPropertyKeyContainingSubstring({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'type',
+                        substring: 'ROUTINE'
+                    });
+                    break;
+                case DISPLAY_REMINDER_EVENTS:
+                    displayEventsWithPropertyKeyContainingSubstring({
+                        danielSan,
+                        terminalOptions,
+                        propertyKey: 'type',
+                        substring: 'REMINDER'
+                    });
+                    break;
+                case DISPLAY_RULES_TO_RETIRE:
+                    displayRulesToRetire({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
+                case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
+                    displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
+                case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
+                    displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
+                    displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                    displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
+                    displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
+                    break;
+                case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
+                    displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
+                    break;
+                default:
+                    break;
             }
             lineSeparator(2);
             standardTerminalSubheader({ danielSan, terminalOptions }, 'endBalance');

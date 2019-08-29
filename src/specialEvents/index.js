@@ -2,6 +2,7 @@ const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { streamForward } = require('../timeStream');
+const { createTimeZone } = require('../timeZone');
 const {
     getRelevantDateSegmentByFrequency,
     exclusionsPhase
@@ -27,7 +28,7 @@ const {
     0 = Sunday
     6 = Saturday
 */
-const findAllWeekdaysInTheMonth = (date) => {
+const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
     try {
         const monthlyWeekdayConstruct = {
             0: [],
@@ -38,8 +39,8 @@ const findAllWeekdaysInTheMonth = (date) => {
             5: [],
             6: []
         };
-        const startOfMonth = moment(date, DATE_FORMAT_STRING).startOf('month');
-        const endOfMonth = moment(date, DATE_FORMAT_STRING).endOf('month');
+        const startOfMonth = createTimeZone({ timeZone, timeZoneType, date }).startOf('month');
+        const endOfMonth = createTimeZone({ timeZone, timeZoneType, date }).endOf('month');
 
         const processThisLooperDate = (thisLooperDate) => {
             try {
@@ -101,7 +102,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
     let processPhase = EVALUATING_RULE_INSERTION;
     try {
         const nthProcessDays = rule.frequency;
-        const weekdaysInMonth = findAllWeekdaysInTheMonth(date);
+        const weekdaysInMonth = findAllWeekdaysInTheMonth({ date, timeZone: rule.timeZone, timeZoneType: rule.timeZoneType });
         nthProcessDays.forEach((nthProcessDay) => {
             const objectKey = nthProcessDay.weekday;
             const sizeOfObjectKeyArray = weekdaysInMonth[objectKey].length;

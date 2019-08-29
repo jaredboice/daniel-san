@@ -26,7 +26,7 @@ const buildStandardEvent = ({ danielSan, rule, date }) => {
             rule.frequency === DAILY ||
             isUndefinedOrNull(rule.processDate) ||
             (rule.processDate === relevantDateSegmentByFrequency ||
-                _28DayCondition({ processDate: rule.processDate, date, frequency: rule.frequency }))
+                _28DayCondition({ processDate: rule.processDate, date, frequency: rule.frequency, timeZone: rule.timeZone, timeZoneType: rule.timeZoneType }))
         ) {
             processPhase = exclusionsPhase({ rule, date, processPhase });
             processPhase = modulusPhase({ rule, processPhase });

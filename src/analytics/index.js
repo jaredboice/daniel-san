@@ -1,5 +1,7 @@
+const { DATE_FORMAT_STRING, ONCE } = require('../constants');
+const { createTimeZone, convertTimeZone } = require('../timeZone');
+const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const { isUndefinedOrNull } = require('../utility/validation');
-const { DATE_FORMAT_STRING } = require('../constants');
 
 const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0 }) => {
     let criticalSnapshots = null;
@@ -11,14 +13,46 @@ const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0 }) => {
     return criticalSnapshots;
 };
 
-// finds rules with end dates that are less than the beginning date range of the budget projection
+// finds rules with end dates that are less than the beginning date range of the budget projection and rules with beginning dates that are greater than the projection end date
 const findRulesToRetire = ({ danielSan }) => {
-    const { dateStart } = danielSan;
+    const { dateStart, dateEnd, timeStart } = danielSan;
     // eslint-disable-next-line array-callback-return
-    const rulesToRetire = danielSan.rules.filter((rule) => {
-        if (!isUndefinedOrNull(rule.dateEnd) && dateStart.format(DATE_FORMAT_STRING) > rule.dateEnd) {
-            rulesToRetire.push(rule);
-        }
+    const rulesToRetire = danielSan.rules.filter((rule, index) => {
+        const dateToStart = createTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.TimeZoneType,
+            dateString: dateStart,
+            timeString: timeStart
+        });
+        const convertedDateToStart = convertTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.timeZoneType,
+            date: dateToStart,
+            timeString: danielSan.timeStart
+        }).date;
+        const convertedDateStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
+
+        const dateToEnd = createTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.TimeZoneType,
+            dateString: dateEnd,
+            timeString: timeStart
+        });
+        const convertedDateToEnd = convertTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.timeZoneType,
+            date: dateToEnd,
+            timeString: danielSan.timeStart
+        }).date;
+        const convertedDateEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
+
+        if (
+            (!isUndefinedOrNull(rule.dateEnd) && rule.dateEnd < convertedDateStartString) ||
+            (!isUndefinedOrNull(rule.dateStart) && rule.dateStart > convertedDateEndString)
+        ) {
+            rule.ruleIndex = index;
+            return rule;
+        } 
     });
     if (rulesToRetire.length > 0) {
         return rulesToRetire;
@@ -137,9 +171,18 @@ const findGreatestValueSnapshots = ({
 const sumAllPositiveEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
-        if (!isUndefinedOrNull(event.amount) && event.amount > 0) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
-            sum += event.convertedAmount; // note: every rule has its amount converted to conversionAmount by default
-        } // note continued: if there is no actual currency conversion applied, currencyAmount is assigned the same value as the amount field
+        if (!isUndefinedOrNull(event.amount) && event.amount > 0) {
+            // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+            const convertedAmount =
+                danielSan.currencySymbol && event.currencySymbol && danielSan.currencySymbol !== event.currencySymbol
+                    ? danielSan.currencyConversion({
+                          amount: event.amount,
+                          inputSymbol: event.currencySymbol,
+                          outputSymbol: danielSan.currencySymbol
+                      })
+                    : event.amount;
+            sum += convertedAmount;
+        }
     });
     return sum;
 };
@@ -147,9 +190,18 @@ const sumAllPositiveEventAmounts = (danielSan) => {
 const sumAllNegativeEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
-        if (!isUndefinedOrNull(event.amount) && event.amount < 0) { // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
-            sum += event.convertedAmount; // note: every rule has its amount converted to conversionAmount by default
-        }// note continued: if there is no actual currency conversion applied, currencyAmount is assigned the same value as the amount field
+        if (!isUndefinedOrNull(event.amount) && event.amount < 0) {
+            // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+            const convertedAmount =
+                danielSan.currencySymbol && event.currencySymbol && danielSan.currencySymbol !== event.currencySymbol
+                    ? danielSan.currencyConversion({
+                          amount: event.amount,
+                          inputSymbol: event.currencySymbol,
+                          outputSymbol: danielSan.currencySymbol
+                      })
+                    : event.amount;
+            sum += convertedAmount;
+        }
     });
     return sum;
 };

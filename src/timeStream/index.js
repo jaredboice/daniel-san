@@ -1,4 +1,5 @@
 const moment = require('moment');
+const { createTimeZone } = require('../timeZone');
 const { DATE_FORMAT_STRING } = require('../constants');
 
 const streamForward = (momentDate) => {
@@ -10,12 +11,12 @@ const streamBackward = (momentDate) => {
 };
 
 class TimeStream {
-    constructor({ dateStartString, dateEndString }) {
+    constructor({ dateStartString, dateEndString, timeZone = null, timeZoneType = null, timeString = null }) {
         this.dateStartString = dateStartString;
         this.dateEndString = dateEndString;
-        this.dateStart = moment(dateStartString, DATE_FORMAT_STRING);
-        this.dateEnd = moment(dateEndString, DATE_FORMAT_STRING);
-        this.looperDate = moment(dateStartString, DATE_FORMAT_STRING);
+        this.dateStart = createTimeZone({ timeZone, timeZoneType, dateString: dateStartString, timeString });
+        this.dateEnd = createTimeZone({ timeZone, timeZoneType, dateString: dateEndString, timeString });
+        this.looperDate = createTimeZone({ timeZone, timeZoneType, dateString: dateStartString, timeString });
     }
 
     stream1DayForward() {

@@ -1,10 +1,20 @@
 const { decimalFormatterStandard } = require('./utility/formatting');
 
 const DATE_DELIMITER = '-';
+const TIME_DELIMITER = ':';
+const DATE_TIME_DELIMITER = 'T';
 
 const appConstants = {
     DATE_DELIMITER,
+    TIME_DELIMITER,
+    DATE_TIME_DELIMITER,
     DATE_FORMAT_STRING: `YYYY${DATE_DELIMITER}MM${DATE_DELIMITER}DD`,
+    TIME_FORMAT_STRING: `hh${TIME_DELIMITER}mmA`,
+    UTC: 'UTC',
+    LOCAL: 'LOCAL',
+    GREENWICH: 'Greenwich',
+    AM: 'am',
+    PM: 'pm',
     STANDARD_EVENT: 'STANDARD_EVENT',
     STANDARD_EVENT_ROUTINE: 'STANDARD_EVENT_ROUTINE',
     STANDARD_EVENT_REMINDER: 'STANDARD_EVENT_ROUTINE_REMINDER',
