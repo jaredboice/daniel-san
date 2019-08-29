@@ -14,7 +14,7 @@ const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0 }) => {
 };
 
 // finds rules with end dates that are less than the beginning date range of the budget projection and rules with beginning dates that are greater than the projection end date
-const findRulesToRetire = ({ danielSan }) => {
+const findRulesToRetire = (danielSan) => {
     const { dateStart, dateEnd, timeStart } = danielSan;
     // eslint-disable-next-line array-callback-return
     const rulesToRetire = danielSan.rules.filter((rule, index) => {

@@ -595,7 +595,7 @@ const seventHighestValues = findGreatestValueSnapshots({ collection: danielSan.e
 const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'endBalance', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
 const bigSnapshots = findSnapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'endBalance' });
 const smallSnapshots = findSnapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' }); 
-const rulesToRetire = findRulesToRetire({ danielSan }); // finds rules with a dateEnd lower than the global dateStart value, and rules with dateStart that are higher than the global dateEnd. 
+const rulesToRetire = findRulesToRetire(danielSan); // finds rules with a dateEnd lower than the global dateStart value, and rules with dateStart that are higher than the global dateEnd. 
 // also adds a ruleIndex on each rule so that you can delete them from the original array if required
 // rules are auto retired during the budget projection process, however, so if you want to find rules that you need to retire/
 // then make sure you perform it on the original danielSan and not the resulting danielSan object that is returned from findBalance()

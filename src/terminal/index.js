@@ -557,7 +557,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
 };
 
 const showRulesToRetire = ({ danielSan, terminalOptions }) => {
-    const rulesToRetire = findRulesToRetire({ danielSan });
+    const rulesToRetire = findRulesToRetire(danielSan);
     if (rulesToRetire) {
         terminalBoundary(3);
         lineHeading(' begin showRulesToRetire ');

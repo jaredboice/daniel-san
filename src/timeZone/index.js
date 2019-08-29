@@ -78,7 +78,7 @@ const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
 const timeTravel = (danielSan) => {
     const { timeZone, timeZoneType } = danielSan;
     let newDate;
-    let newData;
+    let newDataObj;
     danielSan.events.forEach((event) => {
         newDate = createTimeZone({
             timeZone: event.timeZone,
@@ -87,9 +87,12 @@ const timeTravel = (danielSan) => {
             timeString: event.timeStart,
             name: event.name
         });
-        newData = convertTimeZone({ timeZone, timeZoneType, date: newDate, name: event.name, timeString: true, eventTrue: true });
-        event.eventDate = newData.dateString;
-        event.timeStart = event.timeStart ? newData.timeString : null;
+
+        newDataObj = convertTimeZone({ timeZone, timeZoneType, date: newDate, name: event.name, timeString: true, eventTrue: true });
+        event.momentTzDateSource = newDate; // for future convenience, store the full original moment-timezone date from the rule
+        event.momentTzDateTarget = newDataObj.date; // for future convenience, store the full converted moment-timezone date for the event
+        event.eventDate = newDataObj.dateString;
+        event.timeStart = event.timeStart ? newDataObj.timeString : null;
         event.timeZone = danielSan.timeZone;
         event.timeZoneType = danielSan.timeZoneType;
     });
