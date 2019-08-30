@@ -75,10 +75,6 @@ const buildEvents = ({ danielSan, rules, date }) => {
                 timeZoneType: rule.timeZoneType,
                 date
             }).date;
-            rule.dateCycleSource = `danielSan / ${danielSan.timeZone} / ${danielSan.timeZoneType}`; // for future convenience
-            rule.dateCycleTarget = `rule / ${rule.timeZone} / ${rule.timeZoneType}`; // for future convenience
-            rule.dateCycleAtSource = date;
-            rule.dateCycleAtTarget = convertedDate;
             if (isUndefinedOrNull(rule.dateStart) || rule.dateStart <= convertedDate.format(DATE_FORMAT_STRING)) {
                 processPhase = DISCOVERING_EVENT_TYPE;
                 switch (rule.type) {
@@ -245,7 +241,7 @@ const deleteIrrelevantRules = ({ danielSan, dateStartString }) => {
     }
 };
 
-const prepareRules = ({ danielSan, date }) => {
+const prepareConfiguration = ({ danielSan, date }) => {
     // to avoid unnecessary future checks to see if certain properties exist, we will add them with default values
     if (!danielSan.retiredRuleIndices) {
         danielSan.retiredRuleIndices = [];
@@ -268,11 +264,6 @@ const prepareRules = ({ danielSan, date }) => {
         danielSan.currencySymbol = CURRENCY_DEFAULT;
     } else {
         danielSan.currencySymbol = danielSan.currencySymbol.toUpperCase();
-    }
-    if (isUndefinedOrNull(danielSan.timeZoneType) || isUndefinedOrNull(danielSan.timeZone)) {
-        const initialTimeZoneData = initializeTimeZoneData(danielSan);
-        danielSan.timeZoneType = initialTimeZoneData.timeZoneType;
-        danielSan.timeZone = initialTimeZoneData.timeZone;
     }
     danielSan.rules.forEach((rule, index) => {
         if (isUndefinedOrNull(rule.currencySymbol)) {
@@ -338,7 +329,7 @@ const prepareRules = ({ danielSan, date }) => {
                     rule.processDate = null;
                 }
             } catch (err) {
-                throw errorDisc(err, 'error in prepareRules()', { index, date, rule });
+                throw errorDisc(err, 'error in prepareConfiguration()', { index, date, rule });
             }
         }
     });
@@ -398,15 +389,17 @@ const checkForInputErrors = ({ danielSan, dateStartString, dateEndString }) => {
 const findBalance = (danielSan = {}) => {
     const newDanielSan = deepCopy(danielSan);
     try {
+        if (isUndefinedOrNull(newDanielSan.timeZoneType) || isUndefinedOrNull(newDanielSan.timeZone)) {
+            const initialTimeZoneData = initializeTimeZoneData(newDanielSan);
+            newDanielSan.timeZoneType = initialTimeZoneData.timeZoneType;
+            newDanielSan.timeZone = initialTimeZoneData.timeZone;
+        }
+        const timeZone = newDanielSan.timeZone;
+        const timeZoneType = newDanielSan.timeZoneType;
         const dateStartString = newDanielSan.dateStart;
         const dateEndString = newDanielSan.dateEnd;
         const timeStartString = newDanielSan.timeStart;
-        const timeZone = newDanielSan.timeZone;
-        const timeZoneType = newDanielSan.timeZoneType;
         checkForInputErrors({ danielSan: newDanielSan, dateStartString, dateEndString });
-        deleteIrrelevantRules({
-            danielSan: newDanielSan
-        });
         const timeStream = new TimeStream({
             dateStartString,
             dateEndString,
@@ -414,7 +407,10 @@ const findBalance = (danielSan = {}) => {
             timeZoneType,
             timeString: timeStartString
         });
-        prepareRules({ danielSan: newDanielSan, date: timeStream.looperDate });
+        prepareConfiguration({ danielSan: newDanielSan, date: timeStream.looperDate });
+        deleteIrrelevantRules({
+            danielSan: newDanielSan
+        }); // this follows prepareConfiguration just in case timezones were not yet present where they needed to be
         do {
             buildEvents({
                 danielSan: newDanielSan,
