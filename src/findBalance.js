@@ -237,14 +237,12 @@ const sortDanielSan = (danielSan) => {
 };
 
 const deleteIrrelevantRules = ({ danielSan, dateStartString }) => {
-    const newRules = danielSan.rules.filter((rule) => {
-        try {
-            seekAndDestroyIrrelevantRules(danielSan);
-        } catch (err) {
-            throw errorDisc(err, 'error in deleteIrrelevantRules()', { dateStartString, rule });
-        }
-    });
-    danielSan.rules = newRules;
+    try {
+        const irrelevantRules = seekAndDestroyIrrelevantRules(danielSan);
+        danielSan.irrelevantRules = irrelevantRules;
+    } catch (err) {
+        throw errorDisc(err, 'error in deleteIrrelevantRules()', { dateStartString, rule });
+    }
 };
 
 const prepareRules = ({ danielSan, date }) => {
