@@ -1,5 +1,6 @@
+const moment = require('moment-timezone');
 const { TimeStream } = require('./timeStream');
-const { convertTimeZone, timeTravel } = require('./timeZone');
+const { initializeTimeZoneData, convertTimeZone, timeTravel } = require('./timeZone');
 const { getRelevantDateSegmentByFrequency } = require('./standardEvents/common');
 const { errorDisc } = require('./utility/errorHandling');
 const { isUndefinedOrNull } = require('./utility/validation');
@@ -16,6 +17,9 @@ const {
 const { flagRuleForRetirement, retireRules } = require('./standardEvents/common');
 const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle/cycleModulusToDate');
 const {
+    LOCAL,
+    UTC,
+    GREENWICH,
     DATE_FORMAT_STRING,
     DATE_DELIMITER,
     STANDARD_EVENT,
@@ -65,13 +69,15 @@ const buildEvents = ({ danielSan, rules, date }) => {
     let processPhase;
     try {
         rules.forEach((rule, index) => {
-            // const convertedDate = date;
             const convertedDate = convertTimeZone({
                 timeZone: rule.timeZone,
                 timeZoneType: rule.timeZoneType,
-                date,
-                timeString: danielSan.timeStart
+                date
             }).date;
+            rule.dateCycleSource = `danielSan / ${danielSan.timeZone} / ${danielSan.timeZoneType}`; // for future convenience
+            rule.dateCycleTarget = `rule / ${rule.timeZone} / ${rule.timeZoneType}`; // for future convenience
+            rule.dateCycleAtSource = date;
+            rule.dateCycleAtTarget = convertedDate;
             if (isUndefinedOrNull(rule.dateStart) || rule.dateStart <= convertedDate.format(DATE_FORMAT_STRING)) {
                 processPhase = DISCOVERING_EVENT_TYPE;
                 switch (rule.type) {
@@ -278,12 +284,24 @@ const prepareRules = ({ danielSan, date }) => {
     } else {
         danielSan.currencySymbol = danielSan.currencySymbol.toUpperCase();
     }
+    if (isUndefinedOrNull(danielSan.timeZoneType) || isUndefinedOrNull(danielSan.timeZone)) {
+        const initialTimeZoneData = initializeTimeZoneData(danielSan);
+        danielSan.timeZoneType = initialTimeZoneData.timeZoneType;
+        danielSan.timeZone = initialTimeZoneData.timeZone;
+    }
     danielSan.rules.forEach((rule, index) => {
         if (isUndefinedOrNull(rule.currencySymbol)) {
             rule.currencySymbol = CURRENCY_DEFAULT;
         } else {
             rule.currencySymbol = rule.currencySymbol.toUpperCase();
         }
+        // initialize timezone data
+        if (isUndefinedOrNull(rule.timeZoneType) || isUndefinedOrNull(rule.timeZone)) {
+            const initialTimeZoneData = initializeTimeZoneData(rule);
+            rule.timeZoneType = initialTimeZoneData.timeZoneType;
+            rule.timeZone = initialTimeZoneData.timeZone;
+        }
+        // if standard event, check to pre-modulate
         if (
             rule.type === STANDARD_EVENT ||
             rule.type === STANDARD_EVENT_ROUTINE ||
@@ -309,8 +327,7 @@ const prepareRules = ({ danielSan, date }) => {
                     const convertedDate = convertTimeZone({
                         timeZone: rule.timeZone,
                         timeZoneType: rule.timeZoneType,
-                        date,
-                        timeString: danielSan.timeStart
+                        date
                     }).date;
                     const dateStartString = getRelevantDateSegmentByFrequency({
                         frequency: ONCE,
@@ -398,13 +415,12 @@ const findBalance = (danielSan = {}) => {
     try {
         const dateStartString = newDanielSan.dateStart;
         const dateEndString = newDanielSan.dateEnd;
-        const timeStartString = newDanielSan.timeStartString;
+        const timeStartString = newDanielSan.timeStart;
         const timeZone = newDanielSan.timeZone;
         const timeZoneType = newDanielSan.timeZoneType;
         checkForInputErrors({ danielSan: newDanielSan, dateStartString, dateEndString });
         deleteIrrelevantRules({
-            danielSan: newDanielSan,
-            dateStartString
+            danielSan: newDanielSan
         });
         const timeStream = new TimeStream({
             dateStartString,
@@ -421,7 +437,7 @@ const findBalance = (danielSan = {}) => {
                 date: timeStream.looperDate
             });
         } while (timeStream.stream1DayForward());
-        timeTravel(newDanielSan);
+        timeTravel(newDanielSan); // note: newDanielSan timezones must be converted prior to sorting and executing events
         sortDanielSan(newDanielSan); // note: newDanielSan must be sorted prior to executing events
         discardEventsOutsideDateRange(newDanielSan);
         executeEvents({ danielSan: newDanielSan });

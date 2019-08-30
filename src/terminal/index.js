@@ -13,6 +13,13 @@ const {
 } = require('../analytics');
 
 const {
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    SUNDAY,
     STANDARD_TERMINAL_OUTPUT,
     VERBOSE,
     CONCISE,
@@ -173,6 +180,37 @@ const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
     };
 };
 
+const getWeekdayString = (weekday) => {
+    let weekdayString;
+    switch (weekday) {
+        case MONDAY:
+            weekdayString = 'monday';
+            break;
+        case TUESDAY:
+            weekdayString = 'tuesday';
+            break;
+        case WEDNESDAY:
+            weekdayString = 'wednesday';
+            break;
+        case THURSDAY:
+            weekdayString = 'thursday';
+            break;
+        case FRIDAY:
+            weekdayString = 'friday';
+            break;
+        case SATURDAY:
+            weekdayString = 'saturday';
+            break;
+        case SUNDAY:
+            weekdayString = 'sunday';
+            break;
+        default:
+            weekdayString = 'some day';
+            break;
+    }
+    return weekdayString;
+};
+
 const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
     const {
         formattingFunction,
@@ -304,6 +342,10 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     // eslint-disable-next-line no-console
     if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
+    if (!isUndefinedOrNull(event.weekday)) {
+        let weekdayString = getWeekdayString(event.weekday);
+        console.log(`weekday: ${weekdayString}`);
+    }
     if (!isUndefinedOrNull(event.notes)) console.log(`notes: `, event.notes); // eslint-disable-line quotes
     lineSeparator(1);
 };
@@ -329,8 +371,7 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             key !== 'specialAdjustments' &&
             key !== 'exclusions' &&
             key !== 'sortPriority' &&
-            key !== 'currencyConversion' &&
-            key !== 'weekday'
+            key !== 'currencyConversion'
         ) {
             if (key === 'name') {
                 // eslint-disable-next-line no-console
@@ -400,7 +441,15 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             } else if (key === 'dateEnd' && event.dateEnd != null) {
                 // eslint-disable-next-line no-console
                 console.log(`dateEnd: ${event.dateEnd}`);
+            } else if (key === 'weekday') {
+                let weekdayString = getWeekdayString(event.weekday);
+                if (!isUndefinedOrNull(event.weekday)) {
+                    let weekdayString = getWeekdayString(event.weekday);
+                    console.log(`weekday: ${weekdayString}`);
+                }
             } else if (
+                key !== 'name' &&
+                key !== 'amount' &&
                 key !== 'convertedAmount' &&
                 key !== 'beginBalance' &&
                 key !== 'endBalance' &&
@@ -873,7 +922,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
     terminalBoundary(3);
 };
 
-const terminal = ({ danielSan, terminalOptions = {}, error = null }) => {
+const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanielSan = null }) => {
     if (error) {
         // eslint-disable-next-line no-console
         lineHeading(' something bad happened and a lot of robots died ');
@@ -960,7 +1009,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null }) => {
                     });
                     break;
                 case DISPLAY_RULES_TO_RETIRE:
-                    displayRulesToRetire({ danielSan, terminalOptions });
+                    displayRulesToRetire({ danielSan: originalDanielSan || danielSan, terminalOptions });
                     break;
                 case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
                 case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:

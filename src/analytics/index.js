@@ -3,56 +3,37 @@ const { createTimeZone, convertTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const { isUndefinedOrNull } = require('../utility/validation');
 
-const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0 }) => {
+const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0, propertyKey = 'endBalance' }) => {
     let criticalSnapshots = null;
     if (!isUndefinedOrNull(criticalThreshold)) {
         criticalSnapshots = danielSan.events.filter((event) => {
-            return event.endBalance < criticalThreshold;
+            return event[propertyKey] < criticalThreshold;
         });
     }
     return criticalSnapshots;
 };
 
-// finds rules with end dates that are less than the beginning date range of the budget projection and rules with beginning dates that are greater than the projection end date
+// finds rules with end dates that are less than the beginning date range of the budget projection
 const findRulesToRetire = (danielSan) => {
-    const { dateStart, dateEnd, timeStart } = danielSan;
+    const { dateStart, timeStart, timeZone, timeZoneType } = danielSan;
     // eslint-disable-next-line array-callback-return
     const rulesToRetire = danielSan.rules.filter((rule, index) => {
         const dateToStart = createTimeZone({
-            timeZone: rule.timeZone,
-            timeZoneType: rule.TimeZoneType,
+            timeZone,
+            timeZoneType,
             dateString: dateStart,
             timeString: timeStart
         });
         const convertedDateToStart = convertTimeZone({
             timeZone: rule.timeZone,
             timeZoneType: rule.timeZoneType,
-            date: dateToStart,
-            timeString: danielSan.timeStart
+            date: dateToStart
         }).date;
         const convertedDateStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
-
-        const dateToEnd = createTimeZone({
-            timeZone: rule.timeZone,
-            timeZoneType: rule.TimeZoneType,
-            dateString: dateEnd,
-            timeString: timeStart
-        });
-        const convertedDateToEnd = convertTimeZone({
-            timeZone: rule.timeZone,
-            timeZoneType: rule.timeZoneType,
-            date: dateToEnd,
-            timeString: danielSan.timeStart
-        }).date;
-        const convertedDateEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
-
-        if (
-            (!isUndefinedOrNull(rule.dateEnd) && rule.dateEnd < convertedDateStartString) ||
-            (!isUndefinedOrNull(rule.dateStart) && rule.dateStart > convertedDateEndString)
-        ) {
+        if (!isUndefinedOrNull(rule.dateEnd) && rule.dateEnd < convertedDateStartString) {
             rule.ruleIndex = index;
             return rule;
-        } 
+        }
     });
     if (rulesToRetire.length > 0) {
         return rulesToRetire;
@@ -62,6 +43,67 @@ const findRulesToRetire = (danielSan) => {
     }
     // eslint-disable-next-line no-unreachable
     return null; // this line satisfies another linting error
+};
+
+// returns/removes rules that have no chance ot being included into a projected event
+const seekAndDestroyIrrelevantRules = (danielSan) => {
+    const { dateStart, dateEnd, timeStart, timeZone, timeZoneType } = danielSan;
+    const relevantRules = [];
+    const irrelevantRules = [];
+    // eslint-disable-next-line array-callback-return
+    danielSan.rules.forEach((rule, index) => {
+        const dateToStart = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: dateStart,
+            timeString: timeStart
+        });
+        const convertedDateToStart = convertTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.timeZoneType,
+            date: dateToStart
+        }).date;
+        const convertedDateStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
+        const dateToEnd = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: dateEnd,
+            timeString: timeStart
+        });
+        const convertedDateToEnd = convertTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.timeZoneType,
+            date: dateToEnd
+        }).date;
+        const convertedDateEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
+        let allowToLive = true;
+        if (
+            (!isUndefinedOrNull(rule.dateEnd) && rule.dateEnd < convertedDateStartString) ||
+            (!isUndefinedOrNull(rule.dateStart) && rule.dateStart > convertedDateEndString)
+        ) {
+            // exclude
+            allowToLive = false;
+            // eslint-disable-next-line no-else-return
+        } else if (rule.frequency === ONCE && rule.processDate < convertedDateStartString) {
+            // exclude:
+            allowToLive = false;
+        } else if (isUndefinedOrNull(rule.dateEnd)) {
+            // include
+            allowToLive = true;
+        } else {
+            // include
+            allowToLive = true;
+        }
+
+        if (allowToLive) {
+            relevantRules.push(rule);
+        } else {
+            rule.ruleIndex = index;
+            irrelevantRules.push(rule);
+        }
+    });
+    danielSan.rules = relevantRules; // remove irrelevantRules from the danielSan reference
+    return irrelevantRules; // return irrelevantRules if needed
 };
 
 const findEventsWithProperty = ({ events, propertyKey }) => {
@@ -171,16 +213,11 @@ const findGreatestValueSnapshots = ({
 const sumAllPositiveEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
-        if (!isUndefinedOrNull(event.amount) && event.amount > 0) {
-            // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
-            const convertedAmount =
-                danielSan.currencySymbol && event.currencySymbol && danielSan.currencySymbol !== event.currencySymbol
-                    ? danielSan.currencyConversion({
-                          amount: event.amount,
-                          inputSymbol: event.currencySymbol,
-                          outputSymbol: danielSan.currencySymbol
-                      })
-                    : event.amount;
+        const { amount, convertedAmount } = event;
+        if (!isUndefinedOrNull(amount) && convertedAmount > 0) {
+            // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field
+            // we first check to make sure it had an amount field so that it satisfies our required context
+            // however, we are actually only interested in the multi-currency converted amount
             sum += convertedAmount;
         }
     });
@@ -190,16 +227,11 @@ const sumAllPositiveEventAmounts = (danielSan) => {
 const sumAllNegativeEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
-        if (!isUndefinedOrNull(event.amount) && event.amount < 0) {
-            // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
-            const convertedAmount =
-                danielSan.currencySymbol && event.currencySymbol && danielSan.currencySymbol !== event.currencySymbol
-                    ? danielSan.currencyConversion({
-                          amount: event.amount,
-                          inputSymbol: event.currencySymbol,
-                          outputSymbol: danielSan.currencySymbol
-                      })
-                    : event.amount;
+        const { amount, convertedAmount } = event;
+        if (!isUndefinedOrNull(amount) && convertedAmount < 0) {
+            // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field
+            // we first check to make sure it had an amount field so that it satisfies our required context
+            // however, we are actually only interested in the multi-currency converted amount
             sum += convertedAmount;
         }
     });
@@ -211,6 +243,7 @@ module.exports = {
     findSnapshotsLessThanAmount,
     findCriticalSnapshots,
     findRulesToRetire,
+    seekAndDestroyIrrelevantRules,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,

@@ -13,28 +13,37 @@ const {
 } = require('../constants');
 const { isUndefinedOrNull } = require('../utility/validation');
 
+const initializeTimeZoneData = (obj) => {
+    const thisTimeZoneType = obj.timeZoneType || LOCAL; // default value
+    let thisTimeZone; // default value is set below
+    if (!obj.timeZone && thisTimeZoneType === UTC) {
+        thisTimeZone = GREENWICH;
+    } else if (!obj.timeZone) {
+        thisTimeZone = moment.tz.guess();
+    } else {
+        thisTimeZone = obj.timeZone;
+    }
+    obj.timeZoneType = thisTimeZoneType;
+    obj.timeZone = thisTimeZone;
+    return {
+        timeZoneType: thisTimeZoneType,
+        timeZone: thisTimeZone
+    }
+};
+
 const createTimeZone = ({ timeZone, timeZoneType, date = null, dateString = null, timeString = null }) => {
     const DATE_TIME_FORMAT_STRING = timeString
         ? `${DATE_FORMAT_STRING}${DATE_TIME_DELIMITER}${TIME_FORMAT_STRING}`
         : DATE_FORMAT_STRING;
     const dateTimeString = timeString ? `${dateString}${DATE_TIME_DELIMITER}${timeString}` : dateString;
     let outputDate = date; // default value
-    const thisTimeZoneType = timeZoneType || LOCAL; // default value
-    let thisTimeZone; // default value is set below
-    if (!timeZone && thisTimeZoneType === UTC) {
-        thisTimeZone = GREENWICH;
-    } else if (!timeZone) {
-        thisTimeZone = moment.tz.guess();
-    } else {
-        thisTimeZone = timeZone;
-    }
-    const thisMoment = thisTimeZoneType === LOCAL ? moment.tz : moment.utc;
+    const thisMoment = timeZoneType === LOCAL ? moment.tz : moment.utc;
 
     // process date
     if (date) {
-        outputDate = thisMoment(date, thisTimeZone);
+        outputDate = thisMoment(date, timeZone);
     } else {
-        outputDate = thisMoment(dateTimeString, DATE_TIME_FORMAT_STRING, thisTimeZone);
+        outputDate = thisMoment(dateTimeString, DATE_TIME_FORMAT_STRING, timeZone);
     }
     return outputDate;
 };
@@ -42,28 +51,6 @@ const createTimeZone = ({ timeZone, timeZoneType, date = null, dateString = null
 const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
     const newDate = date.clone();
     let outputDate = newDate; // default value;
-    if (newDate && timeString && typeof timeString === 'string') {
-        const [preHours, preMinutes] = timeString.split(TIME_DELIMITER);
-        const hours = parseInt(preHours, 10);
-        const minutes = parseInt(preMinutes.slice(0, 2), 10);
-        const dayOrNight = preMinutes.slice(2, 4);
-        let militaryHours = hours; // default value
-        const militaryMinutes = minutes; // default value
-        if (dayOrNight === AM) {
-            if (hours === 12) {
-                militaryHours = 0;
-            } else {
-                militaryHours = hours;
-            }
-        } else if (dayOrNight === PM) {
-            if (hours === 12) {
-                militaryHours = 12;
-            } else {
-                militaryHours = hours + 12;
-            }
-        }
-        newDate.set({ h: militaryHours, m: militaryMinutes });
-    }
     outputDate = timeZoneType === LOCAL ? newDate.tz(timeZone) : newDate.utc(timeZone);
     const DATE_TIME_FORMAT_STRING = `${DATE_FORMAT_STRING}${DATE_TIME_DELIMITER}${TIME_FORMAT_STRING}`;
     const dateTimeString = outputDate.format(DATE_TIME_FORMAT_STRING); // lowercase the AM/PM
@@ -78,7 +65,7 @@ const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
 const timeTravel = (danielSan) => {
     const { timeZone, timeZoneType } = danielSan;
     let newDate;
-    let newDataObj;
+    let newDataObj = {};
     danielSan.events.forEach((event) => {
         newDate = createTimeZone({
             timeZone: event.timeZone,
@@ -88,17 +75,29 @@ const timeTravel = (danielSan) => {
             name: event.name
         });
 
-        newDataObj = convertTimeZone({ timeZone, timeZoneType, date: newDate, name: event.name, timeString: true, eventTrue: true });
-        event.momentTzDateSource = newDate; // for future convenience, store the full original moment-timezone date from the rule
-        event.momentTzDateTarget = newDataObj.date; // for future convenience, store the full converted moment-timezone date for the event
+        newDataObj = convertTimeZone({
+            timeZone,
+            timeZoneType,
+            date: newDate,
+            name: event.name,
+            timeString: event.timeStart
+        });
+        event.timeZoneSource = `event / ${event.timeZone} / ${event.timeZoneType}`; // for future convenience
+        event.timeZoneTarget = `danielSan / ${timeZone} / ${timeZoneType}`; // for future convenience
+        event.dateAtSource = newDate; // for future convenience, store the full original moment-timezone date from the rule
+        event.dateAtTarget = newDataObj.date; // for future convenience, store the full converted moment-timezone date for the event
         event.eventDate = newDataObj.dateString;
         event.timeStart = event.timeStart ? newDataObj.timeString : null;
         event.timeZone = danielSan.timeZone;
         event.timeZoneType = danielSan.timeZoneType;
+        if (isUndefinedOrNull(event.weekday)) {
+            event.weekday = newDate.day();
+        }
     });
 };
 
 module.exports = {
+    initializeTimeZoneData,
     createTimeZone,
     convertTimeZone,
     timeTravel

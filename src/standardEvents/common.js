@@ -1,6 +1,4 @@
-// const moment = require('moment-timezone');
 const { isUndefinedOrNull } = require('../utility/validation');
-let { createTimeZone } = require('../timeZone'); // TODO: something was causing this to be undefined, so I loaded it again below
 const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
 const { errorDisc } = require('../utility/errorHandling');
 const {
@@ -11,7 +9,6 @@ const {
     MONTHLY,
     ANNUALLY,
     DATE_DELIMITER,
-    EXECUTING_RULE_INSERTION,
     EXECUTION_REJECTED
 } = require('../constants');
 
@@ -45,11 +42,15 @@ const getRelevantDateSegmentByFrequency = ({ frequency, date }) => {
     }
 };
 
-// flags rule that is no longer relevant for active budget-projection calculations
+// flags a rule that is no longer relevant for active budget-projection calculations
 const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
     try {
         // if dateEnd has been reached, flag the rule for retirement
-        if (!isUndefinedOrNull(rule.dateEnd) && date.format(DATE_FORMAT_STRING) >= rule.dateEnd) {
+        const dateString = date.format(DATE_FORMAT_STRING);
+        if (
+            (!isUndefinedOrNull(rule.dateEnd) && dateString >= rule.dateEnd) ||
+            (rule.frequency === ONCE && dateString >= rule.processDate)
+        ) {
             danielSan.retiredRuleIndices.push(index);
         }
     } catch (err) {
@@ -57,6 +58,7 @@ const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
     }
 };
 
+// retires rules that were flagged in flagRuleForRetirement()
 const retireRules = ({ danielSan }) => {
     let looper;
     try {
@@ -76,49 +78,6 @@ const retireRules = ({ danielSan }) => {
             retiredRuleIndices: danielSan.retiredRuleIndices
         });
     }
-};
-
-// eslint-disable-next-line max-len
-// _28DayCondition checks if processDate (such as 30th) is greater than the last day of the month (for example, february has only 28 days)
-// eslint-disable-next-line no-underscore-dangle
-const _28DayCondition = ({ processDate, date, frequency, timeZone = null, timeZoneType = null }) => {
-    if (frequency === MONTHLY && parseInt(processDate, 10) > 28) {
-        const dateString = getRelevantDateSegmentByFrequency({
-            frequency: MONTHLY, // we are going to compare dates like this '2019-06-28' === '2019-06-31'
-            date
-        });
-
-        if (isUndefinedOrNull(createTimeZone)) { // TODO: something was causing createTimeZone to not be defined
-            createTimeZone = require('../timeZone').createTimeZone;
-        }
-        const fullDateOfLastDayOfMonth = createTimeZone({ timeZone, timeZoneType, date }).endOf('month');
-        // const fullDateOfLastDayOfMonth = moment(date).endOf('month');
-        const dateStringOfLastDayOfMonth = getRelevantDateSegmentByFrequency({
-            frequency: MONTHLY,
-            date: fullDateOfLastDayOfMonth
-        });
-        if (processDate >= dateStringOfLastDayOfMonth && dateString >= dateStringOfLastDayOfMonth) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        return false;
-    }
-};
-
-const modulusPhase = ({ rule, processPhase }) => {
-    // if there are modulus/cycle attributes, then execute them
-    let transientProcessPhase = processPhase || '';
-    if (rule.modulus) {
-        if (isCycleAtModulus(rule) && transientProcessPhase !== EXECUTION_REJECTED) {
-            transientProcessPhase = EXECUTING_RULE_INSERTION;
-        }
-        cycleModulusUp(rule);
-    } else if (transientProcessPhase !== EXECUTION_REJECTED) {
-        transientProcessPhase = EXECUTING_RULE_INSERTION;
-    }
-    return transientProcessPhase;
 };
 
 /*
@@ -162,7 +121,5 @@ module.exports = {
     getRelevantDateSegmentByFrequency,
     retireRules,
     flagRuleForRetirement,
-    _28DayCondition,
-    modulusPhase,
     exclusionsPhase
 };

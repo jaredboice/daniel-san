@@ -1,18 +1,33 @@
 const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
+const { _28DayCondition } = require('./conditional');
 const {
     getRelevantDateSegmentByFrequency,
-    _28DayCondition,
-    modulusPhase,
     exclusionsPhase
 } = require('../standardEvents/common');
+const { cycleModulusUp, isCycleAtModulus } = require('../modulusCycle');
 const {
     DATE_FORMAT_STRING,
     DAILY,
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
-    MODIFIED
+    MODIFIED,
+    EXECUTION_REJECTED
 } = require('../constants');
+
+const modulusPhase = ({ rule, processPhase }) => {
+    // if there are modulus/cycle attributes, then execute them
+    let transientProcessPhase = processPhase || '';
+    if (rule.modulus) {
+        if (transientProcessPhase !== EXECUTION_REJECTED && isCycleAtModulus(rule)) {
+            transientProcessPhase = EXECUTING_RULE_INSERTION;
+        }
+        cycleModulusUp(rule);
+    } else if (transientProcessPhase !== EXECUTION_REJECTED) {
+        transientProcessPhase = EXECUTING_RULE_INSERTION;
+    }
+    return transientProcessPhase;
+};
 
 const buildStandardEvent = ({ danielSan, rule, date }) => {
     let processPhase;

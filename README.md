@@ -12,7 +12,7 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-St
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion, multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. TimeZones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
 
 ## Breaking Change in v3.0
 In v3.0, the currencyConversion function parameters have changed from currentSymbol and futureSymbol to inputSymbol and outputSymbol, respectively. Because naming things is hard.
@@ -182,7 +182,7 @@ const danielSan = {
 
 **Special Adjustments**
 
-When using timezones or multi-currency conversions, special adjustments take place in the context of the rule.
+When using time zones or multi-currency conversions, special adjustments take place in the context of the rule.
 
 -   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS'` _(prepay: move processing before specific weekdays)_
 -   `type: 'MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES' or simply 'PRE_PAY'` _(prepay: move processing before specific dates of the month with an optional weekdays attribute)_
@@ -409,7 +409,7 @@ const danielSan = {
 
 ## Time Zones
 
-**TimeZone Props**
+**Time Zone Props**
 
 ```javascript
 const danielSan = {
@@ -417,7 +417,7 @@ const danielSan = {
     endBalance: null,
     dateStart: '2019-03-20',
     dateEnd: '2019-12-13',
-    timeZone: 'America_New_York', // the timezone that every rule will be converted to; see moment-timezone for a complete list timezones
+    timeZone: 'America_New_York', // the time zone that every rule will be converted to; see moment-timezone for a complete list time zones
     timeZoneType: LOCAL, // LOCAL or UTC are available to be imported as constants
     rules: [
         { // rule 1
@@ -427,7 +427,7 @@ const danielSan = {
             amount: -20.00,
             dateStart: '2019-03-20',
             dateEnd: '2019-04-01',
-            timeZone: 'Greenwich', // run the following for a list of timezones: const moment = require('moment-timezone; moment.tz.names().forEach(name => console.log(name));
+            timeZone: 'Greenwich', // run the following for a list of time zones: const moment = require('moment-timezone; moment.tz.names().forEach(name => console.log(name));
             timeZoneType: UTC
         }
     ],
