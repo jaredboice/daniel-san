@@ -1,6 +1,7 @@
 const moment = require('moment-timezone');
 const { TimeStream } = require('./timeStream');
 const { initializeTimeZoneData, convertTimeZone, timeTravel } = require('./timeZone');
+const { seekAndDestroyIrrelevantRules } = require('./analytics');
 const { getRelevantDateSegmentByFrequency } = require('./standardEvents/common');
 const { errorDisc } = require('./utility/errorHandling');
 const { isUndefinedOrNull } = require('./utility/validation');
@@ -238,21 +239,7 @@ const sortDanielSan = (danielSan) => {
 const deleteIrrelevantRules = ({ danielSan, dateStartString }) => {
     const newRules = danielSan.rules.filter((rule) => {
         try {
-            if (rule.frequency === ONCE && rule.processDate < dateStartString) {
-                // exclude:
-                return false;
-            }
-            if (isUndefinedOrNull(rule.dateEnd)) {
-                // include
-                return true;
-            } else if (rule.dateEnd < dateStartString) {
-                // exclude
-                return false;
-                // eslint-disable-next-line no-else-return
-            } else {
-                // include
-                return true;
-            }
+            seekAndDestroyIrrelevantRules(danielSan);
         } catch (err) {
             throw errorDisc(err, 'error in deleteIrrelevantRules()', { dateStartString, rule });
         }
