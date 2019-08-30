@@ -579,7 +579,7 @@ const danielSan = {
 
 **Useful Functions**  
   
-You can always use any exported function found in the program by simply requiring it. However, a few such useful functions are shown below. The analytic functions, with exception to findRulesToRetire, are executed on events. If using multi-currency conversion, the analysis takes place in the context of the global currencySymbol at the root of the danielSan object.
+You can always use any exported function in the program by simply requiring it. However, a few such useful functions are shown below. The analytic functions, with exception to findRulesToRetire, are executed on events. If using multi-currency conversion, the analysis takes place in the context of the global currencySymbol at the root of the danielSan object.
 
 ```javascript
 const {     
