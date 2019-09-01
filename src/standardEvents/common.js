@@ -10,8 +10,8 @@ const {
     ANNUALLY,
     DATE_DELIMITER,
     EXECUTION_REJECTED,
-    RULE_CONTEXT,
-    EVENT_CONTEXT,
+    EVENT_SOURCE_CONTEXT,
+    OBSERVER_SOURCE_CONTEXT,
     BOTH
 } = require('../constants');
 
@@ -99,7 +99,7 @@ const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
         if (rule.exclusions.weekdays) {
             if (
                 isUndefinedOrNull(rule.exclusions.context) ||
-                rule.exclusions.context === RULE_CONTEXT ||
+                rule.exclusions.context === EVENT_SOURCE_CONTEXT ||
                 rule.exclusions.context === BOTH
             ) {
                 relevantDateSegmentForExclusion = date.day();
@@ -108,7 +108,7 @@ const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
                     // eslint-disable-next-line eqeqeq
                     return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                 });
-            } else if (rule.exclusions.context === EVENT_CONTEXT || rule.exclusions.context === BOTH) {
+            } else if (rule.exclusions.context === OBSERVER_SOURCE_CONTEXT || rule.exclusions.context === BOTH) {
                 const convertedDate = convertTimeZone({
                     timeZone: danielSan.timeZone,
                     timeZoneType: danielSan.timeZoneType,
@@ -126,7 +126,7 @@ const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
         if (rule.exclusions.dates && transientProcessPhase !== EXECUTION_REJECTED) {
             if (
                 isUndefinedOrNull(rule.exclusions.context) ||
-                rule.exclusions.context === RULE_CONTEXT ||
+                rule.exclusions.context === EVENT_SOURCE_CONTEXT ||
                 rule.exclusions.context === BOTH
             ) {
                 relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
@@ -137,7 +137,7 @@ const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
                     dynamicDateSegmentForExclusion = eventDate;
                     return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
                 });
-            } else if (rule.exclusions.context === EVENT_CONTEXT || rule.exclusions.context === BOTH) {
+            } else if (rule.exclusions.context === OBSERVER_SOURCE_CONTEXT || rule.exclusions.context === BOTH) {
                 const convertedDate = convertTimeZone({
                     timeZone: danielSan.timeZone,
                     timeZoneType: danielSan.timeZoneType,

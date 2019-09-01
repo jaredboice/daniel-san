@@ -415,12 +415,12 @@ const danielSan = {
 
 When applying the ADJUST_AMOUNT specialAdjustment for rules with multi-currency data, the following property is useful:
 
--   `context: RULE_CONTEXT` _(applies the adjustment in the context of the original rule's currencySymbol)_
+-   `context: EVENT_SOURCE_CONTEXT` _(applies the adjustment in the context of the original rule's currencySymbol), as if you yourself were at the event source spending the native currency_
 
 options in the above scenario include:
 
--   `context: RULE_CONTEXT` _(default value)_
--   `context: EVENT_CONTEXT` _(applies the adjustment in the context of the final converted currency value via the currencySymbol on the master controller)_
+-   `context: EVENT_SOURCE_CONTEXT` _(default value)_
+-   `context: OBSERVER_SOURCE_CONTEXT` _(applies the adjustment in the context of the final converted currency value via the currencySymbol on the root=level of the danielSan object, aka the MCU, ie. the Master Control Unit)_
 
 -all constants are available for import-
 
@@ -470,12 +470,12 @@ For starters, you should commit to using either all LOCAL time zones or all UTC.
 
 In Addition, when applying PRE_PAY and POST_PAY specialAdjustments, or exclusions to rules with time zones, the following property is useful:
 
--   `context: RULE_CONTEXT` _(applies the adjustment in the context of the original rule's timeZone data)_
+-   `context: EVENT_SOURCE_CONTEXT` _(applies the adjustment in the context of the original rule's timeZone data, as seen and interpreted at the source of the event)_
 
 options in the above scenario include:  
 
--   `context: RULE_CONTEXT` _(default value)_
--   `context: EVENT_CONTEXT` _(applies the adjustment in the context of the event's final calculated time zone via the timeZone indicator on the root-level of the danielSan master controller object)_
+-   `context: EVENT_SOURCE_CONTEXT` _(default value)_
+-   `context: OBSERVER_SOURCE_CONTEXT` _(applies the adjustment in the context of the event's final calculated time zone via the timeZone indicator on the root-level of the danielSan object, aka the MCU, ie. the Master Control Unit)_
 -   `context: BOTH` _(applies the adjustment with respect to both of the contexts mentioned above; As an example of usage, BOTH is great when you don't want a weekend or corporate holiday to trigger in ANY context)_
 
 -all constants are available for import-
@@ -663,8 +663,8 @@ const {
     GREENWICH,
     AM,
     PM,
-    RULE_CONTEXT,
-    EVENT_CONTEXT,
+    EVENT_SOURCE_CONTEXT,
+    OBSERVER_SOURCE_CONTEXT,
     BOTH,
     STANDARD_EVENT,
     STANDARD_EVENT_ROUTINE,

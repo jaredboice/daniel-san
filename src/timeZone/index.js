@@ -89,13 +89,13 @@ const timeTravel = (danielSan) => {
             name: event.name,
             timeString: event.timeStart
         });
-        event.timeZoneSource = `event / ${event.timeZone} / ${event.timeZoneType}`; // for future convenience
-        event.timeZoneTarget = `danielSan / ${timeZone} / ${timeZoneType}`; // for future convenience
-        event.dateAtSource = newTargetTimeStartDate; // for future convenience, store the full original moment-timezone date from the rule
-        event.dateAtTarget = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
+        event.timeZoneEventSource = `event source: ${event.timeZone} / ${event.timeZoneType}`; // for future convenience
+        event.timeZoneObserverSource = `observer source: ${timeZone} / ${timeZoneType}`; // for future convenience
+        event.dateTimeEventSource = newTargetTimeStartDate; // for future convenience, store the full original moment-timezone date from the rule
+        event.dateTimeObserverSource = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
         event.timeZone = danielSan.timeZone;
         event.timeZoneType = danielSan.timeZoneType;
-        event.eventDateStart = targetTimeStartObj.dateString;
+        event.eventDateStart = targetTimeStartObj.dateString; // as seen from the observer
         event.timeStart = event.timeStart ? targetTimeStartObj.timeString : null;
         event.weekdayStart = targetTimeStartObj.weekday;
         event.timeEnd = null;
