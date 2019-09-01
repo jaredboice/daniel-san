@@ -16,15 +16,14 @@ const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0, propertyKey =
 
 // finds rules with end dates that are less than the beginning date range of the budget projection
 const findRulesToRetire = (danielSan) => {
-    const { dateStart, timeStart } = danielSan;
+    const { effectiveDateStart } = danielSan;
     // eslint-disable-next-line array-callback-return
     const rulesToRetire = danielSan.rules.filter((rule, index) => {
         const dateToStartConfig = initializeTimeZoneData(danielSan);
         const dateToStart = createTimeZone({
             timeZone: dateToStartConfig.timeZone,
             timeZoneType: dateToStartConfig.timeZoneType,
-            dateString: dateStart,
-            timeString: timeStart
+            dateString: effectiveDateStart
         });
         const convertedDateToStartConfig = initializeTimeZoneData(rule);
         const convertedDateToStart = convertTimeZone({
@@ -33,7 +32,7 @@ const findRulesToRetire = (danielSan) => {
             date: dateToStart
         }).date;
         const convertedDateStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
-        if (!isUndefinedOrNull(rule.dateEnd) && rule.dateEnd < convertedDateStartString) {
+        if (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateStartString) {
             rule.ruleIndex = index;
             return rule;
         }
@@ -50,7 +49,7 @@ const findRulesToRetire = (danielSan) => {
 
 // returns/removes rules that have no chance ot being included into a projected event
 const seekAndDestroyIrrelevantRules = (danielSan) => {
-    const { dateStart, dateEnd, timeStart, timeZone, timeZoneType } = danielSan;
+    const { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType } = danielSan;
     const relevantRules = [];
     const irrelevantRules = [];
     // eslint-disable-next-line array-callback-return
@@ -58,39 +57,38 @@ const seekAndDestroyIrrelevantRules = (danielSan) => {
         const dateToStart = createTimeZone({
             timeZone,
             timeZoneType,
-            dateString: dateStart,
-            timeString: timeStart
+            dateString: effectiveDateStart
         });
         const convertedDateToStart = convertTimeZone({
             timeZone: rule.timeZone,
             timeZoneType: rule.timeZoneType,
             date: dateToStart
         }).date;
-        const convertedDateStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
+        const convertedDateToStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
         const dateToEnd = createTimeZone({
             timeZone,
             timeZoneType,
-            dateString: dateEnd,
-            timeString: timeStart
+            dateString: effectiveDateEnd
         });
         const convertedDateToEnd = convertTimeZone({
             timeZone: rule.timeZone,
             timeZoneType: rule.timeZoneType,
             date: dateToEnd
         }).date;
-        const convertedDateEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
+        const convertedDateToEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
         let allowToLive = true;
+        
         if (
-            (!isUndefinedOrNull(rule.dateEnd) && rule.dateEnd < convertedDateStartString) ||
-            (!isUndefinedOrNull(rule.dateStart) && rule.dateStart > convertedDateEndString)
+            (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateToStartString) ||
+            (!isUndefinedOrNull(rule.effectiveDateStart) && rule.effectiveDateStart > convertedDateToEndString)
         ) {
             // exclude
             allowToLive = false;
             // eslint-disable-next-line no-else-return
-        } else if (rule.frequency === ONCE && rule.processDate < convertedDateStartString) {
+        } else if (rule.frequency === ONCE && rule.processDate < convertedDateToStartString) {
             // exclude:
             allowToLive = false;
-        } else if (isUndefinedOrNull(rule.dateEnd)) {
+        } else if (isUndefinedOrNull(rule.effectiveDateEnd)) {
             // include
             allowToLive = true;
         } else {
@@ -216,12 +214,12 @@ const findGreatestValueSnapshots = ({
 const sumAllPositiveEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
-        const { amount, convertedAmount } = event;
-        if (!isUndefinedOrNull(amount) && convertedAmount > 0) {
+        const { amount, amountConverted } = event;
+        if (!isUndefinedOrNull(amount) && amountConverted > 0) {
             // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field
             // we first check to make sure it had an amount field so that it satisfies our required context
             // however, we are actually only interested in the multi-currency converted amount
-            sum += convertedAmount;
+            sum += amountConverted;
         }
     });
     return sum;
@@ -230,12 +228,12 @@ const sumAllPositiveEventAmounts = (danielSan) => {
 const sumAllNegativeEventAmounts = (danielSan) => {
     let sum = 0;
     danielSan.events.forEach((event) => {
-        const { amount, convertedAmount } = event;
-        if (!isUndefinedOrNull(amount) && convertedAmount < 0) {
+        const { amount, amountConverted } = event;
+        if (!isUndefinedOrNull(amount) && amountConverted < 0) {
             // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field
             // we first check to make sure it had an amount field so that it satisfies our required context
             // however, we are actually only interested in the multi-currency converted amount
-            sum += convertedAmount;
+            sum += amountConverted;
         }
     });
     return sum;

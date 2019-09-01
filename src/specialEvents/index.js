@@ -115,9 +115,9 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
                         (nthProcessDay.nthId < 0 && looperDateIndex === sizeOfObjectKeyArray - 1))
                 ) {
                     processPhase = EXECUTING_RULE_INSERTION;
-                    processPhase = exclusionsPhase({ rule, date, processPhase });
+                    processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
                     if (processPhase !== EXECUTION_REJECTED) {
-                        rule.eventDate = date.format(DATE_FORMAT_STRING);
+                        rule.eventDateStart = date.format(DATE_FORMAT_STRING);
                         danielSan.events.push({ ...rule });
                         processPhase = MODIFIED;
                     }
@@ -152,9 +152,9 @@ const weekdayOnDate = ({ danielSan, rule, date }) => {
         }
         if (rule.processDate === thisProcessDate && rule.frequency === thisWeekday) {
             processPhase = EXECUTING_RULE_INSERTION;
-            processPhase = exclusionsPhase({ rule, date, processPhase });
+            processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
             if (processPhase !== EXECUTION_REJECTED) {
-                rule.eventDate = date.format(DATE_FORMAT_STRING);
+                rule.eventDateStart = date.format(DATE_FORMAT_STRING);
                 danielSan.events.push({ ...rule });
                 processPhase = MODIFIED;
             }

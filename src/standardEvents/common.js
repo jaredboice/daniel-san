@@ -1,5 +1,5 @@
 const { isUndefinedOrNull } = require('../utility/validation');
-const { isCycleAtModulus, cycleModulusUp } = require('../modulusCycle');
+const { convertTimeZone } = require('../timeZone');
 const { errorDisc } = require('../utility/errorHandling');
 const {
     DATE_FORMAT_STRING,
@@ -9,7 +9,10 @@ const {
     MONTHLY,
     ANNUALLY,
     DATE_DELIMITER,
-    EXECUTION_REJECTED
+    EXECUTION_REJECTED,
+    RULE_CONTEXT,
+    EVENT_CONTEXT,
+    BOTH
 } = require('../constants');
 
 /*
@@ -45,10 +48,10 @@ const getRelevantDateSegmentByFrequency = ({ frequency, date }) => {
 // flags a rule that is no longer relevant for active budget-projection calculations
 const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
     try {
-        // if dateEnd has been reached, flag the rule for retirement
+        // if effectiveDateEnd has been reached, flag the rule for retirement
         const dateString = date.format(DATE_FORMAT_STRING);
         if (
-            (!isUndefinedOrNull(rule.dateEnd) && dateString >= rule.dateEnd) ||
+            (!isUndefinedOrNull(rule.effectiveDateEnd) && dateString >= rule.effectiveDateEnd) ||
             (rule.frequency === ONCE && dateString >= rule.processDate)
         ) {
             danielSan.retiredRuleIndices.push(index);
@@ -86,7 +89,7 @@ const retireRules = ({ danielSan }) => {
         dates: ['2019-07-04', '2019-09-17', '2019-10-31']
     }
 */
-const exclusionsPhase = ({ rule, date, processPhase }) => {
+const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
     let transientProcessPhase = processPhase || '';
     if (rule.exclusions) {
         // eslint-disable-next-line no-unused-vars
@@ -94,23 +97,61 @@ const exclusionsPhase = ({ rule, date, processPhase }) => {
         let dynamicDateSegmentForExclusion;
         let anyMatch = false;
         if (rule.exclusions.weekdays) {
-            relevantDateSegmentForExclusion = date.weekday();
-            anyMatch = rule.exclusions.weekdays.some((eventDate) => {
-                dynamicDateSegmentForExclusion = eventDate;
-                // eslint-disable-next-line eqeqeq
-                return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
-            });
+            if (
+                isUndefinedOrNull(rule.exclusions.context) ||
+                rule.exclusions.context === RULE_CONTEXT ||
+                rule.exclusions.context === BOTH
+            ) {
+                relevantDateSegmentForExclusion = date.day();
+                anyMatch = rule.exclusions.weekdays.some((eventDate) => {
+                    dynamicDateSegmentForExclusion = eventDate;
+                    // eslint-disable-next-line eqeqeq
+                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                });
+            } else if (rule.exclusions.context === EVENT_CONTEXT || rule.exclusions.context === BOTH) {
+                const convertedDate = convertTimeZone({
+                    timeZone: danielSan.timeZone,
+                    timeZoneType: danielSan.timeZoneType,
+                    date
+                });
+                relevantDateSegmentForExclusion = convertedDate.day();
+                anyMatch = rule.exclusions.weekdays.some((eventDate) => {
+                    dynamicDateSegmentForExclusion = eventDate;
+                    // eslint-disable-next-line eqeqeq
+                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                });
+            }
             if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
         }
         if (rule.exclusions.dates && transientProcessPhase !== EXECUTION_REJECTED) {
-            relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                frequency: ONCE,
-                date
-            });
-            anyMatch = rule.exclusions.dates.some((eventDate) => {
-                dynamicDateSegmentForExclusion = eventDate;
-                return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
-            });
+            if (
+                isUndefinedOrNull(rule.exclusions.context) ||
+                rule.exclusions.context === RULE_CONTEXT ||
+                rule.exclusions.context === BOTH
+            ) {
+                relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                    frequency: ONCE,
+                    date
+                });
+                anyMatch = rule.exclusions.dates.some((eventDate) => {
+                    dynamicDateSegmentForExclusion = eventDate;
+                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                });
+            } else if (rule.exclusions.context === EVENT_CONTEXT || rule.exclusions.context === BOTH) {
+                const convertedDate = convertTimeZone({
+                    timeZone: danielSan.timeZone,
+                    timeZoneType: danielSan.timeZoneType,
+                    date
+                });
+                relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                    frequency: ONCE,
+                    date: convertedDate
+                });
+                anyMatch = rule.exclusions.dates.some((eventDate) => {
+                    dynamicDateSegmentForExclusion = eventDate;
+                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                });
+            }
             if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
         }
     }

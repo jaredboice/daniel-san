@@ -1,5 +1,4 @@
 const moment = require('moment-timezone');
-const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const {
     UTC,
     LOCAL,
@@ -28,7 +27,7 @@ const initializeTimeZoneData = (obj) => {
     return {
         timeZoneType: thisTimeZoneType,
         timeZone: thisTimeZone
-    }
+    };
 };
 
 const createTimeZone = ({ timeZone, timeZoneType, date = null, dateString = null, timeString = null }) => {
@@ -57,6 +56,7 @@ const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
     const [dateString, newTimeString] = dateTimeString.split(DATE_TIME_DELIMITER);
     return {
         date: outputDate,
+        weekday: outputDate.day(),
         dateString, // generic dateString information / without time
         timeString: timeString ? newTimeString.toLowerCase() : null // only return timeString if the user intended so (via the timeStart property on the rule which will be passed into this function as timeString)
     };
@@ -64,34 +64,71 @@ const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
 
 const timeTravel = (danielSan) => {
     const { timeZone, timeZoneType } = danielSan;
-    let newDate;
-    let newDataObj = {};
+    let newTargetTimeStartDate;
+    let targetTimeStartObj = {};
+    let newTargetTimeEndDate;
     danielSan.events.forEach((event) => {
-        newDate = createTimeZone({
+        newTargetTimeStartDate = createTimeZone({
             timeZone: event.timeZone,
             timeZoneType: event.timeZoneType,
-            dateString: event.eventDate,
+            dateString: event.eventDateStart,
             timeString: event.timeStart,
             name: event.name
         });
-
-        newDataObj = convertTimeZone({
+        newTargetTimeEndDate = createTimeZone({
+            timeZone: event.timeZone,
+            timeZoneType: event.timeZoneType,
+            dateString: event.eventDateStart,
+            timeString: event.timeStart,
+            name: event.name
+        });
+        targetTimeStartObj = convertTimeZone({
             timeZone,
             timeZoneType,
-            date: newDate,
+            date: newTargetTimeStartDate,
             name: event.name,
             timeString: event.timeStart
         });
         event.timeZoneSource = `event / ${event.timeZone} / ${event.timeZoneType}`; // for future convenience
         event.timeZoneTarget = `danielSan / ${timeZone} / ${timeZoneType}`; // for future convenience
-        event.dateAtSource = newDate; // for future convenience, store the full original moment-timezone date from the rule
-        event.dateAtTarget = newDataObj.date; // for future convenience, store the full converted moment-timezone date for the event
-        event.eventDate = newDataObj.dateString;
-        event.timeStart = event.timeStart ? newDataObj.timeString : null;
+        event.dateAtSource = newTargetTimeStartDate; // for future convenience, store the full original moment-timezone date from the rule
+        event.dateAtTarget = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
         event.timeZone = danielSan.timeZone;
         event.timeZoneType = danielSan.timeZoneType;
-        if (isUndefinedOrNull(event.weekday)) {
-            event.weekday = newDate.day();
+        event.eventDateStart = targetTimeStartObj.dateString;
+        event.timeStart = event.timeStart ? targetTimeStartObj.timeString : null;
+        event.weekdayStart = targetTimeStartObj.weekday;
+        event.timeEnd = null;
+        if (event.timeStart) {
+            newTargetTimeEndDate = createTimeZone({
+                timeZone: event.timeZone,
+                timeZoneType: event.timeZoneType,
+                dateString: event.eventDateStart,
+                timeString: event.timeStart,
+                name: event.name
+            });
+            let spanningTime = false;
+            const targetTimeEndDateClone = targetTimeStartObj.date;
+            if (event.spanningMinutes) {
+                targetTimeEndDateClone.add(event.spanningMinutes, 'minute');
+                spanningTime = true;
+            }
+            if (event.spanningHours) {
+                targetTimeEndDateClone.add(event.spanningHours, 'hour');
+                spanningTime = true;
+            }
+            if (event.spanningDays) {
+                targetTimeEndDateClone.add(event.spanningDays, 'day');
+                spanningTime = true;
+            }
+            if (spanningTime) {
+                const DATE_TIME_FORMAT_STRING = `${DATE_FORMAT_STRING}${DATE_TIME_DELIMITER}${TIME_FORMAT_STRING}`;
+                const dateTimeString = targetTimeEndDateClone.format(DATE_TIME_FORMAT_STRING); // lowercase the AM/PM
+                const [dateString, newTimeString] = dateTimeString.split(DATE_TIME_DELIMITER);
+                event.eventDateEnd = dateString;
+                event.timeEnd = newTimeString.toLowerCase();
+                event.weekdayEnd = targetTimeEndDateClone.day();
+            }
         }
     });
 };

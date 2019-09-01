@@ -1,6 +1,6 @@
 const moment = require('moment-timezone');
 const { TimeStream } = require('./timeStream');
-const { initializeTimeZoneData, convertTimeZone, timeTravel } = require('./timeZone');
+const { initializeTimeZoneData, createTimeZone, convertTimeZone, timeTravel } = require('./timeZone');
 const { seekAndDestroyIrrelevantRules } = require('./analytics');
 const { getRelevantDateSegmentByFrequency } = require('./standardEvents/common');
 const { errorDisc } = require('./utility/errorHandling');
@@ -50,10 +50,29 @@ const {
 } = require('./constants');
 
 const discardEventsOutsideDateRange = (danielSan) => {
+    const { effectiveDateStart, timeStart, effectiveDateEnd, timeEnd, timeZone, timeZoneType } = danielSan;
     const eventsToDiscard = [];
     const newEventList = [];
     danielSan.events.forEach((event) => {
-        if (event.eventDate < danielSan.dateStart || event.eventDate > danielSan.dateEnd) {
+        const dateToStart = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: effectiveDateStart,
+            timeString: timeStart
+        });
+        const eventDateStart = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: event.eventDateStart,
+            timeString: event.timeStart
+        });
+        const dateToEnd = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: effectiveDateEnd,
+            timeString: timeEnd || timeStart
+        });
+        if (eventDateStart.isBefore(dateToStart) || eventDateStart.isAfter(dateToEnd)) {
             eventsToDiscard.push(event);
         } else {
             newEventList.push(event);
@@ -75,7 +94,10 @@ const buildEvents = ({ danielSan, rules, date }) => {
                 timeZoneType: rule.timeZoneType,
                 date
             }).date;
-            if (isUndefinedOrNull(rule.dateStart) || rule.dateStart <= convertedDate.format(DATE_FORMAT_STRING)) {
+            if (
+                isUndefinedOrNull(rule.effectiveDateStart) ||
+                rule.effectiveDateStart <= convertedDate.format(DATE_FORMAT_STRING)
+            ) {
                 processPhase = DISCOVERING_EVENT_TYPE;
                 switch (rule.type) {
                     case STANDARD_EVENT:
@@ -104,34 +126,39 @@ const buildEvents = ({ danielSan, rules, date }) => {
                             case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS:
                                 moveThisProcessDateBeforeTheseWeekdays({
                                     event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
+                                    specialAdjustment,
+                                    danielSan
                                 });
                                 break;
                             case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
                             case PRE_PAY:
                                 moveThisProcessDateBeforeTheseDates({
                                     event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
+                                    specialAdjustment,
+                                    danielSan
                                 });
                                 break;
                             case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
                                 moveThisProcessDateAfterTheseWeekdays({
                                     event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
+                                    specialAdjustment,
+                                    danielSan
                                 });
                                 break;
                             case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
                             case POST_PAY:
                                 moveThisProcessDateAfterTheseDates({
                                     event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
+                                    specialAdjustment,
+                                    danielSan
                                 });
                                 break;
                             case ADJUST_AMOUNT_ON_THESE_DATES:
                             case ADJUST_AMOUNT:
                                 adjustAmountOnTheseDates({
                                     event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment
+                                    specialAdjustment,
+                                    danielSan
                                 });
                                 break;
                             default:
@@ -205,8 +232,8 @@ const compareTime = (a, b) => {
 
 const sortDanielSan = (danielSan) => {
     danielSan.events.sort((a, b) => {
-        const thisDateA = a.eventDate.split(DATE_DELIMITER).join('');
-        const thisDateB = b.eventDate.split(DATE_DELIMITER).join('');
+        const thisDateA = a.eventDateStart.split(DATE_DELIMITER).join('');
+        const thisDateB = b.eventDateStart.split(DATE_DELIMITER).join('');
         if (thisDateA > thisDateB) {
             return 1;
         } else if (thisDateA < thisDateB) {
@@ -232,12 +259,12 @@ const sortDanielSan = (danielSan) => {
     });
 };
 
-const deleteIrrelevantRules = ({ danielSan, dateStartString }) => {
+const deleteIrrelevantRules = ({ danielSan, effectiveDateStartString }) => {
     try {
         const irrelevantRules = seekAndDestroyIrrelevantRules(danielSan);
         danielSan.irrelevantRules = irrelevantRules;
     } catch (err) {
-        throw errorDisc(err, 'error in deleteIrrelevantRules()', { dateStartString, rule });
+        throw errorDisc(err, 'error in deleteIrrelevantRules()', { effectiveDateStartString });
     }
 };
 
@@ -296,31 +323,31 @@ const prepareConfiguration = ({ danielSan, date }) => {
                     if (!rule.cycle) {
                         rule.cycle = 1;
                     }
-                    // if there is a dateStart without a syncDate, then just assign it to the syncDate
-                    if (!rule.syncDate && rule.dateStart) {
-                        rule.syncDate = rule.dateStart;
+                    // if there is a effectiveDateStart without a syncDate, then just assign it to the syncDate
+                    if (!rule.syncDate && rule.effectiveDateStart) {
+                        rule.syncDate = rule.effectiveDateStart;
                     }
                     const convertedDate = convertTimeZone({
                         timeZone: rule.timeZone,
                         timeZoneType: rule.timeZoneType,
                         date
                     }).date;
-                    const dateStartString = getRelevantDateSegmentByFrequency({
+                    const effectiveDateStartString = getRelevantDateSegmentByFrequency({
                         frequency: ONCE,
                         date: convertedDate
                     });
                     // if the following condition is not true, there is no reason to modify the modulus cycle
                     // eslint-disable-next-line no-lonely-if
-                    if (rule.syncDate && rule.syncDate !== dateStartString) {
-                        if (rule.syncDate > dateStartString) {
+                    if (rule.syncDate && rule.syncDate !== effectiveDateStartString) {
+                        if (rule.syncDate > effectiveDateStartString) {
                             // pre-modulation is not necessary here since we will simply start the cycle in the future
-                            rule.dateStart = rule.syncDate; // future date
+                            rule.effectiveDateStart = rule.syncDate; // future date
                             rule.syncDate = null;
                         } else {
-                            rule.dateStart = null;
+                            rule.effectiveDateStart = null;
                             cycleModulusUpToDate({
                                 rule,
-                                dateStartString
+                                effectiveDateStartString
                             });
                         }
                     }
@@ -340,30 +367,33 @@ const executeEvents = ({ danielSan }) => {
         try {
             event.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
             event.endBalance = event.beginBalance; // default value in case there is no amount field
+            let amountConverted = 0;
             if (!isUndefinedOrNull(event.amount)) {
-                const convertedAmount =
-                    danielSan.currencySymbol &&
-                    event.currencySymbol &&
-                    danielSan.currencySymbol !== event.currencySymbol
-                        ? danielSan.currencyConversion({
-                              amount: event.amount,
-                              inputSymbol: event.currencySymbol,
-                              outputSymbol: danielSan.currencySymbol
-                          })
-                        : event.amount;
-                event.endBalance = event.beginBalance + convertedAmount; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
-                event.convertedAmount = convertedAmount;
-                event.timeZoneType = danielSan.timeZoneType;
-                event.timeZone = danielSan.timeZone;
-                event.currencySymbol = danielSan.currencySymbol;
+                if (event.amount !== 0) {
+                    amountConverted =
+                        danielSan.currencySymbol &&
+                        event.currencySymbol &&
+                        danielSan.currencySymbol !== event.currencySymbol
+                            ? danielSan.currencyConversion({
+                                  amount: event.amount,
+                                  inputSymbol: event.currencySymbol,
+                                  outputSymbol: danielSan.currencySymbol
+                              })
+                            : event.amount;
+                }
+                event.endBalance = event.beginBalance + amountConverted; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+                event.amountConverted = amountConverted;
             }
+            event.timeZoneType = danielSan.timeZoneType;
+            event.timeZone = danielSan.timeZone;
+            event.currencySymbol = danielSan.currencySymbol;
         } catch (err) {
             throw errorDisc(err, 'error in executeEvents()', { event, index });
         }
     });
 };
 
-const checkForInputErrors = ({ danielSan, dateStartString, dateEndString }) => {
+const checkForInputErrors = ({ danielSan, effectiveDateStartString, effectiveDateEndString }) => {
     let errorMessage = null;
     if (
         isUndefinedOrNull(danielSan) ||
@@ -373,7 +403,11 @@ const checkForInputErrors = ({ danielSan, dateStartString, dateEndString }) => {
         errorMessage =
             'findBalance() must first find appropriate parameters. expected danielSan to be an object with cashflow rules';
     }
-    if (isUndefinedOrNull(dateStartString) || isUndefinedOrNull(dateEndString) || dateStartString > dateEndString) {
+    if (
+        isUndefinedOrNull(effectiveDateStartString) ||
+        isUndefinedOrNull(effectiveDateEndString) ||
+        effectiveDateStartString > effectiveDateEndString
+    ) {
         errorMessage = 'findBalance() must first find appropriate parameters. there was a problem with a date input';
     }
     if (!danielSan.rules || !Array.isArray(danielSan.rules) || danielSan.rules.length === 0) {
@@ -396,16 +430,17 @@ const findBalance = (danielSan = {}) => {
         }
         const timeZone = newDanielSan.timeZone;
         const timeZoneType = newDanielSan.timeZoneType;
-        const dateStartString = newDanielSan.dateStart;
-        const dateEndString = newDanielSan.dateEnd;
+        const effectiveDateStartString = newDanielSan.effectiveDateStart;
+        const effectiveDateEndString = newDanielSan.effectiveDateEnd;
         const timeStartString = newDanielSan.timeStart;
-        checkForInputErrors({ danielSan: newDanielSan, dateStartString, dateEndString });
+        checkForInputErrors({ danielSan: newDanielSan, effectiveDateStartString, effectiveDateEndString });
         const timeStream = new TimeStream({
-            dateStartString,
-            dateEndString,
+            effectiveDateStartString,
+            effectiveDateEndString,
+            timeStartString,
+            timeEndString: timeStartString,
             timeZone,
-            timeZoneType,
-            timeString: timeStartString
+            timeZoneType
         });
         prepareConfiguration({ danielSan: newDanielSan, date: timeStream.looperDate });
         deleteIrrelevantRules({

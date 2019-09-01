@@ -43,10 +43,10 @@ const buildStandardEvent = ({ danielSan, rule, date }) => {
             (rule.processDate === relevantDateSegmentByFrequency ||
                 _28DayCondition({ processDate: rule.processDate, date, frequency: rule.frequency, timeZone: rule.timeZone, timeZoneType: rule.timeZoneType }))
         ) {
-            processPhase = exclusionsPhase({ rule, date, processPhase });
+            processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
             processPhase = modulusPhase({ rule, processPhase });
             if (processPhase === EXECUTING_RULE_INSERTION) {
-                rule.eventDate = date.format(DATE_FORMAT_STRING);
+                rule.eventDateStart = date.format(DATE_FORMAT_STRING);
                 danielSan.events.push({ ...rule });
                 processPhase = MODIFIED;
             }

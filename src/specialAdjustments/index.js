@@ -1,15 +1,122 @@
 const moment = require('moment');
+const { isUndefinedOrNull } = require('../utility/validation');
 const { errorDisc } = require('../utility/errorHandling');
 const { streamForward, streamBackward } = require('../timeStream');
-const { createTimeZone } = require('../timeZone');
+const { createTimeZone, convertTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const {
     DATE_FORMAT_STRING,
     WEEKLY,
     ONCE,
     EXECUTING_RULE_ADJUSTMENT,
-    MODIFIED
+    MODIFIED,
+    RULE_CONTEXT,
+    EVENT_CONTEXT,
+    BOTH
 } = require('../constants');
+
+const reusableLogicForDatesMovements = ({
+    event,
+    specialAdjustment,
+    danielSan,
+    streamForwardOrBackWard,
+    dateArray,
+    frequency
+}) => {
+    const processPhase = EXECUTING_RULE_ADJUSTMENT;
+    if (dateArray) {
+        // note: timezone for "EVENT_CONTEXT" is actually coming from the root of the master danielSan controller for all the projections.
+        // Because that will be the final assigned timezone for the event.
+        // even though the timezones for "RULE_CONTEXT" are coming from the event object,
+        // their below dates are calcluated via the rule timezone data (which still hasn't changed yet)
+        let ruleContextLooperDate = createTimeZone({
+            timeZone: event.timeZone,
+            timeZoneType: event.timeZoneType,
+            dateString: event.eventDateStart,
+            timeString: event.timeStart
+        });
+        let ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
+            frequency,
+            date: ruleContextLooperDate
+        });
+        // note: the following 2 variables would only be used in EVENT_CONTEXT or BOTH
+        let eventContextLooperDate = convertTimeZone({
+            timeZone: danielSan.timeZone,
+            timeZoneType: danielSan.timeZoneType,
+            date: ruleContextLooperDate
+        });
+        let eventContextLooperDateString = getRelevantDateSegmentByFrequency({
+            frequency,
+            date: eventContextLooperDate.date
+        });
+        /* begin big code block */
+        /* conditions: RULE_CONTEXT / EVENT_CONTEXT / BOTH */
+        if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === RULE_CONTEXT) {
+            while (dateArray.includes(ruleContextLooperDateString)) {
+                ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
+                event.eventDateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                ruleContextLooperDate = createTimeZone({
+                    timeZone: event.timeZone,
+                    timeZoneType: event.timeZoneType,
+                    dateString: event.eventDateStart,
+                    timeString: event.timeStart
+                });
+                ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
+                    frequency,
+                    date: ruleContextLooperDate
+                });
+            }
+        } else if (specialAdjustment.context === EVENT_CONTEXT) {
+            while (dateArray.includes(eventContextLooperDateString)) {
+                ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
+                event.eventDateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                ruleContextLooperDate = createTimeZone({
+                    timeZone: event.timeZone,
+                    timeZoneType: event.timeZoneType,
+                    dateString: event.eventDateStart,
+                    timeString: event.timeStart
+                });
+                eventContextLooperDate = convertTimeZone({
+                    timeZone: danielSan.timeZone,
+                    timeZoneType: danielSan.timeZoneType,
+                    date: ruleContextLooperDate
+                });
+                eventContextLooperDateString = getRelevantDateSegmentByFrequency({
+                    frequency,
+                    date: eventContextLooperDate.date
+                });
+            }
+        } else if (specialAdjustment.context === BOTH) {
+            while (
+                dateArray.includes(eventContextLooperDateString) ||
+                dateArray.includes(ruleContextLooperDateString)
+            ) {
+                ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
+                event.eventDateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                ruleContextLooperDate = createTimeZone({
+                    timeZone: event.timeZone,
+                    timeZoneType: event.timeZoneType,
+                    dateString: event.eventDateStart,
+                    timeString: event.timeStart
+                });
+                ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
+                    frequency,
+                    date: ruleContextLooperDate
+                });
+                eventContextLooperDate = convertTimeZone({
+                    timeZone: danielSan.timeZone,
+                    timeZoneType: danielSan.timeZoneType,
+                    date: ruleContextLooperDate
+                });
+                eventContextLooperDateString = getRelevantDateSegmentByFrequency({
+                    frequency,
+                    date: eventContextLooperDate.date
+                });
+            }
+        }
+    }
+    return processPhase;
+};
 
 /*
     specialAdjustments: [
@@ -20,24 +127,17 @@ const {
     ];
 
 */
-const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment }) => {
+const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, danielSan }) => {
     let processPhase;
     try {
-        const { weekdays } = specialAdjustment;
-        processPhase = EXECUTING_RULE_ADJUSTMENT;
-        let thisWeekday = getRelevantDateSegmentByFrequency({
-            frequency: WEEKLY,
-            date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
+        processPhase = reusableLogicForDatesMovements({
+            event,
+            specialAdjustment,
+            danielSan,
+            streamForwardOrBackWard: streamBackward,
+            dateArray: specialAdjustment.weekdays,
+            frequency: WEEKLY
         });
-        while (weekdays.includes(thisWeekday)) {
-            const looperDate = streamBackward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
-            event.eventDate = looperDate.format(DATE_FORMAT_STRING);
-            thisWeekday = getRelevantDateSegmentByFrequency({
-                frequency: WEEKLY,
-                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
-            });
-            processPhase = MODIFIED;
-        }
         return processPhase;
     } catch (err) {
         throw errorDisc(err, 'error in moveThisProcessDateBeforeTheseWeekdays()', {
@@ -48,7 +148,6 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment }) =>
     }
 };
 
-
 /*
     specialAdjustments: [
         {
@@ -58,25 +157,17 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment }) =>
     ];
 
 */
-const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment }) => {
+const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danielSan }) => {
     let processPhase;
     try {
-        const { weekdays } = specialAdjustment;
-        processPhase = EXECUTING_RULE_ADJUSTMENT;
-        let thisWeekday = getRelevantDateSegmentByFrequency({
-            frequency: WEEKLY,
-            date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
+        processPhase = reusableLogicForDatesMovements({
+            event,
+            specialAdjustment,
+            danielSan,
+            streamForwardOrBackWard: streamForward,
+            dateArray: specialAdjustment.weekdays,
+            frequency: WEEKLY
         });
-        while (weekdays.includes(thisWeekday)) {
-            const looperDate = streamForward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
-            event.eventDate = looperDate.format(DATE_FORMAT_STRING);
-            thisWeekday = getRelevantDateSegmentByFrequency({
-                frequency: WEEKLY,
-                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
-            });
-            processPhase = MODIFIED;
-        }
-        return processPhase;
     } catch (err) {
         throw errorDisc(err, 'error in moveThisProcessDateAfterTheseWeekdays()', {
             processPhase,
@@ -96,32 +187,28 @@ const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment }) => 
         ]
 
 */
-const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment }) => {
+const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielSan }) => {
     let processPhase;
     try {
-        const { dates } = specialAdjustment;
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
-            let currentProcessDate = getRelevantDateSegmentByFrequency({
-                frequency: ONCE,
-                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
+            processPhase = reusableLogicForDatesMovements({
+                event,
+                specialAdjustment,
+                danielSan,
+                streamForwardOrBackWard: streamBackward,
+                dateArray: specialAdjustment.dates,
+                frequency: ONCE
             });
-            while (dates.includes(currentProcessDate)) {
-                const looperDate = streamBackward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
-                event.eventDate = looperDate.format(DATE_FORMAT_STRING);
-                currentProcessDate = getRelevantDateSegmentByFrequency({
-                    frequency: ONCE,
-                    date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
-                });
-            }
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateBeforeTheseWeekdays({
                 event,
-                specialAdjustment
+                specialAdjustment,
+                danielSan
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateBeforeTheseDates({ event, specialAdjustment });
+                processPhase = moveThisProcessDateBeforeTheseDates({ event, specialAdjustment, danielSan });
             }
         }
         return processPhase;
@@ -144,32 +231,28 @@ const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment }) => {
         ]
 
 */
-const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment }) => {
+const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSan }) => {
     let processPhase;
     try {
-        const { dates } = specialAdjustment;
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
-            let currentProcessDate = getRelevantDateSegmentByFrequency({
-                frequency: ONCE,
-                date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
+            processPhase = reusableLogicForDatesMovements({
+                event,
+                specialAdjustment,
+                danielSan,
+                streamForwardOrBackWard: streamForward,
+                dateArray: specialAdjustment.dates,
+                frequency: ONCE
             });
-            while (dates.includes(currentProcessDate)) {
-                const looperDate = streamForward(createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate }));
-                event.eventDate = looperDate.format(DATE_FORMAT_STRING);
-                currentProcessDate = getRelevantDateSegmentByFrequency({
-                    frequency: ONCE,
-                    date: createTimeZone({ timeZone: event.timeZone, timeZoneType: event.timeZoneType, dateString: event.eventDate })
-                });
-            }
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateAfterTheseWeekdays({
                 event,
-                specialAdjustment
+                specialAdjustment,
+                danielSan
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateAfterTheseDates({ event, specialAdjustment });
+                processPhase = moveThisProcessDateAfterTheseDates({ event, specialAdjustment, danielSan });
             }
         }
         return processPhase;
@@ -198,14 +281,28 @@ const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment }) => {
         }
     ]
 */
-const adjustAmountOnTheseDates = ({ event, specialAdjustment }) => {
+const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     try {
-        specialAdjustment.dates.forEach((looperDate, looperDateIndex) => {
-            if (looperDate === event.eventDate && event.amount) {
-                event.amount += specialAdjustment.amounts[looperDateIndex];
+        specialAdjustment.dates.forEach((ruleContextLooperDate, looperDateIndex) => {
+            if (ruleContextLooperDate === event.eventDateStart && event.amount) {
+                if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === RULE_CONTEXT) {
+                    event.amount += specialAdjustment.amounts[looperDateIndex];
+                } else if (specialAdjustment.context === EVENT_CONTEXT) {
+                    const adjustmentConverted =
+                        danielSan.currencySymbol &&
+                        event.currencySymbol &&
+                        danielSan.currencySymbol !== event.currencySymbol
+                            ? danielSan.currencyConversion({
+                                  amount: specialAdjustment.amounts[looperDateIndex],
+                                  inputSymbol: event.currencySymbol,
+                                  outputSymbol: danielSan.currencySymbol
+                              })
+                            : specialAdjustment.amounts[looperDateIndex];
+                    event.amount += adjustmentConverted;
+                }
+                processPhase = MODIFIED;
             }
-            processPhase = MODIFIED;
         });
         return processPhase;
     } catch (err) {

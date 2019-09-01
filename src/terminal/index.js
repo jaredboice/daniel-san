@@ -239,14 +239,14 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
         );
     }
     if (
-        !isUndefinedOrNull(event.convertedAmount) &&
+        !isUndefinedOrNull(event.amountConverted) &&
         !isUndefinedOrNull(event.amount) &&
         currencySymbol !== event.currencySymbol
     ) {
         // eslint-disable-next-line no-console
         console.log(
-            `convertedAmount: `, // eslint-disable-line quotes
-            formattingFunction(event.convertedAmount, {
+            `amountConverted: `, // eslint-disable-line quotes
+            formattingFunction(event.amountConverted, {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
@@ -271,8 +271,9 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
         );
     }
     // eslint-disable-next-line no-console
-    console.log(`eventDate: `, event.eventDate); // eslint-disable-line quotes
+    console.log(`eventDateStart: `, event.eventDateStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
+    if (event.timeStart) console.log('timeStart: ', event.timeStart);
     lineSeparator(1);
 };
 
@@ -305,14 +306,14 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
         );
     }
     if (
-        !isUndefinedOrNull(event.convertedAmount) &&
+        !isUndefinedOrNull(event.amountConverted) &&
         !isUndefinedOrNull(event.amount) &&
         event.currencySymbol !== currencySymbol
     ) {
         // eslint-disable-next-line no-console
         console.log(
-            `convertedAmount: `, // eslint-disable-line quotes
-            formattingFunction(event.convertedAmount, {
+            `amountConverted: `, // eslint-disable-line quotes
+            formattingFunction(event.amountConverted, {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
@@ -338,13 +339,21 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     }
 
     // eslint-disable-next-line no-console
-    console.log(`eventDate: `, event.eventDate); // eslint-disable-line quotes
+    console.log(`eventDateStart: `, event.eventDateStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
+    if (event.eventDateEnd) console.log(`effectiveDateEnd: `, event.eventDateEnd); // eslint-disable-line quotes
+            // eslint-disable-next-line no-console
     if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
-    if (!isUndefinedOrNull(event.weekday)) {
-        let weekdayString = getWeekdayString(event.weekday);
-        console.log(`weekday: ${weekdayString}`);
+    if (event.timeEnd) console.log(`timeEnd: `, event.timeEnd); // eslint-disable-line quotes
+    // eslint-disable-next-line no-console
+    if (!isUndefinedOrNull(event.weekdayStart)) {
+        const weekdayString = getWeekdayString(event.weekdayStart);
+        console.log(`weekdayStart: ${weekdayString}`); // eslint-disable-line no-console
+    }
+    if (!isUndefinedOrNull(event.weekdayEnd)) {
+        const weekdayString = getWeekdayString(event.weekdayEnd);
+        console.log(`weekdayEnd: ${weekdayString}`); // eslint-disable-line no-console
     }
     if (!isUndefinedOrNull(event.notes)) console.log(`notes: `, event.notes); // eslint-disable-line quotes
     lineSeparator(1);
@@ -390,14 +399,14 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                     })
                 );
             } else if (
-                key === 'convertedAmount' &&
+                key === 'amountConverted' &&
                 !isUndefinedOrNull(event.amount) &&
                 event.currencySymbol !== currencySymbol
             ) {
                 // eslint-disable-next-line no-console
                 console.log(
-                    `convertedAmount: `, // eslint-disable-line quotes
-                    formattingFunction(event.convertedAmount, {
+                    `amountConverted: `, // eslint-disable-line quotes
+                    formattingFunction(event.amountConverted, {
                         minIntegerDigits,
                         minDecimalDigits,
                         maxDecimalDigits,
@@ -435,27 +444,45 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
                 // eslint-disable-next-line no-console
                 console.log(`currencySymbol: ${event.currencySymbol}`);
-            } else if (key === 'dateStart' && event.dateStart != null) {
+            } else if (key === 'effectiveDateStart' && event.effectiveDateStart != null) {
                 // eslint-disable-next-line no-console
-                console.log(`dateStart: ${event.dateStart}`);
-            } else if (key === 'dateEnd' && event.dateEnd != null) {
+                console.log(`effectiveDateStart: ${event.effectiveDateStart}`);
+            } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
                 // eslint-disable-next-line no-console
-                console.log(`dateEnd: ${event.dateEnd}`);
-            } else if (key === 'weekday') {
-                let weekdayString = getWeekdayString(event.weekday);
-                if (!isUndefinedOrNull(event.weekday)) {
-                    let weekdayString = getWeekdayString(event.weekday);
-                    console.log(`weekday: ${weekdayString}`);
-                }
+                console.log(`effectiveDateEnd: ${event.effectiveDateEnd}`);
+            } else if (key === 'eventDateStart' && event.eventDateStart != null) {
+                // eslint-disable-next-line no-console
+                console.log(`eventDateStart: ${event.eventDateStart}`);
+            } else if (key === 'eventDateEnd' && event.eventDateEnd != null) {
+                // eslint-disable-next-line no-console
+                console.log(`eventDateEnd: ${event.eventDateEnd}`);
+            } else if (key === 'timeStart' && event.timeStart != null) {
+                // eslint-disable-next-line no-console
+                console.log(`timeStart: ${event.timeStart}`);
+            } else if (key === 'timeEnd' && event.timeEnd != null) {
+                // eslint-disable-next-line no-console
+                console.log(`timeEnd: ${event.timeEnd}`);
+            } else if (key === 'weekdayStart' && event.weekdayStart != null) {
+                const weekdayString = getWeekdayString(event.weekdayStart);
+                console.log(`weekdayStart: ${weekdayString}`); // eslint-disable-line no-console
+            } else if (key === 'weekdayEnd' && event.weekdayEnd != null) {
+                const weekdayString = getWeekdayString(event.weekdayEnd);
+                console.log(`weekdayEnd: ${weekdayString}`); // eslint-disable-line no-console
             } else if (
                 key !== 'name' &&
                 key !== 'amount' &&
-                key !== 'convertedAmount' &&
+                key !== 'amountConverted' &&
                 key !== 'beginBalance' &&
                 key !== 'endBalance' &&
                 key !== 'currencySymbol' &&
-                key !== 'dateStart' &&
-                key !== 'dateEnd'
+                key !== 'effectiveDateStart' &&
+                key !== 'effectiveDateEnd' &&
+                key !== 'eventDateStart' &&
+                key !== 'eventDateEnd' &&
+                key !== 'timeStart' &&
+                key !== 'timeEnd' &&
+                key !== 'weekdayStart' &&
+                key !== 'weekdayEnd'
             ) {
                 // eslint-disable-next-line no-console
                 console.log(`${key}: ${value}`);
@@ -526,8 +553,10 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrEndBal
     if (!isUndefinedOrNull(danielSan.timeZone)) {
         lineHeading(` timeZone: ${danielSan.timeZone} `);
     }
-    lineHeading(` dateStart: ${danielSan.dateStart} `);
-    lineHeading(` dateEnd:   ${danielSan.dateEnd} `);
+    lineHeading(` effectiveDateStart: ${danielSan.effectiveDateStart} `);
+    if (danielSan.timeStart) lineHeading(` timeStart: ${danielSan.timeStart} `);
+    lineHeading(` effectiveDateEnd:   ${danielSan.effectiveDateEnd} `);
+    if (danielSan.timeEnd) lineHeading(` timeEnd: ${danielSan.timeEnd} `);
     lineSeparator(2);
 };
 
@@ -610,7 +639,7 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
     if (rulesToRetire) {
         terminalBoundary(3);
         lineHeading(' begin showRulesToRetire ');
-        lineHeading(' the following rules have obsolete dateEnd values ');
+        lineHeading(' the following rules have obsolete effectiveDateEnd values ');
         lineSeparator(2);
         eventsLogger({
             events: rulesToRetire,

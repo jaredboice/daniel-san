@@ -11,23 +11,23 @@ const streamBackward = (momentDate) => {
 };
 
 class TimeStream {
-    constructor({ dateStartString, dateEndString, timeZone = null, timeZoneType = null, timeString = null }) {
-        this.dateStartString = dateStartString;
-        this.dateEndString = dateEndString;
-        this.dateStart = createTimeZone({ timeZone, timeZoneType, dateString: dateStartString, timeString });
-        this.dateEnd = createTimeZone({ timeZone, timeZoneType, dateString: dateEndString, timeString });
-        this.looperDate = createTimeZone({ timeZone, timeZoneType, dateString: dateStartString, timeString });
+    constructor({ effectiveDateStartString, effectiveDateEndString, timeZone = null, timeZoneType = null, timeStartString = null, timeEndString = null }) {
+        this.effectiveDateStartString = effectiveDateStartString;
+        this.effectiveDateEndString = effectiveDateEndString;
+        this.effectiveDateStart = createTimeZone({ timeZone, timeZoneType, dateString: effectiveDateStartString, timeString: timeStartString });
+        this.effectiveDateEnd = createTimeZone({ timeZone, timeZoneType, dateString: effectiveDateEndString, timeString: timeEndString });
+        this.looperDate = createTimeZone({ timeZone, timeZoneType, dateString: effectiveDateStartString, timeString: timeStartString });
     }
 
     stream1DayForward() {
         this.looperDate = streamForward(this.looperDate);
-        // const looperIsNotOnTheEdge = moment.max([this.looperDate, this.dateEnd]) !== this.looperDate;
-        const looperIsNotBeyondTheEdge = !this.looperDate.isAfter(this.dateEnd);
+        // const looperIsNotOnTheEdge = moment.max([this.looperDate, this.effectiveDateEnd]) !== this.looperDate;
+        const looperIsNotBeyondTheEdge = !this.looperDate.isAfter(this.effectiveDateEnd);
         return looperIsNotBeyondTheEdge;
     }
     stream1DayBackward() {
         this.looperDate = streamBackward(this.looperDate);
-        const looperIsNotBeyondTheEdge = !this.looperDate.isBefore(this.dateEnd);
+        const looperIsNotBeyondTheEdge = !this.looperDate.isBefore(this.effectiveDateEnd);
         return looperIsNotBeyondTheEdge;
     }
 }

@@ -8,15 +8,15 @@ const {
     DAILY
 } = require('../constants');
 
-const cycleModulusUpToDate = ({ rule, dateStartString }) => {
-    // note: for when syncDate input is less than dateStartString
+const cycleModulusUpToDate = ({ rule, effectiveDateStartString }) => {
+    // note: for when syncDate input is less than effectiveDateStartString
     let looperDate = createTimeZone({ timeZone: rule.timeZone, timeZoneType: rule.timeZoneType, dateString: rule.syncDate });
     let looperDateFormatted = looperDate.format(DATE_FORMAT_STRING);
     switch (rule.frequency) {
     case DAILY:
         // cycle back once for daily since every day is a modulation and because Math
         cycleModulusDown(rule);
-        while (looperDateFormatted <= dateStartString) {
+        while (looperDateFormatted <= effectiveDateStartString) {
             cycleModulusUp(rule);
             looperDate = streamForward(looperDate);
             looperDateFormatted = looperDate.format(DATE_FORMAT_STRING);
@@ -28,7 +28,7 @@ const cycleModulusUpToDate = ({ rule, dateStartString }) => {
             frequency: rule.frequency,
             date: looperDate
         });
-        while (looperDateFormatted < dateStartString) {
+        while (looperDateFormatted < effectiveDateStartString) {
             relevantDateSegmentByFrequency = getRelevantDateSegmentByFrequency({
                 frequency: rule.frequency,
                 date: looperDate
