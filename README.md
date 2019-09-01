@@ -415,7 +415,7 @@ const danielSan = {
 
 When applying the ADJUST_AMOUNT specialAdjustment for rules with multi-currency data, the following property is useful:
 
--   `context: EVENT_SOURCE_CONTEXT` _(applies the adjustment in the context of the original rule's currencySymbol), as if you yourself were at the event source spending the native currency_
+-   `context: EVENT_SOURCE_CONTEXT` _(applies the adjustment in the context of the original rule's currencySymbol, as if you yourself were at the event-source spending the native currency as it is defined on the rule)_
 
 options in the above scenario include:
 
