@@ -411,24 +411,25 @@ const danielSan = {
     events: [] // future balance projections stored here
 };
 ```
+**Pro Tip**
 
-When applying the ADJUST_AMOUNT specialAdjustments for rules with multi-currency data, the following property is useful:
+When applying the ADJUST_AMOUNT specialAdjustment for rules with multi-currency data, the following property is useful:
 
--   `context: RULE_CONTEXT` _(applies the adjustment to the context of the original rule's currencySymbol)_
+-   `context: RULE_CONTEXT` _(applies the adjustment in the context of the original rule's currencySymbol)_
 
 options in the above scenario include:
 
 -   `context: RULE_CONTEXT` _(default value)_
--   `context: EVENT_CONTEXT` _(applies the context of the final converted currency value via the currencySymbol on the master controller)_
+-   `context: EVENT_CONTEXT` _(applies the adjustment in the context of the final converted currency value via the currencySymbol on the master controller)_
 
 -all constants are available for import-
 
 
-##Time**  
+##Time
 
 timeStart and timeEnd are optional fields for the master controller context (at the root level of the danielSan object). Any events that fall outside of those beginning and end time values will be discarded. 
 
-timeStart is optional at the rule level as well. However, timeEnd is calculated for you when applying any of the following time-span fields (individually or combined) to a rule:
+timeStart is optional at the rule level as well. However, in this context, timeEnd is calculated for you, specifically when applying any of the following time-span fields (individually or combined) to a rule:
 
 -   `spanningMinutes: 30` _(adds 30 minutes to the event timespan)_
 -   `spanningHours: 3` _(adds 3 hours to the event timespan)_
@@ -446,7 +447,7 @@ const danielSan = {
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
     timeZone: 'America_New_York', // the time zone that every rule will be converted to; see moment-timez one for a complete list time zones
-    timeZoneType: LOCAL, // LOCAL or UTC are available to be imported as constants
+    timeZoneType: LOCAL, // LOCAL and UTC are available to be imported as constants
     rules: [
         { // rule 1
             type: STANDARD_EVENT,
@@ -463,18 +464,21 @@ const danielSan = {
 };
 ```
 
-When applying PRE_PAY and POST_PAY specialAdjustments, or exclusions to rules with time zones, the following property is useful:
+**Pro Tip**
 
--   `context: RULE_CONTEXT` _(applies the time zone conversion to the context of the original rule's timeZone data)_
+For starters, you should commit to using either all LOCAL time zones or all UTC. Mixing them together could produce confusing or unintended results.
+
+In Addition, when applying PRE_PAY and POST_PAY specialAdjustments, or exclusions to rules with time zones, the following property is useful:
+
+-   `context: RULE_CONTEXT` _(applies the adjustment in the context of the original rule's timeZone data)_
 
 options in the above scenario include:  
 
--   `context: RULE_CONTEXT` _(aefault value)_
--   `context: EVENT_CONTEXT` _(the context of the event's final calculated time zone via the timeZone indicator on the danielSan master controller)_
--   `context: BOTH` _(applies the time zone conversion to the context of the original rule's timeZone data)_  
+-   `context: RULE_CONTEXT` _(default value)_
+-   `context: EVENT_CONTEXT` _(applies the adjustment in the context of the event's final calculated time zone via the timeZone indicator on the root-level of the danielSan master controller object)_
+-   `context: BOTH` _(applies the adjustment with respect to both of the contexts mentioned above; As an example of usage, BOTH is great when you don't want a weekend or corporate holiday to trigger in ANY context)_
 
 -all constants are available for import-
-
 
 
 ## Terminal
