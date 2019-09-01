@@ -15,7 +15,7 @@ const {
     BOTH
 } = require('../constants');
 
-const reusableLogicForDatesMovements = ({
+const reusableLogicForDateMovements = ({
     event,
     specialAdjustment,
     danielSan,
@@ -130,7 +130,7 @@ const reusableLogicForDatesMovements = ({
 const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, danielSan }) => {
     let processPhase;
     try {
-        processPhase = reusableLogicForDatesMovements({
+        processPhase = reusableLogicForDateMovements({
             event,
             specialAdjustment,
             danielSan,
@@ -160,7 +160,7 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, dani
 const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danielSan }) => {
     let processPhase;
     try {
-        processPhase = reusableLogicForDatesMovements({
+        processPhase = reusableLogicForDateMovements({
             event,
             specialAdjustment,
             danielSan,
@@ -192,7 +192,7 @@ const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielS
     try {
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
-            processPhase = reusableLogicForDatesMovements({
+            processPhase = reusableLogicForDateMovements({
                 event,
                 specialAdjustment,
                 danielSan,
@@ -236,7 +236,7 @@ const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSa
     try {
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
-            processPhase = reusableLogicForDatesMovements({
+            processPhase = reusableLogicForDateMovements({
                 event,
                 specialAdjustment,
                 danielSan,

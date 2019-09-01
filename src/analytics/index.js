@@ -35,6 +35,9 @@ const findRulesToRetire = (danielSan) => {
         if (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateStartString) {
             rule.ruleIndex = index;
             return rule;
+        } else if (rule.frequency === ONCE && rule.processDate < convertedDateStartString) {
+            rule.ruleIndex = index;
+            return rule;
         }
     });
     if (rulesToRetire.length > 0) {
