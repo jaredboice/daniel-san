@@ -569,7 +569,7 @@ const standardTerminalHeader = ({ terminalOptions }) => {
     lineSeparator(2);
 };
 
-const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrBalanceEndingKey = 'balanceBeginning') => {
+const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -578,10 +578,23 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrBalanc
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
-    if (!isUndefinedOrNull(danielSan[beginOrBalanceEndingKey])) {
+    if (!isUndefinedOrNull(danielSan['balanceBeginning'])) {
         lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
         lineHeading(
-            ` ${beginOrBalanceEndingKey}: ${formattingFunction(danielSan[beginOrBalanceEndingKey], {
+            ` ${'balanceBeginning'}: ${formattingFunction(danielSan['balanceBeginning'], {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+            })} `
+        );
+    }
+    if (!isUndefinedOrNull(danielSan['balanceEnding'])) {
+        lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
+        lineHeading(
+            ` ${balanceEnding}: ${formattingFunction(danielSan[balanceEnding], {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
@@ -1108,7 +1121,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
                     break;
             }
             lineSeparator(2);
-            standardTerminalSubheader({ danielSan, terminalOptions }, 'balanceEnding');
+            standardTerminalSubheader({ danielSan, terminalOptions });
             lineSeparator(2);
             // eslint-disable-next-line no-console
             console.log(getRandomMiyagiQuote());
