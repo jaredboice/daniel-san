@@ -15,9 +15,7 @@ const { isUndefinedOrNull } = require('../utility/validation');
 const initializeTimeZoneData = (obj) => {
     const thisTimeZoneType = obj.timeZoneType || LOCAL; // default value
     let thisTimeZone; // default value is set below
-    if (!obj.timeZone && thisTimeZoneType === UTC) {
-        thisTimeZone = GREENWICH;
-    } else if (!obj.timeZone) {
+    if (!obj.timeZone) {
         thisTimeZone = moment.tz.guess();
     } else {
         thisTimeZone = obj.timeZone;
