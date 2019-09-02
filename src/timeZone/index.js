@@ -96,7 +96,7 @@ const timeTravel = (danielSan) => {
                 timeZoneType: event.timeZoneType,
                 dateString: event.effectiveDateStart
             });
-            transientDateObjConverted = convertTimeZone({
+            const transientDateObjConverted = convertTimeZone({
                 timeZone,
                 timeZoneType,
                 date: transientDateObj
@@ -109,7 +109,7 @@ const timeTravel = (danielSan) => {
                 timeZoneType: event.timeZoneType,
                 dateString: event.effectiveDateEnd
             });
-            transientDateObjConverted = convertTimeZone({
+            const transientDateObjConverted = convertTimeZone({
                 timeZone,
                 timeZoneType,
                 date: transientDateObj
@@ -122,7 +122,7 @@ const timeTravel = (danielSan) => {
                 timeZoneType: event.timeZoneType,
                 dateString: event.syncDate
             });
-            transientDateObjConverted = convertTimeZone({
+            const transientDateObjConverted = convertTimeZone({
                 timeZone,
                 timeZoneType,
                 date: transientDateObj
