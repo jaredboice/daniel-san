@@ -271,7 +271,7 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
         );
     }
     // eslint-disable-next-line no-console
-    console.log(`eventDateStart: `, event.eventDateStart); // eslint-disable-line quotes
+    console.log(`dateStart: `, event.dateStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
     if (event.timeStart) console.log('timeStart: ', event.timeStart);
     lineSeparator(1);
@@ -339,9 +339,9 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     }
 
     // eslint-disable-next-line no-console
-    console.log(`eventDateStart: `, event.eventDateStart); // eslint-disable-line quotes
+    console.log(`dateStart: `, event.dateStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
-    if (event.eventDateEnd) console.log(`effectiveDateEnd: `, event.eventDateEnd); // eslint-disable-line quotes
+    if (event.dateEnd) console.log(`effectiveDateEnd: `, event.dateEnd); // eslint-disable-line quotes
             // eslint-disable-next-line no-console
     if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
@@ -450,12 +450,12 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
                 // eslint-disable-next-line no-console
                 console.log(`effectiveDateEnd: ${event.effectiveDateEnd}`);
-            } else if (key === 'eventDateStart' && event.eventDateStart != null) {
+            } else if (key === 'dateStart' && event.dateStart != null) {
                 // eslint-disable-next-line no-console
-                console.log(`eventDateStart: ${event.eventDateStart}`);
-            } else if (key === 'eventDateEnd' && event.eventDateEnd != null) {
+                console.log(`dateStart: ${event.dateStart}`);
+            } else if (key === 'dateEnd' && event.dateEnd != null) {
                 // eslint-disable-next-line no-console
-                console.log(`eventDateEnd: ${event.eventDateEnd}`);
+                console.log(`dateEnd: ${event.dateEnd}`);
             } else if (key === 'timeStart' && event.timeStart != null) {
                 // eslint-disable-next-line no-console
                 console.log(`timeStart: ${event.timeStart}`);
@@ -477,8 +477,8 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
                 key !== 'currencySymbol' &&
                 key !== 'effectiveDateStart' &&
                 key !== 'effectiveDateEnd' &&
-                key !== 'eventDateStart' &&
-                key !== 'eventDateEnd' &&
+                key !== 'dateStart' &&
+                key !== 'dateEnd' &&
                 key !== 'timeStart' &&
                 key !== 'timeEnd' &&
                 key !== 'weekdayStart' &&

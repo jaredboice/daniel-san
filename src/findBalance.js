@@ -60,10 +60,10 @@ const discardEventsOutsideDateRange = (danielSan) => {
             dateString: effectiveDateStart,
             timeString: timeStart
         });
-        const eventDateStart = createTimeZone({
+        const dateStart = createTimeZone({
             timeZone,
             timeZoneType,
-            dateString: event.eventDateStart,
+            dateString: event.dateStart,
             timeString: event.timeStart
         });
         const dateToEnd = createTimeZone({
@@ -72,7 +72,7 @@ const discardEventsOutsideDateRange = (danielSan) => {
             dateString: effectiveDateEnd,
             timeString: timeEnd || timeStart
         });
-        if (eventDateStart.isBefore(dateToStart) || eventDateStart.isAfter(dateToEnd)) {
+        if (dateStart.isBefore(dateToStart) || dateStart.isAfter(dateToEnd)) {
             eventsToDiscard.push(event);
         } else {
             newEventList.push(event);
@@ -232,8 +232,8 @@ const compareTime = (a, b) => {
 
 const sortDanielSan = (danielSan) => {
     danielSan.events.sort((a, b) => {
-        const thisDateA = a.eventDateStart.split(DATE_DELIMITER).join('');
-        const thisDateB = b.eventDateStart.split(DATE_DELIMITER).join('');
+        const thisDateA = a.dateStart.split(DATE_DELIMITER).join('');
+        const thisDateB = b.dateStart.split(DATE_DELIMITER).join('');
         if (thisDateA > thisDateB) {
             return 1;
         } else if (thisDateA < thisDateB) {

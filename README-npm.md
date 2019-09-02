@@ -17,7 +17,7 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-St
 maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
 
 ## Breaking Change in v8.0.0
-As of v8.0.0, to make way for a cleaner distinction between event dates and effective dates, dateStart and dateEnd are now effectiveDateStart and effectiveDateEnd, respectively. And eventDate has been changed to eventStartDate as a cleaner approach to applying time spans to events.
+As of v8.0.0, to make way for a cleaner distinction between event dates and effective dates, dateStart and dateEnd at the top-level of the danielSan master control unit are now effectiveDateStart and effectiveDateEnd, respectively. And the eventDate on the event level has been changed to dateStart as a cleaner approach to applying time spans to events.
 
 ## Breaking Change in v3.0.0
 In v3.0, the currencyConversion function parameters have changed from currentSymbol and futureSymbol to inputSymbol and outputSymbol, respectively. Because naming things is hard.

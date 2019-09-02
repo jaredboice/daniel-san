@@ -46,7 +46,7 @@ const buildStandardEvent = ({ danielSan, rule, date }) => {
             processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
             processPhase = modulusPhase({ rule, processPhase });
             if (processPhase === EXECUTING_RULE_INSERTION) {
-                rule.eventDateStart = date.format(DATE_FORMAT_STRING);
+                rule.dateStart = date.format(DATE_FORMAT_STRING);
                 danielSan.events.push({ ...rule });
                 processPhase = MODIFIED;
             }

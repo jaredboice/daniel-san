@@ -32,7 +32,7 @@ const reusableLogicForDateMovements = ({
         let ruleContextLooperDate = createTimeZone({
             timeZone: event.timeZone,
             timeZoneType: event.timeZoneType,
-            dateString: event.eventDateStart,
+            dateString: event.dateStart,
             timeString: event.timeStart
         });
         let ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
@@ -54,11 +54,11 @@ const reusableLogicForDateMovements = ({
         if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === EVENT_SOURCE_CONTEXT) {
             while (dateArray.includes(ruleContextLooperDateString)) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
-                event.eventDateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
-                    dateString: event.eventDateStart,
+                    dateString: event.dateStart,
                     timeString: event.timeStart
                 });
                 ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
@@ -69,11 +69,11 @@ const reusableLogicForDateMovements = ({
         } else if (specialAdjustment.context === OBSERVER_SOURCE_CONTEXT) {
             while (dateArray.includes(observerContextLooperDateString)) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
-                event.eventDateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
-                    dateString: event.eventDateStart,
+                    dateString: event.dateStart,
                     timeString: event.timeStart
                 });
                 observerContextLooperDate = convertTimeZone({
@@ -92,11 +92,11 @@ const reusableLogicForDateMovements = ({
                 dateArray.includes(ruleContextLooperDateString)
             ) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
-                event.eventDateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
-                    dateString: event.eventDateStart,
+                    dateString: event.dateStart,
                     timeString: event.timeStart
                 });
                 ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
@@ -285,7 +285,7 @@ const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     try {
         specialAdjustment.dates.forEach((ruleContextLooperDate, looperDateIndex) => {
-            if (ruleContextLooperDate === event.eventDateStart && event.amount) {
+            if (ruleContextLooperDate === event.dateStart && event.amount) {
                 if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === EVENT_SOURCE_CONTEXT) {
                     event.amount += specialAdjustment.amounts[looperDateIndex];
                 } else if (specialAdjustment.context === OBSERVER_SOURCE_CONTEXT) {

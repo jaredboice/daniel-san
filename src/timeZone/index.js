@@ -71,31 +71,67 @@ const timeTravel = (danielSan) => {
         newTargetTimeStartDate = createTimeZone({
             timeZone: event.timeZone,
             timeZoneType: event.timeZoneType,
-            dateString: event.eventDateStart,
+            dateString: event.dateStart,
             timeString: event.timeStart,
-            name: event.name
         });
         newTargetTimeEndDate = createTimeZone({
             timeZone: event.timeZone,
             timeZoneType: event.timeZoneType,
-            dateString: event.eventDateStart,
+            dateString: event.dateStart, // assigning dateStart as default value
             timeString: event.timeStart,
-            name: event.name
         });
         targetTimeStartObj = convertTimeZone({
             timeZone,
             timeZoneType,
             date: newTargetTimeStartDate,
-            name: event.name,
             timeString: event.timeStart
         });
-        event.timeZoneEventSource = `event source: ${event.timeZone} / ${event.timeZoneType}`; // for future convenience
-        event.timeZoneObserverSource = `observer source: ${timeZone} / ${timeZoneType}`; // for future convenience
+        event.timeZoneEventSource = `${event.timeZone}/${event.timeZoneType}`; // for future convenience
+        event.timeZoneObserverSource = `${timeZone}/${timeZoneType}`; // for future convenience
         event.dateTimeEventSource = newTargetTimeStartDate; // for future convenience, store the full original moment-timezone date from the rule
         event.dateTimeObserverSource = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
+        if(event.effectiveDateStart){
+            const transientDateObj = createTimeZone({
+                timeZone: event.timeZone,
+                timeZoneType: event.timeZoneType,
+                dateString: event.effectiveDateStart
+            });
+            transientDateObjConverted = convertTimeZone({
+                timeZone,
+                timeZoneType,
+                date: transientDateObj
+            }); // for future convenience
+            event.effectiveDateStart = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
+        }
+        if(event.effectiveDateEnd){
+            const transientDateObj = createTimeZone({
+                timeZone: event.timeZone,
+                timeZoneType: event.timeZoneType,
+                dateString: event.effectiveDateEnd
+            });
+            transientDateObjConverted = convertTimeZone({
+                timeZone,
+                timeZoneType,
+                date: transientDateObj
+            }); // for future convenience
+            event.effectiveDateEnd = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
+        }
+        if(event.syncDate){
+            const transientDateObj = createTimeZone({
+                timeZone: event.timeZone,
+                timeZoneType: event.timeZoneType,
+                dateString: event.syncDate
+            });
+            transientDateObjConverted = convertTimeZone({
+                timeZone,
+                timeZoneType,
+                date: transientDateObj
+            }); // for future convenience
+            event.syncDate = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
+        }
         event.timeZone = danielSan.timeZone;
         event.timeZoneType = danielSan.timeZoneType;
-        event.eventDateStart = targetTimeStartObj.dateString; // as seen from the observer
+        event.dateStart = targetTimeStartObj.dateString; // as seen from the observer
         event.timeStart = event.timeStart ? targetTimeStartObj.timeString : null;
         event.weekdayStart = targetTimeStartObj.weekday;
         event.timeEnd = null;
@@ -103,9 +139,8 @@ const timeTravel = (danielSan) => {
             newTargetTimeEndDate = createTimeZone({
                 timeZone: event.timeZone,
                 timeZoneType: event.timeZoneType,
-                dateString: event.eventDateStart,
+                dateString: event.dateStart,
                 timeString: event.timeStart,
-                name: event.name
             });
             let spanningTime = false;
             const targetTimeEndDateClone = targetTimeStartObj.date;
@@ -125,11 +160,21 @@ const timeTravel = (danielSan) => {
                 const DATE_TIME_FORMAT_STRING = `${DATE_FORMAT_STRING}${DATE_TIME_DELIMITER}${TIME_FORMAT_STRING}`;
                 const dateTimeString = targetTimeEndDateClone.format(DATE_TIME_FORMAT_STRING); // lowercase the AM/PM
                 const [dateString, newTimeString] = dateTimeString.split(DATE_TIME_DELIMITER);
-                event.eventDateEnd = dateString;
+                event.dateEnd = dateString;
                 event.timeEnd = newTimeString.toLowerCase();
                 event.weekdayEnd = targetTimeEndDateClone.day();
             }
         }
+        // delete irrelevant data:
+        delete event.specialAdjustments;
+        delete event.exclusions;
+        delete event.processDate;
+        if(typeof event.frequency !== 'string'){
+            delete event.frequency;
+        }
+        // the idea is that we should only provide useful data that makes sense in the context of each event
+        // as it may relate to timezone or currency conversion
+        // any other information that may be required can be gathered from the original rule (matched via name or custom id property)
     });
 };
 
