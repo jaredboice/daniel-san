@@ -446,18 +446,20 @@ const danielSan = {
     endBalance: null,
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
-    timeZone: 'America_New_York', // the time zone that every rule will be converted to; see moment-timez one for a complete list time zones
+    timeZone: 'US/Eastern', // the time zone in context of the observer that every rule will be converted to; see moment-timezone for a complete list time zones
     timeZoneType: LOCAL, // LOCAL and UTC are available to be imported as constants
     rules: [
         { // rule 1
             type: STANDARD_EVENT,
             frequency: DAILY,
-            name: 'vacation lunch',
+            name: 'international video conference',
             amount: -20.00,
             effectiveDateStart: '2019-03-20',
             effectiveDateEnd: '2019-04-01',
-            timeZone: 'Greenwich', // run the following for a list of time zones: const moment = require('moment-timezone; moment.tz.names().forEach(name => console.log(name));
-            timeZoneType: UTC
+            timeZone: 'Europe/Paris', // run the following for a list of time zones: const moment = require('moment-timezone; moment.tz.names().forEach(name => console.log(name));
+            timeZoneType: 'LOCAL',
+            timeStart: '11:00am',
+            spanningMinutes: 30
         }
     ],
     events: [] // future balance projections stored here
@@ -466,7 +468,7 @@ const danielSan = {
 
 **Pro Tip**
 
-For starters, you should commit to using either all LOCAL time zones or all UTC. Mixing them together could produce confusing or unintended results.
+Be aware that the big difference between UTC and LOCAL is the existence of daylight savings when using LOCAL time.
 
 In Addition, when applying PRE_PAY and POST_PAY specialAdjustments, or exclusions to rules with time zones, the following property is useful:
 
