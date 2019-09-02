@@ -439,12 +439,6 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
         } else if (key === 'currencyObserverSource' && event.currencyObserverSource != null && !isUndefinedOrNull(event.amount) &&
         event.currencySymbol !== currencySymbol) {
             dataBouncer(`currencyObserverSource: ${event.currencyObserverSource}`, 110);
-        } else if (key === 'anchorSyncDate' && event.anchorSyncDate != null) {
-            dataBouncer(`anchorSyncDate: ${event.anchorSyncDate}`, 120);
-        } else if (key === 'modulus' && event.modulus != null) {
-            dataBouncer(`modulus: ${event.modulus}`, 130);
-        } else if (key === 'cycle' && event.cycle != null) {
-            dataBouncer(`cycle: ${event.cycle}`, 140);
         } else if (key === 'sortPriority' && key.sortPriority != null) {
             dataBouncer(`sortPriority: ${event.sortPriority}`, 150);
         } else if (key === 'timeZone') {
@@ -471,6 +465,12 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             dataBouncer(`spanningHours: ${event.spanningHours}`, 232);
         } else if (key === 'spanningMinutes' && event.spanningMinutes != null) {
             dataBouncer(`spanningMinutes: ${event.spanningMinutes}`, 233);
+        } else if (key === 'cycle' && event.cycle != null) {
+            dataBouncer(`cycle: ${event.cycle}`, 234);
+        } else if (key === 'modulus' && event.modulus != null) {
+            dataBouncer(`modulus: ${event.modulus}`, 235);
+        } else if (key === 'anchorSyncDate' && event.anchorSyncDate != null) {
+            dataBouncer(`anchorSyncDate: ${event.anchorSyncDate}`, 236);
         } else if (key === 'effectiveDateStart' && event.effectiveDateStart != null) {
             dataBouncer(`effectiveDateStart: ${event.effectiveDateStart}`, 240);
         } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
@@ -495,9 +495,6 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             key !== 'balanceEnding' &&
             key !== 'currencyEventSource' &&
             key !== 'currencyObserverSource' &&
-            key !== 'anchorSyncDate' &&
-            key !== 'modulus' &&
-            key !== 'cycle' &&
             key !== 'sortPriority' &&
             key !== 'timeZone' &&
             key !== 'timeZoneType' &&
@@ -510,6 +507,9 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             key !== 'spanningDays' &&
             key !== 'spanningHours' &&
             key !== 'spanningMinutes' &&
+            key !== 'cycle' &&
+            key !== 'modulus' &&
+            key !== 'anchorSyncDate' &&
             key !== 'effectiveDateStart' &&
             key !== 'effectiveDateEnd' &&
             key !== 'timeZoneEventSource' &&
