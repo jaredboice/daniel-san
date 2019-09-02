@@ -341,7 +341,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     // eslint-disable-next-line no-console
     console.log(`dateStart: `, event.dateStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
-    if (event.dateEnd) console.log(`effectiveDateEnd: `, event.dateEnd); // eslint-disable-line quotes
+    if (event.dateEnd) console.log(`dateEnd: `, event.dateEnd); // eslint-disable-line quotes
             // eslint-disable-next-line no-console
     if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
