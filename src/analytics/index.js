@@ -4,7 +4,7 @@ const { initializeTimeZoneData, createTimeZone, convertTimeZone } = require('../
 const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const { isUndefinedOrNull } = require('../utility/validation');
 
-const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0, propertyKey = 'endBalance' }) => {
+const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0, propertyKey = 'balanceEnding' }) => {
     let criticalSnapshots = null;
     if (!isUndefinedOrNull(criticalThreshold)) {
         criticalSnapshots = danielSan.events.filter((event) => {
@@ -174,7 +174,7 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     return null; // this line satisfies another linting error
 };
 
-const findSnapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
+const findSnapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey = 'balanceEnding' }) => {
     const newCollection = collection.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > amount) {
             return element;
@@ -183,7 +183,7 @@ const findSnapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyK
     return newCollection;
 };
 
-const findSnapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'endBalance' }) => {
+const findSnapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'balanceEnding' }) => {
     const newCollection = collection.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] < amount) {
             return element;
@@ -194,7 +194,7 @@ const findSnapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey 
 
 const findGreatestValueSnapshots = ({
     collection = [],
-    propertyKey = 'endBalance',
+    propertyKey = 'balanceEnding',
     selectionAmount = 7,
     reverse = false
 }) => {

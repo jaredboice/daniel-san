@@ -7,7 +7,8 @@ const {
     TIME_DELIMITER,
     DATE_TIME_DELIMITER,
     DATE_FORMAT_STRING,
-    TIME_FORMAT_STRING
+    TIME_FORMAT_STRING,
+    OBSERVER_SOURCE_CONTEXT
 } = require('../constants');
 const { isUndefinedOrNull } = require('../utility/validation');
 
@@ -83,10 +84,11 @@ const timeTravel = (danielSan) => {
             date: newTargetTimeStartDate,
             timeString: event.timeStart
         });
+        event.context = OBSERVER_SOURCE_CONTEXT;
         event.timeZoneEventSource = `${event.timeZone} ${event.timeZoneType}`; // for future convenience
         event.timeZoneObserverSource = `${timeZone} ${timeZoneType}`; // for future convenience
-        event.dateTimeEventSource = newTargetTimeStartDate; // for future convenience, store the full original moment-timezone date from the rule
-        event.dateTimeObserverSource = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
+        event.dateTimeStartEventSource = newTargetTimeStartDate; // for future convenience, store the full original moment-timezone date from the rule
+        event.dateTimeStartObserverSource = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
         if(event.effectiveDateStart){
             const transientDateObj = createTimeZone({
                 timeZone: event.timeZone,
@@ -113,18 +115,18 @@ const timeTravel = (danielSan) => {
             }); // for future convenience
             event.effectiveDateEnd = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
         }
-        if(event.syncDate){
+        if(event.anchorSyncDate){
             const transientDateObj = createTimeZone({
                 timeZone: event.timeZone,
                 timeZoneType: event.timeZoneType,
-                dateString: event.syncDate
+                dateString: event.anchorSyncDate
             });
             const transientDateObjConverted = convertTimeZone({
                 timeZone,
                 timeZoneType,
                 date: transientDateObj
             }); // for future convenience
-            event.syncDate = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
+            event.anchorSyncDate = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
         }
         event.timeZone = danielSan.timeZone;
         event.timeZoneType = danielSan.timeZoneType; // this is currently redundant since we are auto-assigning the danielSan value to event 

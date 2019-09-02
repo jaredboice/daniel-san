@@ -14,7 +14,7 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-St
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
 
 ## Breaking Change in v8.0.0
 As of v8.0.0, to make way for a cleaner distinction between event dates and effective dates, dateStart and dateEnd at the top-level of the danielSan master control unit are now effectiveDateStart and effectiveDateEnd, respectively. And the eventDate on the event level has been changed to dateStart as a cleaner approach to applying time spans to events.
@@ -42,8 +42,8 @@ Plase note that the format of property values are strict. For example, Years are
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
-    endBalance: null, // future end balance is stored here
+    balanceBeginning: 1618.03,
+    balanceEnding: null, // future end balance is stored here
     effectiveDateStart: '2019-03-20', // always required - inclusive (effectiveDateStart is included in the budget projection)
     effectiveDateEnd: '2019-12-13', // always required - inclusive (effectiveDateEnd is included in the budget projection)
     timeStart: null, // optional: '09:00am'

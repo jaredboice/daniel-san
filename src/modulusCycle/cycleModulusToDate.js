@@ -9,8 +9,8 @@ const {
 } = require('../constants');
 
 const cycleModulusUpToDate = ({ rule, effectiveDateStartString }) => {
-    // note: for when syncDate input is less than effectiveDateStartString
-    let looperDate = createTimeZone({ timeZone: rule.timeZone, timeZoneType: rule.timeZoneType, dateString: rule.syncDate });
+    // note: for when anchorSyncDate input is less than effectiveDateStartString
+    let looperDate = createTimeZone({ timeZone: rule.timeZone, timeZoneType: rule.timeZoneType, dateString: rule.anchorSyncDate });
     let looperDateFormatted = looperDate.format(DATE_FORMAT_STRING);
     switch (rule.frequency) {
     case DAILY:

@@ -12,7 +12,10 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-St
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Time zones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the endBalance calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Time zones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+
+## Breaking Change in v8.0.0
+In keeping with the trend of adding clarity and consistency to variable names, the following properties have been changed accordingly. beginBalance is now balanceBeginning. endBalance is now balanceEnding. And syncDate is now anchorSyncDate.  
 
 ## Breaking Change in v8.0.0
 As of v8.0.0, to make way for a cleaner distinction between event dates and effective dates, dateStart and dateEnd at the top-level of the danielSan master control unit are now effectiveDateStart and effectiveDateEnd, respectively. And the eventDate on the event level has been changed to dateStart as a cleaner approach to applying time spans to events.
@@ -40,8 +43,8 @@ Plase note that the format of property values are strict. For example, Years are
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03, // always required
-    endBalance: null, // future end balance is stored here
+    balanceBeginning: 1618.03, // always required
+    balanceEnding: null, // future end balance is stored here
     effectiveDateStart: '2019-03-20', // always required - inclusive (effectiveDateStart is included in the budget projection)
     effectiveDateEnd: '2019-12-13', // always required - inclusive (effectiveDateEnd is included in the budget projection)
     timeStart: null, // optional: '09:00am'
@@ -108,8 +111,8 @@ _includes all standard frequencies: 'ANNUALLY', 'MONTHLY', 'WEEKLY', 'DAILY', an
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
-    endBalance: null, // future end balance is stored here
+    balanceBeginning: 1618.03,
+    balanceEnding: null, // future end balance is stored here
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
     rules: [
@@ -150,12 +153,12 @@ const danielSan = {
 -   `type: 'WEEKDAY_ON_DATE_ROUTINE'` _(same as above but does not need an amount field)_
 -   `type: 'WEEKDAY_ON_DATE_REMINDER'` _(same as above but does not need an amount field, solely for semantic differentiation)_
 
-_special events do not utilize the modulus/cycle/syncDate attributes_
+_special events do not utilize the modulus/cycle/anchorSyncDate attributes_
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
-    endBalance: null, // future end balance is stored here
+    balanceBeginning: 1618.03,
+    balanceEnding: null, // future end balance is stored here
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
     rules: [
@@ -200,8 +203,8 @@ When using time zones or multi-currency conversions, special adjustments take pl
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
-    endBalance: null, // future end balance is stored here
+    balanceBeginning: 1618.03,
+    balanceEnding: null, // future end balance is stored here
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
     rules: [
@@ -276,21 +279,21 @@ const danielSan = {
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
 the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). The cycle fires on the modulus, and then it loops back around to 1.
-If your cycle/modulus isn't getting expected results, try modifying the cycle (a syncDate can also modify results as explained below, which is used if you are applying the modulus/cycle attributes). If you are confused, it will make sense after trying a couple different settings.
+If your cycle/modulus isn't getting expected results, try modifying the cycle (a anchorSyncDate can also modify results as explained below, which is used if you are applying the modulus/cycle attributes). If you are confused, it will make sense after trying a couple different settings.
 
-As of daniel-san version 6.1.0, adding a effectiveDateStart to any rule with modulus/cycle attributes will automatically assign that effectiveDateStart value to syncDate. So manuallly adding syncDate is no longer required. If the date is in the future, it will simply treat it as effectiveDateStart as explained below. Read on, however, to understand the functionality of syncDate.
+As of daniel-san version 6.1.0, adding a effectiveDateStart to any rule with modulus/cycle attributes will automatically assign that effectiveDateStart value to anchorSyncDate. So manuallly adding anchorSyncDate is no longer required. If the date is in the future, it will simply treat it as effectiveDateStart as explained below. Read on, however, to understand the functionality of anchorSyncDate.
 
-Adding a syncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process execution date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on a syncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that syncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the syncDate every so often will increase performance since this feature requires more computation.  
+Adding a anchorSyncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process-execution "anchor" date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on a anchorSyncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that anchorSyncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the anchorSyncDate every so often will increase performance since this feature requires more computation.  
 
-Adding a effectiveDateStart WITH a syncDate is redundant to daniel-san. You can, however, still start the cycle in the future. When you set a syncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the effectiveDateStart attribute for that rule (while assigning null to syncDate) so it will begin its forward-moving cycle at that time. When that same syncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
+Adding a effectiveDateStart WITH a anchorSyncDate is redundant to daniel-san. You can, however, still start the cycle in the future. When you set a anchorSyncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the effectiveDateStart attribute for that rule (while assigning null to anchorSyncDate) so it will begin its forward-moving cycle at that time. When that same anchorSyncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
 
-The bottom line is this: if you are using modulus/cycle values of anything other than 1/1 (which would equate to normal behavior for any STANDARD_EVENT), you should also be using a syncDate.
+The bottom line is this: if you are using modulus/cycle values of anything other than 1/1 (which would equate to normal behavior for any STANDARD_EVENT), you should also be using a anchorSyncDate.
 
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03, // always required
-    endBalance: null, // future end balance is stored here
+    balanceBeginning: 1618.03, // always required
+    balanceEnding: null, // future end balance is stored here
     effectiveDateStart: '2020-09-17', // always required
     effectiveDateEnd: '2019-12-13', // always required
     rules: [
@@ -312,7 +315,7 @@ const danielSan = {
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
             processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
-            syncDate: '2019-08-12',
+            anchorSyncDate: '2019-08-12',
             effectiveDateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
             cycle: 1
@@ -330,8 +333,8 @@ _(When making use of the modulus/cycle operators on STANDARD_EVENT, exclusion hi
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03, // always required
-    endBalance: null, // future end balance is stored here
+    balanceBeginning: 1618.03, // always required
+    balanceEnding: null, // future end balance is stored here
     effectiveDateStart: '2019-03-20', // always required
     effectiveDateEnd: '2019-12-13', // always required
     rules: [
@@ -358,8 +361,8 @@ const danielSan = {
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
-    endBalance: null,
+    balanceBeginning: 1618.03,
+    balanceEnding: null,
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
     currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represetns the outputSymbol parameter in the currencyConversion function
@@ -444,8 +447,8 @@ timeStart is optional at the rule level as well. However, in this context, timeE
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
-    endBalance: null,
+    balanceBeginning: 1618.03,
+    balanceEnding: null,
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
     timeZone: 'US/Eastern', // the time zone in context of the observer that every rule will be converted to; see moment-timezone for a complete list time zones
@@ -506,14 +509,14 @@ terminal({ danielSan, terminalOptions, error });
 
 -   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy, and will also display discarded events if they exist)_
 -   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the effectiveDateStart and effectiveDateEnd range, they can be displayed with this terminal type )_
--   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical endBalance snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
+-   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical balanceEnding snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
 -   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_
 -   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events if they exist)_
 -   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events if they exist)_
--   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest endBalance values, ordered by value)_
--   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest endBalance values, ordered by value)_
--   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the endBalance values greater than 1000)_
--   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT'` _(pass minAmount: 100 to display all the endBalance values less than 1000)_
+-   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest balanceEnding values, ordered by value)_
+-   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest balanceEnding values, ordered by value)_
+-   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the balanceEnding values greater than 1000)_
+-   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT'` _(pass minAmount: 100 to display all the balanceEnding values less than 1000)_
 -   `type: 'DISPLAY_EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into terminalOptions will search against the optional group property)_
 -   `type: 'DISPLAY_EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
 -   `type: 'DISPLAY_EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
@@ -531,7 +534,7 @@ terminal({ danielSan, terminalOptions, error });
 
 **Critical Snapshots**
 
-Passing a criticalThreshold property will log snapshots to the command-line when the endBalance is less than the criticalThreshold, for STANDARD_TERMINAL_OUTPUT and DISPLAY_CRITICAL_SNAPSHOTS.
+Passing a criticalThreshold property will log snapshots to the command-line when the balanceEnding is less than the criticalThreshold, for STANDARD_TERMINAL_OUTPUT and DISPLAY_CRITICAL_SNAPSHOTS.
 
 **Search Values**
 
@@ -549,7 +552,7 @@ const terminalOptions = {
         mode: CONCISE,
         criticalThreshold: 577.00,
         // the formatting object is optional as the following values are defaulted for you
-        // which will format amount, beginBalance, and endBalance
+        // which will format amount, balanceBeginning, and balanceEnding
         formatting: {
             formattingFunction: decimalFormatterCustom
             minIntegerDigits: 1,
@@ -568,7 +571,7 @@ const terminalOptions = {
         type: STANDARD_TERMINAL_OUTPUT,
         mode: CONCISE,
         criticalThreshold: 577.00,
-        // the formatting object is optional as the following values are defaulted for you which will format amount, beginBalance, and endBalance in mode: CONCISE
+        // the formatting object is optional as the following values are defaulted for you which will format amount, balanceBeginning, and balanceEnding in mode: CONCISE
         formatting: {
             minIntegerDigits: 1,
             minDecimalDigits: 2,
@@ -605,8 +608,8 @@ if (eventResults.err) {
 
 ```javascript
 const danielSan = {
-    beginBalance: 1618.03,
-    endBalance: null,
+    balanceBeginning: 1618.03,
+    balanceEnding: null,
     effectiveDateStart: '2019-03-20',
     effectiveDateEnd: '2019-12-13',
     rules: [
@@ -648,9 +651,9 @@ const {
 // see the source code for real example cases of the following exposed funtions
 // there are also useful functions in the utility directory
 const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold }); // uses the criticalThreshold field
-const seventHighestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'endBalance', selectionAmount: 7, reverse = false });
-const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'endBalance', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
-const bigSnapshots = findSnapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'endBalance' });
+const seventHighestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = false });
+const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
+const bigSnapshots = findSnapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'balanceEnding' });
 const smallSnapshots = findSnapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' }); 
 const rulesToRetire = findRulesToRetire(danielSan); // finds rules with a effectiveDateEnd lower than the global effectiveDateStart value, and rules with effectiveDateStart that are higher than the global effectiveDateEnd. 
 // also adds a ruleIndex on each rule so that you can delete them from the original array if required

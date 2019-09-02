@@ -20,6 +20,8 @@ const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle
 const {
     LOCAL,
     UTC,
+    EVENT_SOURCE_CONTEXT,
+    OBSERVER_SOURCE_CONTEXT,
     DATE_FORMAT_STRING,
     DATE_DELIMITER,
     STANDARD_EVENT,
@@ -278,8 +280,8 @@ const prepareConfiguration = ({ danielSan, date }) => {
     if (!danielSan.discardedEvents) {
         danielSan.discardedEvents = [];
     }
-    if (!danielSan.beginBalance) {
-        danielSan.beginBalance = 0;
+    if (!danielSan.balanceBeginning) {
+        danielSan.balanceBeginning = 0;
     }
     if (isUndefinedOrNull(danielSan.currencyConversion)) {
         danielSan.currencyConversion = ({ amount }) => {
@@ -292,6 +294,7 @@ const prepareConfiguration = ({ danielSan, date }) => {
         danielSan.currencySymbol = danielSan.currencySymbol.toUpperCase();
     }
     danielSan.rules.forEach((rule, index) => {
+        rule.context = EVENT_SOURCE_CONTEXT;
         if (isUndefinedOrNull(rule.currencySymbol)) {
             rule.currencySymbol = CURRENCY_DEFAULT;
         } else {
@@ -322,9 +325,9 @@ const prepareConfiguration = ({ danielSan, date }) => {
                     if (!rule.cycle) {
                         rule.cycle = 1;
                     }
-                    // if there is a effectiveDateStart without a syncDate, then just assign it to the syncDate
-                    if (!rule.syncDate && rule.effectiveDateStart) {
-                        rule.syncDate = rule.effectiveDateStart;
+                    // if there is a effectiveDateStart without a anchorSyncDate, then just assign it to the anchorSyncDate
+                    if (!rule.anchorSyncDate && rule.effectiveDateStart) {
+                        rule.anchorSyncDate = rule.effectiveDateStart;
                     }
                     const convertedDate = convertTimeZone({
                         timeZone: rule.timeZone,
@@ -337,11 +340,11 @@ const prepareConfiguration = ({ danielSan, date }) => {
                     });
                     // if the following condition is not true, there is no reason to modify the modulus cycle
                     // eslint-disable-next-line no-lonely-if
-                    if (rule.syncDate && rule.syncDate !== effectiveDateStartString) {
-                        if (rule.syncDate > effectiveDateStartString) {
+                    if (rule.anchorSyncDate && rule.anchorSyncDate !== effectiveDateStartString) {
+                        if (rule.anchorSyncDate > effectiveDateStartString) {
                             // pre-modulation is not necessary here since we will simply start the cycle in the future
-                            rule.effectiveDateStart = rule.syncDate; // future date
-                            rule.syncDate = null;
+                            rule.effectiveDateStart = rule.anchorSyncDate; // future date
+                            rule.anchorSyncDate = null;
                         } else {
                             rule.effectiveDateStart = null;
                             cycleModulusUpToDate({
@@ -364,8 +367,8 @@ const prepareConfiguration = ({ danielSan, date }) => {
 const executeEvents = ({ danielSan }) => {
     danielSan.events.forEach((event, index) => {
         try {
-            event.beginBalance = index === 0 ? danielSan.beginBalance : danielSan.events[index - 1].endBalance;
-            event.endBalance = event.beginBalance; // default value in case there is no amount field
+            event.balanceBeginning = index === 0 ? danielSan.balanceBeginning : danielSan.events[index - 1].balanceEnding;
+            event.balanceEnding = event.balanceBeginning; // default value in case there is no amount field
             let amountConverted = 0;
             if (!isUndefinedOrNull(event.amount)) {
                 if (event.amount !== 0) {
@@ -380,12 +383,14 @@ const executeEvents = ({ danielSan }) => {
                               })
                             : event.amount;
                 }
-                event.endBalance = event.beginBalance + amountConverted; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
+                event.balanceEnding = event.balanceBeginning + amountConverted; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
                 event.amountConverted = amountConverted;
+                event.currencyEventSource = `${event.currencySymbol} ${event.amount}`; // for future convenience
+                event.currencyObserverSource = `${danielSan.currencySymbol} ${event.amountConverted}`; // for future convenience
+                event.currencySymbol = danielSan.currencySymbol;
             }
             event.timeZoneType = danielSan.timeZoneType;
             event.timeZone = danielSan.timeZone;
-            event.currencySymbol = danielSan.currencySymbol;
         } catch (err) {
             throw errorDisc(err, 'error in executeEvents()', { event, index });
         }
@@ -458,7 +463,7 @@ const findBalance = (danielSan = {}) => {
         executeEvents({ danielSan: newDanielSan });
 
         if (newDanielSan.events.length > 0) {
-            newDanielSan.endBalance = newDanielSan.events[newDanielSan.events.length - 1].endBalance;
+            newDanielSan.balanceEnding = newDanielSan.events[newDanielSan.events.length - 1].balanceEnding;
         }
         return {
             error: null,

@@ -256,11 +256,11 @@ const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.endBalance)) {
+    if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.balanceEnding)) {
         // eslint-disable-next-line no-console
         console.log(
-            `endBalance: `, // eslint-disable-line quotes
-            formattingFunction(event.endBalance, {
+            `balanceEnding: `, // eslint-disable-line quotes
+            formattingFunction(event.balanceEnding, {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
@@ -323,11 +323,11 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
             })
         );
     }
-    if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.endBalance)) {
+    if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.balanceEnding)) {
         // eslint-disable-next-line no-console
         console.log(
-            `endBalance: `, // eslint-disable-line quotes
-            formattingFunction(event.endBalance, {
+            `balanceEnding: `, // eslint-disable-line quotes
+            formattingFunction(event.balanceEnding, {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
@@ -369,125 +369,169 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
         style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineSeparator(1);
+    const ttyMessageStack = [];
+    const dataBouncer = (message, order) => {
+        ttyMessageStack.push({ message, order });
+    };
     Object.entries(event).forEach(([key, value]) => {
-        if (
+        if (key === 'name' && event.name != null) {
+            dataBouncer(`name: ${event.name}`, 10); // eslint-disable-line quotes
+        } else if (key === 'type') {
+            dataBouncer(`type: ${event.type}`, 20);
+        } else if (key === 'frequency' && typeof event.frequency === 'string') {
+            dataBouncer(`frequency: ${event.frequency}`, 30); // code check: this line might be redundant, check to see if we are deleting frequency (if not a string) from the event printing process
+        } else if (key === 'context') {
+            dataBouncer(`context: ${event.context}`, 40);
+        } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
+            dataBouncer(`currencySymbol: ${event.currencySymbol}`, 50);
+        } else if (key === 'amount') {
+            dataBouncer(
+                `amount: ${
+                formattingFunction(event.amount, {
+                    minIntegerDigits,
+                    minDecimalDigits,
+                    maxDecimalDigits,
+                    locale,
+                    style,
+                    currency: event.currencySymbol || CURRENCY_DEFAULT
+                })}`, 60
+            );
+        } else if (
+            key === 'amountConverted' &&
+            !isUndefinedOrNull(event.amount) &&
+            event.currencySymbol !== currencySymbol
+        ) {
+            dataBouncer(
+                `amountConverted: ${formattingFunction(event.amountConverted, {
+                    minIntegerDigits,
+                    minDecimalDigits,
+                    maxDecimalDigits,
+                    locale,
+                    style,
+                    currency: currencySymbol || CURRENCY_DEFAULT
+                })}`, 70
+            );
+        } else if (key === 'balanceBeginning' && !isUndefinedOrNull(event.amount)) {
+            dataBouncer(
+                `balanceBeginning: ${formattingFunction(event.balanceBeginning, {
+                    minIntegerDigits,
+                    minDecimalDigits,
+                    maxDecimalDigits,
+                    locale,
+                    style,
+                    currency: currencySymbol || CURRENCY_DEFAULT
+                })}`, 80
+            );
+        } else if (key === 'balanceEnding' && !isUndefinedOrNull(event.amount)) {
+            dataBouncer(
+                `balanceEnding: ${formattingFunction(event.balanceEnding, {
+                    minIntegerDigits,
+                    minDecimalDigits,
+                    maxDecimalDigits,
+                    locale,
+                    style,
+                    currency: currencySymbol || CURRENCY_DEFAULT
+                })}`, 90
+            );
+        } else if (key === 'currencyEventSource' && event.currencyEventSource != null && !isUndefinedOrNull(event.amount) &&
+        event.currencySymbol !== currencySymbol) {
+            dataBouncer(`currencyEventSource: ${event.currencyEventSource}`, 100);
+        } else if (key === 'currencyObserverSource' && event.currencyObserverSource != null && !isUndefinedOrNull(event.amount) &&
+        event.currencySymbol !== currencySymbol) {
+            dataBouncer(`currencyObserverSource: ${event.currencyObserverSource}`, 110);
+        } else if (key === 'anchorSyncDate' && event.anchorSyncDate != null) {
+            dataBouncer(`anchorSyncDate: ${event.anchorSyncDate}`, 120);
+        } else if (key === 'modulus' && event.modulus != null) {
+            dataBouncer(`modulus: ${event.modulus}`, 130);
+        } else if (key === 'cycle' && event.cycle != null) {
+            dataBouncer(`cycle: ${event.cycle}`, 140);
+        } else if (key === 'sortPriority' && key.sortPriority != null) {
+            dataBouncer(`sortPriority: ${event.sortPriority}`, 150);
+        } else if (key === 'timeZone') {
+            dataBouncer(`timeZone: ${event.timeZone}`, 160);
+        } else if (key === 'timeZoneType') {
+            dataBouncer(`timeZoneType: ${event.timeZoneType}`, 170);
+        } else if (key === 'timeStart' && event.timeStart != null) {
+            dataBouncer(`timeStart: ${event.timeStart}`, 180);
+        } else if (key === 'timeEnd' && event.timeEnd != null) {
+            dataBouncer(`timeEnd: ${event.timeEnd}`, 190);
+        } else if (key === 'dateStart' && event.dateStart != null) {
+            dataBouncer(`dateStart: ${event.dateStart}`, 200);
+        } else if (key === 'dateEnd' && event.dateEnd != null) {
+            dataBouncer(`dateEnd: ${event.dateEnd}`, 210);
+        } else if (key === 'weekdayStart' && event.weekdayStart != null) {
+            const weekdayString = getWeekdayString(event.weekdayStart);
+            dataBouncer(`weekdayStart: ${weekdayString}`, 220);
+        } else if (key === 'weekdayEnd' && event.weekdayEnd != null) {
+            const weekdayString = getWeekdayString(event.weekdayEnd);
+            dataBouncer(`weekdayEnd: ${weekdayString}`, 230);
+        } else if (key === 'spanningDays' && event.spanningDays != null) {
+            dataBouncer(`spanningDays: ${event.spanningDays}`, 231);
+        } else if (key === 'spanningHours' && event.spanningHours != null) {
+            dataBouncer(`spanningHours: ${event.spanningHours}`, 232);
+        } else if (key === 'spanningMinutes' && event.spanningMinutes != null) {
+            dataBouncer(`spanningMinutes: ${event.spanningMinutes}`, 233);
+        } else if (key === 'effectiveDateStart' && event.effectiveDateStart != null) {
+            dataBouncer(`effectiveDateStart: ${event.effectiveDateStart}`, 240);
+        } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
+            dataBouncer(`effectiveDateEnd: ${event.effectiveDateEnd}`, 250);
+        } else if (key === 'timeZoneEventSource' && event.timeZoneEventSource != null && event.timeZoneEventSource !== event.timeZoneObserverSource) {
+            dataBouncer(`timeZoneEventSource: ${event.timeZoneEventSource}`, 260);
+        } else if (key === 'timeZoneObserverSource' && event.timeZoneObserverSource != null) {
+            dataBouncer(`timeZoneObserverSource: ${event.timeZoneObserverSource}`, 270);
+        } else if (key === 'dateTimeStartEventSource' && event.dateTimeStartEventSource != null && event.timeZoneEventSource !== event.timeZoneObserverSource) {
+            dataBouncer(`dateTimeStartEventSource: ${event.dateTimeStartEventSource}`, 280);
+        } else if (key === 'dateTimeObserverSource' && event.dateTimeObserverSource != null) {
+            dataBouncer(`dateTimeObserverSource: ${event.dateTimeObserverSource}`, 290);
+        } else if (
+            key !== 'name' &&
             key !== 'type' &&
             key !== 'frequency' &&
-            key !== 'processDate' &&
+            key !== 'context' &&
+            key !== 'currencySymbol' &&
+            key !== 'amount' &&
+            key !== 'amountConverted' &&
+            key !== 'balanceBeginning' &&
+            key !== 'balanceEnding' &&
+            key !== 'currencyEventSource' &&
+            key !== 'currencyObserverSource' &&
+            key !== 'anchorSyncDate' &&
             key !== 'modulus' &&
             key !== 'cycle' &&
-            key !== 'syncDate' &&
-            key !== 'specialAdjustments' &&
-            key !== 'exclusions' &&
             key !== 'sortPriority' &&
-            key !== 'currencyConversion'
+            key !== 'timeZone' &&
+            key !== 'timeZoneType' &&
+            key !== 'timeStart' &&
+            key !== 'timeEnd' &&
+            key !== 'dateStart' &&
+            key !== 'dateEnd' &&
+            key !== 'weekdayStart' &&
+            key !== 'weekdayEnd' &&
+            key !== 'spanningDays' &&
+            key !== 'spanningHours' &&
+            key !== 'spanningMinutes' &&
+            key !== 'effectiveDateStart' &&
+            key !== 'effectiveDateEnd' &&
+            key !== 'timeZoneEventSource' &&
+            key !== 'timeZoneObserverSource' &&
+            key !== 'dateTimeStartEventSource' &&
+            key !== 'dateTimeObserverSource'
         ) {
-            if (key === 'name') {
-                // eslint-disable-next-line no-console
-                console.log(`name: `, event.name); // eslint-disable-line quotes
-            } else if (key === 'amount') {
-                // eslint-disable-next-line no-console
-                console.log(
-                    `amount: `, // eslint-disable-line quotes
-                    formattingFunction(event.amount, {
-                        minIntegerDigits,
-                        minDecimalDigits,
-                        maxDecimalDigits,
-                        locale,
-                        style,
-                        currency: event.currencySymbol || CURRENCY_DEFAULT
-                    })
-                );
-            } else if (
-                key === 'amountConverted' &&
-                !isUndefinedOrNull(event.amount) &&
-                event.currencySymbol !== currencySymbol
-            ) {
-                // eslint-disable-next-line no-console
-                console.log(
-                    `amountConverted: `, // eslint-disable-line quotes
-                    formattingFunction(event.amountConverted, {
-                        minIntegerDigits,
-                        minDecimalDigits,
-                        maxDecimalDigits,
-                        locale,
-                        style,
-                        currency: currencySymbol || CURRENCY_DEFAULT
-                    })
-                );
-            } else if (key === 'beginBalance' && !isUndefinedOrNull(event.amount)) {
-                // eslint-disable-next-line no-console
-                console.log(
-                    `beginBalance: `, // eslint-disable-line quotes
-                    formattingFunction(event.beginBalance, {
-                        minIntegerDigits,
-                        minDecimalDigits,
-                        maxDecimalDigits,
-                        locale,
-                        style,
-                        currency: currencySymbol || CURRENCY_DEFAULT
-                    })
-                );
-            } else if (key === 'endBalance' && !isUndefinedOrNull(event.amount)) {
-                // eslint-disable-next-line no-console
-                console.log(
-                    `endBalance: `, // eslint-disable-line quotes
-                    formattingFunction(event.endBalance, {
-                        minIntegerDigits,
-                        minDecimalDigits,
-                        maxDecimalDigits,
-                        locale,
-                        style,
-                        currency: currencySymbol || CURRENCY_DEFAULT
-                    })
-                );
-            } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
-                // eslint-disable-next-line no-console
-                console.log(`currencySymbol: ${event.currencySymbol}`);
-            } else if (key === 'effectiveDateStart' && event.effectiveDateStart != null) {
-                // eslint-disable-next-line no-console
-                console.log(`effectiveDateStart: ${event.effectiveDateStart}`);
-            } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
-                // eslint-disable-next-line no-console
-                console.log(`effectiveDateEnd: ${event.effectiveDateEnd}`);
-            } else if (key === 'dateStart' && event.dateStart != null) {
-                // eslint-disable-next-line no-console
-                console.log(`dateStart: ${event.dateStart}`);
-            } else if (key === 'dateEnd' && event.dateEnd != null) {
-                // eslint-disable-next-line no-console
-                console.log(`dateEnd: ${event.dateEnd}`);
-            } else if (key === 'timeStart' && event.timeStart != null) {
-                // eslint-disable-next-line no-console
-                console.log(`timeStart: ${event.timeStart}`);
-            } else if (key === 'timeEnd' && event.timeEnd != null) {
-                // eslint-disable-next-line no-console
-                console.log(`timeEnd: ${event.timeEnd}`);
-            } else if (key === 'weekdayStart' && event.weekdayStart != null) {
-                const weekdayString = getWeekdayString(event.weekdayStart);
-                console.log(`weekdayStart: ${weekdayString}`); // eslint-disable-line no-console
-            } else if (key === 'weekdayEnd' && event.weekdayEnd != null) {
-                const weekdayString = getWeekdayString(event.weekdayEnd);
-                console.log(`weekdayEnd: ${weekdayString}`); // eslint-disable-line no-console
-            } else if (
-                key !== 'name' &&
-                key !== 'amount' &&
-                key !== 'amountConverted' &&
-                key !== 'beginBalance' &&
-                key !== 'endBalance' &&
-                key !== 'currencySymbol' &&
-                key !== 'effectiveDateStart' &&
-                key !== 'effectiveDateEnd' &&
-                key !== 'dateStart' &&
-                key !== 'dateEnd' &&
-                key !== 'timeStart' &&
-                key !== 'timeEnd' &&
-                key !== 'weekdayStart' &&
-                key !== 'weekdayEnd'
-            ) {
-                // eslint-disable-next-line no-console
-                console.log(`${key}: ${value}`);
-            }
+            // eslint-disable-next-line no-console
+            dataBouncer(`${key}: ${value}`, 300);
         }
+    });
+    const ttyMessageStackOrdered = ttyMessageStack.slice().sort((a, b) => {
+        if(a.order > b.order){
+            return 1;
+        } else if(a.order < b.order) {
+            return -1;
+        } else {
+            return 0;
+        }
+    });
+    ttyMessageStackOrdered.forEach((obj) => {
+        console.log(obj.message);
     });
     lineSeparator(1);
 };
@@ -525,7 +569,7 @@ const standardTerminalHeader = ({ terminalOptions }) => {
     lineSeparator(2);
 };
 
-const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrEndBalanceKey = 'beginBalance') => {
+const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrBalanceEndingKey = 'balanceBeginning') => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -534,10 +578,10 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }, beginOrEndBal
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
-    if (!isUndefinedOrNull(danielSan[beginOrEndBalanceKey])) {
+    if (!isUndefinedOrNull(danielSan[beginOrBalanceEndingKey])) {
         lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
         lineHeading(
-            ` ${beginOrEndBalanceKey}: ${formattingFunction(danielSan[beginOrEndBalanceKey], {
+            ` ${beginOrBalanceEndingKey}: ${formattingFunction(danielSan[beginOrBalanceEndingKey], {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
@@ -740,15 +784,15 @@ const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
     terminalBoundary(3);
 };
 
-const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
+const displayBalanceEndingSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
     const collection = findSnapshotsGreaterThanAmount({
         collection: danielSan.events,
         amount: terminalOptions.maxAmount || 0,
-        propertyKey: 'endBalance'
+        propertyKey: 'balanceEnding'
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin displayEndBalanceSnapshotsGreaterThanMaxAmount ');
+    lineHeading(' begin displayBalanceEndingSnapshotsGreaterThanMaxAmount ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -761,20 +805,20 @@ const displayEndBalanceSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOpt
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end displayEndBalanceSnapshotsGreaterThanMaxAmount ');
+    lineHeading(' end displayBalanceEndingSnapshotsGreaterThanMaxAmount ');
     lineSeparator(2);
     terminalBoundary(3);
 };
 
-const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOptions }) => {
+const displayBalanceEndingSnapshotsLessThanMinAmount = ({ danielSan, terminalOptions }) => {
     const collection = findSnapshotsLessThanAmount({
         collection: danielSan.events,
         amount: terminalOptions.minAmount || 0,
-        propertyKey: 'endBalance'
+        propertyKey: 'balanceEnding'
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin displayEndBalanceSnapshotsLessThanMinAmount ');
+    lineHeading(' begin displayBalanceEndingSnapshotsLessThanMinAmount ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -787,7 +831,7 @@ const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOption
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end displayEndBalanceSnapshotsLessThanMinAmount ');
+    lineHeading(' end displayBalanceEndingSnapshotsLessThanMinAmount ');
     lineSeparator(2);
     terminalBoundary(3);
 };
@@ -795,7 +839,7 @@ const displayEndBalanceSnapshotsLessThanMinAmount = ({ danielSan, terminalOption
 const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
     const collection = findGreatestValueSnapshots({
         collection: danielSan.events,
-        propertyKey: 'endBalance',
+        propertyKey: 'balanceEnding',
         selectionAmount: terminalOptions.selectionAmount || 7,
         reverse: false
     });
@@ -819,16 +863,16 @@ const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
     terminalBoundary(3);
 };
 
-const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
+const displayLeastBalanceEndingSnapshots = ({ danielSan, terminalOptions }) => {
     const collection = findGreatestValueSnapshots({
         collection: danielSan.events,
-        propertyKey: 'endBalance',
+        propertyKey: 'balanceEnding',
         selectionAmount: terminalOptions.selectionAmount || 7,
         reverse: true
     });
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
-    lineHeading(' begin displayLeastEndBalanceSnapshots');
+    lineHeading(' begin displayLeastBalanceEndingSnapshots');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -841,7 +885,7 @@ const displayLeastEndBalanceSnapshots = ({ danielSan, terminalOptions }) => {
         showNothingToDisplay();
     }
     lineSeparator(2);
-    lineHeading(' end displayLeastEndBalanceSnapshots ');
+    lineHeading(' end displayLeastBalanceEndingSnapshots ');
     lineSeparator(2);
     terminalBoundary(3);
 };
@@ -1049,22 +1093,22 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
                     displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
                     break;
                 case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
-                    displayEndBalanceSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
+                    displayBalanceEndingSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
                     break;
                 case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
-                    displayEndBalanceSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
+                    displayBalanceEndingSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
                     break;
                 case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
                     displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
                     break;
                 case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
-                    displayLeastEndBalanceSnapshots({ danielSan, terminalOptions });
+                    displayLeastBalanceEndingSnapshots({ danielSan, terminalOptions });
                     break;
                 default:
                     break;
             }
             lineSeparator(2);
-            standardTerminalSubheader({ danielSan, terminalOptions }, 'endBalance');
+            standardTerminalSubheader({ danielSan, terminalOptions }, 'balanceEnding');
             lineSeparator(2);
             // eslint-disable-next-line no-console
             console.log(getRandomMiyagiQuote());
