@@ -581,7 +581,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
     if (!isUndefinedOrNull(danielSan['balanceBeginning'])) {
         lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
         lineHeading(
-            ` ${'balanceBeginning'}: ${formattingFunction(danielSan['balanceBeginning'], {
+            ` 'balanceBeginning': ${formattingFunction(danielSan['balanceBeginning'], {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
@@ -594,7 +594,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
     if (!isUndefinedOrNull(danielSan['balanceEnding'])) {
         lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
         lineHeading(
-            ` ${balanceEnding}: ${formattingFunction(danielSan['balanceEnding'], {
+            ` balanceEnding: ${formattingFunction(danielSan['balanceEnding'], {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
