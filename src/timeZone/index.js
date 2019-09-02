@@ -2,7 +2,6 @@ const moment = require('moment-timezone');
 const {
     UTC,
     LOCAL,
-    GREENWICH,
     AM,
     PM,
     TIME_DELIMITER,
@@ -13,7 +12,7 @@ const {
 const { isUndefinedOrNull } = require('../utility/validation');
 
 const initializeTimeZoneData = (obj) => {
-    const thisTimeZoneType = obj.timeZoneType || LOCAL; // default value
+    const thisTimeZoneType = obj.timeZoneType || UTC; // default value
     let thisTimeZone; // default value is set below
     if (!obj.timeZone) {
         thisTimeZone = moment.tz.guess();
@@ -34,7 +33,7 @@ const createTimeZone = ({ timeZone, timeZoneType, date = null, dateString = null
         : DATE_FORMAT_STRING;
     const dateTimeString = timeString ? `${dateString}${DATE_TIME_DELIMITER}${timeString}` : dateString;
     let outputDate = date; // default value
-    const thisMoment = timeZoneType === LOCAL ? moment.tz : moment.utc;
+    const thisMoment = timeZoneType === UTC ? moment.utc : moment.tz;
 
     // process date
     if (date) {
@@ -48,7 +47,7 @@ const createTimeZone = ({ timeZone, timeZoneType, date = null, dateString = null
 const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
     const newDate = date.clone();
     let outputDate = newDate; // default value;
-    outputDate = timeZoneType === LOCAL ? newDate.tz(timeZone) : newDate.utc(timeZone);
+    outputDate = timeZoneType === UTC ? newDate.utc(timeZone) : newDate.tz(timeZone);
     const DATE_TIME_FORMAT_STRING = `${DATE_FORMAT_STRING}${DATE_TIME_DELIMITER}${TIME_FORMAT_STRING}`;
     const dateTimeString = outputDate.format(DATE_TIME_FORMAT_STRING); // lowercase the AM/PM
     const [dateString, newTimeString] = dateTimeString.split(DATE_TIME_DELIMITER);
@@ -128,7 +127,8 @@ const timeTravel = (danielSan) => {
             event.syncDate = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
         }
         event.timeZone = danielSan.timeZone;
-        event.timeZoneType = danielSan.timeZoneType;
+        event.timeZoneType = danielSan.timeZoneType; // this is currently redundant since we are auto-assigning the danielSan value to event 
+        // however, if we ever want to change that behavior and add additional options, we'd still want to be sure that this value matches the event output
         event.dateStart = targetTimeStartObj.dateString; // as seen from the observer
         event.timeStart = event.timeStart ? targetTimeStartObj.timeString : null;
         event.weekdayStart = targetTimeStartObj.weekday;

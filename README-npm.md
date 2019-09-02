@@ -38,6 +38,8 @@ const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = req
 
 **Defining Accounts/Cashflow Rules**
 
+Plase note that the format of property values are strict. For example, Years are always strings in the format YYYY, months are always MM, and days are always DD. Weekdays are an integer between 0-6, and times are always strings in the format hh:mm:am or hh:mm:pm (case sensitive on the am and pm).
+
 ```javascript
 const danielSan = {
     beginBalance: 1618.03,

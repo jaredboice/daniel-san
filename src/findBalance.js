@@ -20,7 +20,6 @@ const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle
 const {
     LOCAL,
     UTC,
-    GREENWICH,
     DATE_FORMAT_STRING,
     DATE_DELIMITER,
     STANDARD_EVENT,
@@ -301,7 +300,7 @@ const prepareConfiguration = ({ danielSan, date }) => {
         // initialize timezone data
         if (isUndefinedOrNull(rule.timeZoneType) || isUndefinedOrNull(rule.timeZone)) {
             const initialTimeZoneData = initializeTimeZoneData(rule);
-            rule.timeZoneType = initialTimeZoneData.timeZoneType;
+            rule.timeZoneType = danielSan.timeZoneType; // assign the danielSan timeZoneType value to each rule
             rule.timeZone = initialTimeZoneData.timeZone;
         }
         // if standard event, check to pre-modulate

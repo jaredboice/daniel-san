@@ -12,7 +12,6 @@ const appConstants = {
     TIME_FORMAT_STRING: `hh${TIME_DELIMITER}mmA`,
     UTC: 'UTC',
     LOCAL: 'LOCAL',
-    GREENWICH: 'Greenwich',
     AM: 'am',
     PM: 'pm',
     EVENT_SOURCE_CONTEXT: 'EVENT_SOURCE_CONTEXT',

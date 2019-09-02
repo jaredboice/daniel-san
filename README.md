@@ -36,6 +36,8 @@ const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = req
 
 **Defining Accounts/Cashflow Rules**
 
+Plase note that the format of property values are strict. For example, Years are always strings in the format YYYY, months are always MM, and days are always DD. Weekdays are an integer between 0-6, and times are always strings in the format hh:mm:am or hh:mm:pm (case sensitive on the am and pm).
+
 ```javascript
 const danielSan = {
     beginBalance: 1618.03, // always required
@@ -456,8 +458,7 @@ const danielSan = {
             amount: -20.00,
             effectiveDateStart: '2019-03-20',
             effectiveDateEnd: '2019-04-01',
-            timeZone: 'Europe/Paris', // run the following for a list of time zones: const moment = require('moment-timezone; moment.tz.names().forEach(name => console.log(name));
-            timeZoneType: 'LOCAL',
+            timeZone: 'Europe/Paris', // see immediately below for a time zone list
             timeStart: '11:00am',
             spanningMinutes: 30
         }
@@ -466,9 +467,15 @@ const danielSan = {
 };
 ```
 
+```javascript
+// run the following for a complete list of time zones: 
+const moment = require('moment-timezone'); 
+moment.tz.names().forEach(name => console.log(name);
+```
+
 **Pro Tip**
 
-Be aware that the big difference between UTC and LOCAL is the existence of daylight savings when using LOCAL time.
+Be aware that the big difference between UTC and LOCAL is that LOCAL will convert times to compensate for Local and Civil Daylight Savings Time.
 
 In Addition, when applying PRE_PAY and POST_PAY specialAdjustments, or exclusions to rules with time zones, the following property is useful:
 
@@ -662,7 +669,6 @@ const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubs
 const { 
     UTC,
     LOCAL,
-    GREENWICH,
     AM,
     PM,
     EVENT_SOURCE_CONTEXT,
