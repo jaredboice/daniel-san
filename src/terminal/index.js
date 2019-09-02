@@ -594,7 +594,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
     if (!isUndefinedOrNull(danielSan['balanceEnding'])) {
         lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
         lineHeading(
-            ` ${balanceEnding}: ${formattingFunction(danielSan[balanceEnding], {
+            ` ${balanceEnding}: ${formattingFunction(danielSan['balanceEnding'], {
                 minIntegerDigits,
                 minDecimalDigits,
                 maxDecimalDigits,
