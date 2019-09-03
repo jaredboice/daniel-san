@@ -1,4 +1,4 @@
-const = { DEFAULT_ERROR_MESSAGE, APP_NAME } = require('../constants');
+const { DEFAULT_ERROR_MESSAGE, APP_NAME } = require('../constants');
 
 const errorDisc = (disc) => {
     const {
