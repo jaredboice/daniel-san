@@ -274,7 +274,7 @@ const deleteIrrelevantRules = ({ danielSan, effectiveDateStartString }) => {
     }
 };
 
-const prepareConfiguration = ({ danielSan, date }) => {
+const validateAndConfigure = ({ danielSan, date }) => {
     let ruleTracker; // for errorDisc
     let indexTracker; // for errorDisc
     // to avoid unnecessary future checks to see if certain properties exist, we will add them with default values
@@ -454,10 +454,10 @@ const findBalance = (danielSan = {}) => {
             timeZone,
             timeZoneType
         });
-        prepareConfiguration({ danielSan: newDanielSan, date: timeStream.looperDate });
+        validateAndConfigure({ danielSan: newDanielSan, date: timeStream.looperDate });
         deleteIrrelevantRules({
             danielSan: newDanielSan
-        }); // this follows prepareConfiguration just in case timezones were not yet present where they needed to be
+        }); // this follows validateAndConfigure just in case timezones were not yet present where they needed to be
         do {
             buildEvents({
                 danielSan: newDanielSan,
