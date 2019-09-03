@@ -88,9 +88,14 @@ const discardEventsOutsideDateRange = (danielSan) => {
 
 const buildEvents = ({ danielSan, rules, date }) => {
     let processPhase;
+    let convertedDate;
+    let ruleTracker; // for errorDisc
+    let indexTracker; // for errorDisc
     try {
         rules.forEach((rule, index) => {
-            const convertedDate = convertTimeZone({
+            ruleTracker = rule;
+            indexTracker = index;
+            convertedDate = convertTimeZone({
                 timeZone: rule.timeZone,
                 timeZoneType: rule.timeZoneType,
                 date
@@ -173,7 +178,7 @@ const buildEvents = ({ danielSan, rules, date }) => {
         });
         retireRules({ danielSan });
     } catch (err) {
-        throw errorDisc(err, 'error in buildEvents()', { date, processPhase });
+        throw errorDisc({ err, data: { date, processPhase, convertedDate, rule: ruleTracker, indexTracker } });
     }
 };
 
@@ -265,11 +270,13 @@ const deleteIrrelevantRules = ({ danielSan, effectiveDateStartString }) => {
         const irrelevantRules = seekAndDestroyIrrelevantRules(danielSan);
         danielSan.irrelevantRules = irrelevantRules;
     } catch (err) {
-        throw errorDisc(err, 'error in deleteIrrelevantRules()', { effectiveDateStartString });
+        throw errorDisc({ err, data: { effectiveDateStartString } });
     }
 };
 
 const prepareConfiguration = ({ danielSan, date }) => {
+    let ruleTracker; // for errorDisc
+    let indexTracker; // for errorDisc
     // to avoid unnecessary future checks to see if certain properties exist, we will add them with default values
     if (!danielSan.retiredRuleIndices) {
         danielSan.retiredRuleIndices = [];
@@ -294,6 +301,8 @@ const prepareConfiguration = ({ danielSan, date }) => {
         danielSan.currencySymbol = danielSan.currencySymbol.toUpperCase();
     }
     danielSan.rules.forEach((rule, index) => {
+        ruleTracker = rule;
+        indexTracker = index;
         rule.context = EVENT_SOURCE_CONTEXT;
         if (isUndefinedOrNull(rule.currencySymbol)) {
             rule.currencySymbol = CURRENCY_DEFAULT;
@@ -358,7 +367,7 @@ const prepareConfiguration = ({ danielSan, date }) => {
                     rule.processDate = null;
                 }
             } catch (err) {
-                throw errorDisc(err, 'error in prepareConfiguration()', { index, date, rule });
+                throw errorDisc({ err, data: { date, rule: ruleTracker, indexTracker } });
             }
         }
     });
@@ -392,7 +401,7 @@ const executeEvents = ({ danielSan }) => {
             event.timeZoneType = danielSan.timeZoneType;
             event.timeZone = danielSan.timeZone;
         } catch (err) {
-            throw errorDisc(err, 'error in executeEvents()', { event, index });
+            throw errorDisc({ err, data: { event, index } }); 
         }
     });
 };
@@ -419,8 +428,7 @@ const checkForInputErrors = ({ danielSan, effectiveDateStartString, effectiveDat
     }
 
     if (errorMessage) {
-        const error = errorDisc({}, errorMessage);
-        throw error;
+        throw errorDisc({ err, errorMessage, data: { effectiveDateStartString, effectiveDateEndString } });
     }
 };
 
@@ -470,8 +478,7 @@ const findBalance = (danielSan = {}) => {
             danielSan: newDanielSan
         };
     } catch (err) {
-        const error = errorDisc(err, 'error in findBalance(). something bad happened and a lot of robots died');
-        return error;
+        throw errorDisc({ err });
     }
 };
 

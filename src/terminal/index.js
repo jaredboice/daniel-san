@@ -1012,15 +1012,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
         // eslint-disable-next-line no-console
         lineHeading(' something bad happened and a lot of robots died ');
         // eslint-disable-next-line no-console
-        Object.entries(error).forEach(([key, value]) => {
-            console.log(`### ${key}`); // eslint-disable-line no-console
-            if (typeof key === 'object') {
-                console.log(`${JSON.stringify(value, null, 4)}`); // eslint-disable-line no-console
-            } else {
-                console.log(value); // eslint-disable-line no-console
-            }
-            console.log('\n'); // eslint-disable-line no-console
-        });
+        console.log(error);
     } else if (danielSan) {
         try {
             if (!terminalOptions) terminalOptions = { type: STANDARD_TERMINAL_OUTPUT, mode: CONCISE };

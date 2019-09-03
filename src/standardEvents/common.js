@@ -57,7 +57,7 @@ const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
             danielSan.retiredRuleIndices.push(index);
         }
     } catch (err) {
-        throw errorDisc(err, 'error in flagRuleForRetirement()', { date, rule, index });
+        throw errorDisc({ err, data: { rule, date, index } });
     }
 };
 
@@ -76,10 +76,7 @@ const retireRules = ({ danielSan }) => {
             danielSan.retiredRuleIndices = []; // reset retiredRuleIndices
         }
     } catch (err) {
-        throw errorDisc(err, 'error in retireRules()', {
-            looper,
-            retiredRuleIndices: danielSan.retiredRuleIndices
-        });
+        throw errorDisc({ err, data: { retiredRuleIndices: danielSan.retiredRuleIndices, looper } });
     }
 };
 
@@ -90,72 +87,77 @@ const retireRules = ({ danielSan }) => {
     }
 */
 const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
-    let transientProcessPhase = processPhase || '';
-    if (rule.exclusions) {
-        // eslint-disable-next-line no-unused-vars
-        let relevantDateSegmentForExclusion;
-        let dynamicDateSegmentForExclusion;
-        let anyMatch = false;
-        if (rule.exclusions.weekdays) {
-            if (
-                isUndefinedOrNull(rule.exclusions.context) ||
-                rule.exclusions.context === EVENT_SOURCE_CONTEXT ||
-                rule.exclusions.context === BOTH
-            ) {
-                relevantDateSegmentForExclusion = date.day();
-                anyMatch = rule.exclusions.weekdays.some((eventDate) => {
-                    dynamicDateSegmentForExclusion = eventDate;
-                    // eslint-disable-next-line eqeqeq
-                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
-                });
-            } else if (rule.exclusions.context === OBSERVER_SOURCE_CONTEXT || rule.exclusions.context === BOTH) {
-                const convertedDate = convertTimeZone({
-                    timeZone: danielSan.timeZone,
-                    timeZoneType: danielSan.timeZoneType,
-                    date
-                });
-                relevantDateSegmentForExclusion = convertedDate.day();
-                anyMatch = rule.exclusions.weekdays.some((eventDate) => {
-                    dynamicDateSegmentForExclusion = eventDate;
-                    // eslint-disable-next-line eqeqeq
-                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
-                });
+    let transientProcessPhase;
+    try {
+        transientProcessPhase = processPhase || '';
+        if (rule.exclusions) {
+            // eslint-disable-next-line no-unused-vars
+            let relevantDateSegmentForExclusion;
+            let dynamicDateSegmentForExclusion;
+            let anyMatch = false;
+            if (rule.exclusions.weekdays) {
+                if (
+                    isUndefinedOrNull(rule.exclusions.context) ||
+                    rule.exclusions.context === EVENT_SOURCE_CONTEXT ||
+                    rule.exclusions.context === BOTH
+                ) {
+                    relevantDateSegmentForExclusion = date.day();
+                    anyMatch = rule.exclusions.weekdays.some((eventDate) => {
+                        dynamicDateSegmentForExclusion = eventDate;
+                        // eslint-disable-next-line eqeqeq
+                        return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                    });
+                } else if (rule.exclusions.context === OBSERVER_SOURCE_CONTEXT || rule.exclusions.context === BOTH) {
+                    const convertedDate = convertTimeZone({
+                        timeZone: danielSan.timeZone,
+                        timeZoneType: danielSan.timeZoneType,
+                        date
+                    });
+                    relevantDateSegmentForExclusion = convertedDate.day();
+                    anyMatch = rule.exclusions.weekdays.some((eventDate) => {
+                        dynamicDateSegmentForExclusion = eventDate;
+                        // eslint-disable-next-line eqeqeq
+                        return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                    });
+                }
+                if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
             }
-            if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
-        }
-        if (rule.exclusions.dates && transientProcessPhase !== EXECUTION_REJECTED) {
-            if (
-                isUndefinedOrNull(rule.exclusions.context) ||
-                rule.exclusions.context === EVENT_SOURCE_CONTEXT ||
-                rule.exclusions.context === BOTH
-            ) {
-                relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                    frequency: ONCE,
-                    date
-                });
-                anyMatch = rule.exclusions.dates.some((eventDate) => {
-                    dynamicDateSegmentForExclusion = eventDate;
-                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
-                });
-            } else if (rule.exclusions.context === OBSERVER_SOURCE_CONTEXT || rule.exclusions.context === BOTH) {
-                const convertedDate = convertTimeZone({
-                    timeZone: danielSan.timeZone,
-                    timeZoneType: danielSan.timeZoneType,
-                    date
-                });
-                relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
-                    frequency: ONCE,
-                    date: convertedDate
-                });
-                anyMatch = rule.exclusions.dates.some((eventDate) => {
-                    dynamicDateSegmentForExclusion = eventDate;
-                    return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
-                });
+            if (rule.exclusions.dates && transientProcessPhase !== EXECUTION_REJECTED) {
+                if (
+                    isUndefinedOrNull(rule.exclusions.context) ||
+                    rule.exclusions.context === EVENT_SOURCE_CONTEXT ||
+                    rule.exclusions.context === BOTH
+                ) {
+                    relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                        frequency: ONCE,
+                        date
+                    });
+                    anyMatch = rule.exclusions.dates.some((eventDate) => {
+                        dynamicDateSegmentForExclusion = eventDate;
+                        return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                    });
+                } else if (rule.exclusions.context === OBSERVER_SOURCE_CONTEXT || rule.exclusions.context === BOTH) {
+                    const convertedDate = convertTimeZone({
+                        timeZone: danielSan.timeZone,
+                        timeZoneType: danielSan.timeZoneType,
+                        date
+                    });
+                    relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({
+                        frequency: ONCE,
+                        date: convertedDate
+                    });
+                    anyMatch = rule.exclusions.dates.some((eventDate) => {
+                        dynamicDateSegmentForExclusion = eventDate;
+                        return dynamicDateSegmentForExclusion === relevantDateSegmentForExclusion;
+                    });
+                }
+                if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
             }
-            if (anyMatch) transientProcessPhase = EXECUTION_REJECTED;
         }
+        return transientProcessPhase;
+    } catch(err){
+        throw errorDisc({ err, data: { rule, date, processPhase, transientProcessPhase } });
     }
-    return transientProcessPhase;
 };
 
 module.exports = {

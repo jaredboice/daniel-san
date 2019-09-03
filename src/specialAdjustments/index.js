@@ -140,11 +140,7 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, dani
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in moveThisProcessDateBeforeTheseWeekdays()', {
-            processPhase,
-            event,
-            specialAdjustment
-        });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
     }
 };
 
@@ -169,11 +165,7 @@ const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danie
             frequency: WEEKLY
         });
     } catch (err) {
-        throw errorDisc(err, 'error in moveThisProcessDateAfterTheseWeekdays()', {
-            processPhase,
-            event,
-            specialAdjustment
-        });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
     }
 };
 
@@ -213,11 +205,7 @@ const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielS
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in moveThisProcessDateBeforeTheseDates()', {
-            processPhase,
-            event,
-            specialAdjustment
-        });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
     }
 };
 
@@ -257,11 +245,7 @@ const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSa
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in moveThisProcessDateAfterTheseDates()', {
-            processPhase,
-            event,
-            specialAdjustment
-        });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
     }
 };
 
@@ -283,8 +267,12 @@ const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSa
 */
 const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
+    let ruleContextLooperDateTracker;
+    let looperDateIndexTracker;
     try {
         specialAdjustment.dates.forEach((ruleContextLooperDate, looperDateIndex) => {
+            ruleContextLooperDateTracker = ruleContextLooperDate;
+            looperDateIndexTracker = looperDateIndex;
             if (ruleContextLooperDate === event.dateStart && event.amount) {
                 if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === EVENT_SOURCE_CONTEXT) {
                     event.amount += specialAdjustment.amounts[looperDateIndex];
@@ -306,11 +294,7 @@ const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in adjustAmountOnTheseDates()', {
-            processPhase,
-            event,
-            specialAdjustment
-        });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase, ruleContextLooperDateTracker, looperDateIndexTracker } });
     }
 };
 

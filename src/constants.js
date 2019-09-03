@@ -5,6 +5,8 @@ const TIME_DELIMITER = ':';
 const DATE_TIME_DELIMITER = 'T';
 
 const appConstants = {
+    APP_NAME: 'daniel-san',
+    DEFAULT_ERROR_MESSAGE: 'something bad happened and a lot of robots died',
     DATE_DELIMITER,
     TIME_DELIMITER,
     DATE_TIME_DELIMITER,

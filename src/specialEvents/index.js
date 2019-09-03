@@ -74,7 +74,7 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
                     break;
                 }
             } catch (err) {
-                throw errorDisc(err, 'error in processThisLooperDate()', { thisLooperDate });
+                throw errorDisc({ err, data: { thisLooperDate } });
             }
         };
 
@@ -86,7 +86,7 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
         processThisLooperDate(looperDate); // post execution for the last day of the month
         return monthlyWeekdayConstruct;
     } catch (err) {
-        throw errorDisc(err, 'error in findAllWeekdaysInTheMonth()', { date });
+        throw errorDisc({ err, data: { date, timeZone, timeZoneType } });
     }
 };
 
@@ -100,13 +100,19 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
 */
 const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
     let processPhase = EVALUATING_RULE_INSERTION;
+    let nthProcessDayTracker;
+    let looperDateTracker;
+    let looperDateIndexTracker;
     try {
         const nthProcessDays = rule.frequency;
         const weekdaysInMonth = findAllWeekdaysInTheMonth({ date, timeZone: rule.timeZone, timeZoneType: rule.timeZoneType });
         nthProcessDays.forEach((nthProcessDay) => {
+            nthProcessDayTracker = nthProcessDay;
             const objectKey = nthProcessDay.weekday;
             const sizeOfObjectKeyArray = weekdaysInMonth[objectKey].length;
             weekdaysInMonth[objectKey].forEach((looperDate, looperDateIndex) => {
+                looperDateTracker = looperDate;
+                looperDateIndexTracker = looperDateIndex;
                 processPhase = EVALUATING_RULE_INSERTION;
                 if (
                     date.format(DATE_FORMAT_STRING) === looperDate &&
@@ -126,7 +132,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in nthWeekdaysOfMonth()', { processPhase, rule, date });
+        throw errorDisc({ err, data: { rule, date, processPhase, nthProcessDayTracker, looperDateTracker, looperDateIndexTracker } });
     }
 };
 
@@ -161,7 +167,7 @@ const weekdayOnDate = ({ danielSan, rule, date }) => {
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in weekdayOnDate()', { date, processPhase, rule });
+        throw errorDisc({ err, data: { rule, date, processPhase } });
     }
 };
 

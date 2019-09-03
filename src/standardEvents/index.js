@@ -1,10 +1,7 @@
 const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { _28DayCondition } = require('./conditional');
-const {
-    getRelevantDateSegmentByFrequency,
-    exclusionsPhase
-} = require('../standardEvents/common');
+const { getRelevantDateSegmentByFrequency, exclusionsPhase } = require('../standardEvents/common');
 const { cycleModulusUp, isCycleAtModulus } = require('../modulusCycle');
 const {
     DATE_FORMAT_STRING,
@@ -16,17 +13,22 @@ const {
 } = require('../constants');
 
 const modulusPhase = ({ rule, processPhase }) => {
-    // if there are modulus/cycle attributes, then execute them
-    let transientProcessPhase = processPhase || '';
-    if (rule.modulus) {
-        if (transientProcessPhase !== EXECUTION_REJECTED && isCycleAtModulus(rule)) {
+    let transientProcessPhase;
+    try {
+        // if there are modulus/cycle attributes, then execute them
+        transientProcessPhase = processPhase || '';
+        if (rule.modulus) {
+            if (transientProcessPhase !== EXECUTION_REJECTED && isCycleAtModulus(rule)) {
+                transientProcessPhase = EXECUTING_RULE_INSERTION;
+            }
+            cycleModulusUp(rule);
+        } else if (transientProcessPhase !== EXECUTION_REJECTED) {
             transientProcessPhase = EXECUTING_RULE_INSERTION;
         }
-        cycleModulusUp(rule);
-    } else if (transientProcessPhase !== EXECUTION_REJECTED) {
-        transientProcessPhase = EXECUTING_RULE_INSERTION;
+        return transientProcessPhase;
+    } catch (err) {
+        throw errorDisc({ err, data: { rule, processPhase, transientProcessPhase } });
     }
-    return transientProcessPhase;
 };
 
 const buildStandardEvent = ({ danielSan, rule, date }) => {
@@ -41,7 +43,13 @@ const buildStandardEvent = ({ danielSan, rule, date }) => {
             rule.frequency === DAILY ||
             isUndefinedOrNull(rule.processDate) ||
             (rule.processDate === relevantDateSegmentByFrequency ||
-                _28DayCondition({ processDate: rule.processDate, date, frequency: rule.frequency, timeZone: rule.timeZone, timeZoneType: rule.timeZoneType }))
+                _28DayCondition({
+                    processDate: rule.processDate,
+                    date,
+                    frequency: rule.frequency,
+                    timeZone: rule.timeZone,
+                    timeZoneType: rule.timeZoneType
+                }))
         ) {
             processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
             processPhase = modulusPhase({ rule, processPhase });
@@ -53,7 +61,7 @@ const buildStandardEvent = ({ danielSan, rule, date }) => {
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc(err, 'error in buildStandardEvent()', { date, processPhase, rule });
+        throw errorDisc({ err, data: { rule, date, processPhase } });
     }
 };
 
