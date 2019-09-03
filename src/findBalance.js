@@ -478,7 +478,9 @@ const findBalance = (danielSan = {}) => {
             danielSan: newDanielSan
         };
     } catch (err) {
-        throw errorDisc({ err });
+        return {
+            err: errorDisc({ err })
+        };
     }
 };
 
