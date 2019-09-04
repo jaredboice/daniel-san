@@ -65,7 +65,7 @@ const discardEventsOutsideDateRange = (danielSan) => {
         const eventDateStart = createTimeZone({
             timeZone,
             timeZoneType,
-            dateString: event.eventDateStart,
+            dateString: event.dateStart,
             timeString: event.timeStart
         });
         const dateToEnd = createTimeZone({
