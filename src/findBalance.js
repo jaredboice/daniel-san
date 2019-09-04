@@ -432,7 +432,13 @@ const checkForInputErrors = ({ danielSan, effectiveDateStartString, effectiveDat
     }
 };
 
-const findBalance = (danielSan = {}) => {
+const findBalance = (danielSan = {}, options) => {
+    /*
+        executtion options for enhancing performance
+            if you  know for a fact that your danielSan object and your rules are validated/configured according to that function's specifications, then you can skip that phase
+            likewise, you can skip deleteIrrelevantRules if you have already removed irrelevant rules manually
+    */
+    const { skipValidateAndConfigure, skipDeleteIrrelevantRules } = options;
     const newDanielSan = deepCopy(danielSan);
     try {
         if (isUndefinedOrNull(newDanielSan.timeZoneType) || isUndefinedOrNull(newDanielSan.timeZone)) {
@@ -454,10 +460,14 @@ const findBalance = (danielSan = {}) => {
             timeZone,
             timeZoneType
         });
-        validateAndConfigure({ danielSan: newDanielSan, date: timeStream.looperDate });
-        deleteIrrelevantRules({
-            danielSan: newDanielSan
-        }); // this follows validateAndConfigure just in case timezones were not yet present where they needed to be
+        if(!skipValidateAndConfigure){
+            validateAndConfigure({ danielSan: newDanielSan, date: timeStream.looperDate });
+        }
+        if(!skipDeleteIrrelevantRules){
+            deleteIrrelevantRules({
+                danielSan: newDanielSan
+            }); // this follows validateAndConfigure just in case timezones were not yet present where they needed to be
+        }
         do {
             buildEvents({
                 danielSan: newDanielSan,
@@ -479,7 +489,7 @@ const findBalance = (danielSan = {}) => {
         };
     } catch (err) {
         return {
-            err: errorDisc({ err })
+            err: errorDisc({ err, data: { skipValidateAndConfigure, skipDeleteIrrelevantRules } })
         };
     }
 };
