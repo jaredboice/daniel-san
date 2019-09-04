@@ -1,10 +1,13 @@
 const moment = require('moment');
+const { reDefineTimeStartAndTimeSpan, generateTimeSpan } = require('../common');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { errorDisc } = require('../utility/errorHandling');
 const { streamForward, streamBackward } = require('../timeStream');
 const { createTimeZone, convertTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const {
+    DATE_TIME_DELIMITER,
+    TIME_FORMAT_STRING,
     DATE_FORMAT_STRING,
     WEEKLY,
     ONCE,
@@ -16,25 +19,22 @@ const {
 } = require('../constants');
 
 const reusableLogicForDateMovements = ({
+    date,
     event,
     specialAdjustment,
     danielSan,
     streamForwardOrBackWard,
     dateArray,
-    frequency
+    frequency,
+    skipTimeTravel
 }) => {
-    const processPhase = EXECUTING_RULE_ADJUSTMENT;
+    let processPhase = EXECUTING_RULE_ADJUSTMENT;
     if (dateArray) {
         // note: timezone for "OBSERVER_SOURCE_CONTEXT" is actually coming from the root of the master danielSan controller for all the projections.
         // Because that will be the final assigned timezone for the event.
         // even though the timezones for "EVENT_SOURCE_CONTEXT" are coming from the event object,
         // their below dates are calcluated via the rule timezone data (which is still the original data as it hasn't changed to the converted timezone yet)
-        let ruleContextLooperDate = createTimeZone({
-            timeZone: event.timeZone,
-            timeZoneType: event.timeZoneType,
-            dateString: event.dateStart,
-            timeString: event.timeStart
-        });
+        let ruleContextLooperDate = date;
         let ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
             frequency,
             date: ruleContextLooperDate
@@ -55,6 +55,8 @@ const reusableLogicForDateMovements = ({
             while (dateArray.includes(ruleContextLooperDateString)) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                reDefineTimeStartAndTimeSpan({ event, skipTimeTravel });
+                processPhase = MODIFIED;
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
@@ -70,6 +72,8 @@ const reusableLogicForDateMovements = ({
             while (dateArray.includes(observerContextLooperDateString)) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                processPhase = MODIFIED;
+                reDefineTimeStartAndTimeSpan({ event, skipTimeTravel });
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
@@ -93,6 +97,8 @@ const reusableLogicForDateMovements = ({
             ) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
+                processPhase = MODIFIED;
+                reDefineTimeStartAndTimeSpan({ event, skipTimeTravel });
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
@@ -127,20 +133,22 @@ const reusableLogicForDateMovements = ({
     ];
 
 */
-const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, danielSan }) => {
+const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = reusableLogicForDateMovements({
+            date,
             event,
             specialAdjustment,
             danielSan,
             streamForwardOrBackWard: streamBackward,
             dateArray: specialAdjustment.weekdays,
-            frequency: WEEKLY
+            frequency: WEEKLY,
+            skipTimeTravel
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase, skipTimeTravel } });
     }
 };
 
@@ -153,19 +161,21 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, dani
     ];
 
 */
-const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danielSan }) => {
+const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = reusableLogicForDateMovements({
+            date,
             event,
             specialAdjustment,
             danielSan,
             streamForwardOrBackWard: streamForward,
             dateArray: specialAdjustment.weekdays,
-            frequency: WEEKLY
+            frequency: WEEKLY,
+            skipTimeTravel
         });
     } catch (err) {
-        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase, skipTimeTravel } });
     }
 };
 
@@ -179,33 +189,37 @@ const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danie
         ]
 
 */
-const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielSan }) => {
+const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
             processPhase = reusableLogicForDateMovements({
+                date,
                 event,
                 specialAdjustment,
                 danielSan,
                 streamForwardOrBackWard: streamBackward,
                 dateArray: specialAdjustment.dates,
-                frequency: ONCE
+                frequency: ONCE,
+                skipTimeTravel
             });
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateBeforeTheseWeekdays({
+                date,
                 event,
                 specialAdjustment,
-                danielSan
+                danielSan,
+                skipTimeTravel
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateBeforeTheseDates({ event, specialAdjustment, danielSan });
+                processPhase = moveThisProcessDateBeforeTheseDates({ date, event, specialAdjustment, danielSan, skipTimeTravel });
             }
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase, skipTimeTravel } });
     }
 };
 
@@ -219,33 +233,37 @@ const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielS
         ]
 
 */
-const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSan }) => {
+const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
             processPhase = reusableLogicForDateMovements({
+                date,
                 event,
                 specialAdjustment,
                 danielSan,
                 streamForwardOrBackWard: streamForward,
                 dateArray: specialAdjustment.dates,
-                frequency: ONCE
+                frequency: ONCE,
+                skipTimeTravel
             });
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateAfterTheseWeekdays({
+                date,
                 event,
                 specialAdjustment,
-                danielSan
+                danielSan,
+                skipTimeTravel
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateAfterTheseDates({ event, specialAdjustment, danielSan });
+                processPhase = moveThisProcessDateAfterTheseDates({ date, event, specialAdjustment, danielSan, skipTimeTravel });
             }
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc({ err, data: { specialAdjustment, event, processPhase } });
+        throw errorDisc({ err, data: { specialAdjustment, event, processPhase, skipTimeTravel } });
     }
 };
 
@@ -274,7 +292,10 @@ const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
             ruleContextLooperDateTracker = ruleContextLooperDate;
             looperDateIndexTracker = looperDateIndex;
             if (ruleContextLooperDate === event.dateStart && event.amount) {
-                if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === EVENT_SOURCE_CONTEXT) {
+                if (
+                    isUndefinedOrNull(specialAdjustment.context) ||
+                    specialAdjustment.context === EVENT_SOURCE_CONTEXT
+                ) {
                     event.amount += specialAdjustment.amounts[looperDateIndex];
                 } else if (specialAdjustment.context === OBSERVER_SOURCE_CONTEXT) {
                     const adjustmentConverted =
@@ -294,7 +315,10 @@ const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc({ err, data: { specialAdjustment, event, processPhase, ruleContextLooperDateTracker, looperDateIndexTracker } });
+        throw errorDisc({
+            err,
+            data: { specialAdjustment, event, processPhase, ruleContextLooperDateTracker, looperDateIndexTracker }
+        });
     }
 };
 

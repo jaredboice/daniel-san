@@ -130,47 +130,56 @@ const buildEvents = ({ danielSan, rules, date, options = {} }) => {
                     // note: execute specialAdjustments if exists
                     processPhase = EXECUTING_SPECIAL_ADJUSTMENT;
                     danielSan.events[danielSan.events.length - 1].specialAdjustments.forEach((specialAdjustment) => {
-                        switch (specialAdjustment.type) {
-                            case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS:
-                                moveThisProcessDateBeforeTheseWeekdays({
-                                    event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment,
-                                    danielSan
-                                });
-                                break;
-                            case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
-                            case PRE_PAY:
-                                moveThisProcessDateBeforeTheseDates({
-                                    event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment,
-                                    danielSan
-                                });
-                                break;
-                            case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
-                                moveThisProcessDateAfterTheseWeekdays({
-                                    event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment,
-                                    danielSan
-                                });
-                                break;
-                            case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
-                            case POST_PAY:
-                                moveThisProcessDateAfterTheseDates({
-                                    event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment,
-                                    danielSan
-                                });
-                                break;
-                            case ADJUST_AMOUNT_ON_THESE_DATES:
-                            case ADJUST_AMOUNT:
-                                adjustAmountOnTheseDates({
-                                    event: danielSan.events[danielSan.events.length - 1],
-                                    specialAdjustment,
-                                    danielSan
-                                });
-                                break;
-                            default:
-                                break;
+                    switch (specialAdjustment.type) {
+                        case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS:
+                            moveThisProcessDateBeforeTheseWeekdays({
+                                event: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment,
+                                danielSan,
+                                date: convertedDate,
+                                skipTimeTravel
+                            });
+                            break;
+                        case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
+                        case PRE_PAY:
+                            moveThisProcessDateBeforeTheseDates({
+                                event: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment,
+                                danielSan,
+                                date: convertedDate,
+                                skipTimeTravel
+                            });
+                            break;
+                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
+                            moveThisProcessDateAfterTheseWeekdays({
+                                event: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment,
+                                danielSan,
+                                date: convertedDate,
+                                skipTimeTravel
+                            });
+                            break;
+                        case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
+                        case POST_PAY:
+                            moveThisProcessDateAfterTheseDates({
+                                event: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment,
+                                danielSan,
+                                date: convertedDate,
+                                skipTimeTravel
+                            });
+                            break;
+                        case ADJUST_AMOUNT_ON_THESE_DATES:
+                        case ADJUST_AMOUNT:
+                            adjustAmountOnTheseDates({
+                                event: danielSan.events[danielSan.events.length - 1],
+                                specialAdjustment,
+                                danielSan,
+                                date: convertedDate
+                            });
+                            break;
+                        default:
+                            break;
                         }
                     });
                 }
@@ -434,6 +443,20 @@ const checkForInputErrors = ({ danielSan, effectiveDateStartString, effectiveDat
     }
 };
 
+const cleanUpData = (danielSan) => {
+    // the idea is that we should only provide useful data that makes sense in the context of each event
+    // as it may relate to timezone or currency conversion
+    // any other information that may be required can be gathered from the original rule (matched via name or custom id property)
+    danielSan.events.forEach((event) => {
+        delete event.specialAdjustments;
+        delete event.exclusions;
+        delete event.processDate;
+        if (typeof event.frequency !== 'string') {
+            delete event.frequency;
+        }
+    });
+};
+
 const findBalance = (danielSan = {}, options = {}) => {
     /*
         the first parameter is the dentire danielSan bonzai tree of data that you configure.
@@ -447,7 +470,8 @@ const findBalance = (danielSan = {}, options = {}) => {
         skipValidateAndConfigure = null,
         skipDeleteIrrelevantRules = null,
         skipTimeTravel = null,
-        skipDiscardEventsOutsideDateRange = null
+        skipDiscardEventsOutsideDateRange = null,
+        skipCleanUpData = null
     } = options;
     const newDanielSan = deepCopy(danielSan);
     try {
@@ -495,7 +519,9 @@ const findBalance = (danielSan = {}, options = {}) => {
             discardEventsOutsideDateRange(newDanielSan);
         }
         executeEvents({ danielSan: newDanielSan });
-
+        if (!skipCleanUpData) {
+            cleanUpData(newDanielSan);
+        }
         if (newDanielSan.events.length > 0) {
             newDanielSan.balanceEnding = newDanielSan.events[newDanielSan.events.length - 1].balanceEnding;
         }

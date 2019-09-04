@@ -342,7 +342,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     console.log(`dateStart: `, event.dateStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
     if (event.dateEnd) console.log(`dateEnd: `, event.dateEnd); // eslint-disable-line quotes
-            // eslint-disable-next-line no-console
+    // eslint-disable-next-line no-console
     if (event.timeStart) console.log(`timeStart: `, event.timeStart); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
     if (event.timeEnd) console.log(`timeEnd: `, event.timeEnd); // eslint-disable-line quotes
@@ -374,157 +374,170 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
         ttyMessageStack.push({ message, order });
     };
     Object.entries(event).forEach(([key, value]) => {
-        if (key === 'name' && event.name != null) {
-            dataBouncer(`name: ${event.name}`, 10); // eslint-disable-line quotes
-        } else if (key === 'type') {
-            dataBouncer(`type: ${event.type}`, 20);
-        } else if (key === 'frequency' && typeof event.frequency === 'string') {
-            dataBouncer(`frequency: ${event.frequency}`, 30); // code check: this line might be redundant, check to see if we are deleting frequency (if not a string) from the event printing process
-        } else if (key === 'context') {
-            dataBouncer(`context: ${event.context}`, 40);
-        } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
-            dataBouncer(`currencySymbol: ${event.currencySymbol}`, 50);
-        } else if (key === 'amount') {
-            dataBouncer(
-                `amount: ${
-                formattingFunction(event.amount, {
-                    minIntegerDigits,
-                    minDecimalDigits,
-                    maxDecimalDigits,
-                    locale,
-                    style,
-                    currency: event.currencySymbol || CURRENCY_DEFAULT
-                })}`, 60
-            );
-        } else if (
-            key === 'amountConverted' &&
-            !isUndefinedOrNull(event.amount) &&
-            event.currencySymbol !== currencySymbol
-        ) {
-            dataBouncer(
-                `amountConverted: ${formattingFunction(event.amountConverted, {
-                    minIntegerDigits,
-                    minDecimalDigits,
-                    maxDecimalDigits,
-                    locale,
-                    style,
-                    currency: currencySymbol || CURRENCY_DEFAULT
-                })}`, 70
-            );
-        } else if (key === 'balanceBeginning' && !isUndefinedOrNull(event.amount)) {
-            dataBouncer(
-                `balanceBeginning: ${formattingFunction(event.balanceBeginning, {
-                    minIntegerDigits,
-                    minDecimalDigits,
-                    maxDecimalDigits,
-                    locale,
-                    style,
-                    currency: currencySymbol || CURRENCY_DEFAULT
-                })}`, 80
-            );
-        } else if (key === 'balanceEnding' && !isUndefinedOrNull(event.amount)) {
-            dataBouncer(
-                `balanceEnding: ${formattingFunction(event.balanceEnding, {
-                    minIntegerDigits,
-                    minDecimalDigits,
-                    maxDecimalDigits,
-                    locale,
-                    style,
-                    currency: currencySymbol || CURRENCY_DEFAULT
-                })}`, 90
-            );
-        } else if (key === 'currencyEventSource' && event.currencyEventSource != null && !isUndefinedOrNull(event.amount) &&
-        event.currencySymbol !== currencySymbol) {
-            dataBouncer(`currencyEventSource: ${event.currencyEventSource}`, 100);
-        } else if (key === 'currencyObserverSource' && event.currencyObserverSource != null && !isUndefinedOrNull(event.amount) &&
-        event.currencySymbol !== currencySymbol) {
-            dataBouncer(`currencyObserverSource: ${event.currencyObserverSource}`, 110);
-        } else if (key === 'sortPriority' && key.sortPriority != null) {
-            dataBouncer(`sortPriority: ${event.sortPriority}`, 150);
-        } else if (key === 'timeZone') {
-            dataBouncer(`timeZone: ${event.timeZone}`, 160);
-        } else if (key === 'timeZoneType') {
-            dataBouncer(`timeZoneType: ${event.timeZoneType}`, 170);
-        } else if (key === 'timeStart' && event.timeStart != null) {
-            dataBouncer(`timeStart: ${event.timeStart}`, 180);
-        } else if (key === 'timeEnd' && event.timeEnd != null) {
-            dataBouncer(`timeEnd: ${event.timeEnd}`, 190);
-        } else if (key === 'dateStart' && event.dateStart != null) {
-            dataBouncer(`dateStart: ${event.dateStart}`, 200);
-        } else if (key === 'dateEnd' && event.dateEnd != null) {
-            dataBouncer(`dateEnd: ${event.dateEnd}`, 210);
-        } else if (key === 'weekdayStart' && event.weekdayStart != null) {
-            const weekdayString = getWeekdayString(event.weekdayStart);
-            dataBouncer(`weekdayStart: ${weekdayString}`, 220);
-        } else if (key === 'weekdayEnd' && event.weekdayEnd != null) {
-            const weekdayString = getWeekdayString(event.weekdayEnd);
-            dataBouncer(`weekdayEnd: ${weekdayString}`, 230);
-        } else if (key === 'spanningDays' && event.spanningDays != null) {
-            dataBouncer(`spanningDays: ${event.spanningDays}`, 231);
-        } else if (key === 'spanningHours' && event.spanningHours != null) {
-            dataBouncer(`spanningHours: ${event.spanningHours}`, 232);
-        } else if (key === 'spanningMinutes' && event.spanningMinutes != null) {
-            dataBouncer(`spanningMinutes: ${event.spanningMinutes}`, 233);
-        } else if (key === 'cycle' && event.cycle != null) {
-            dataBouncer(`cycle: ${event.cycle}`, 234);
-        } else if (key === 'modulus' && event.modulus != null) {
-            dataBouncer(`modulus: ${event.modulus}`, 235);
-        } else if (key === 'anchorSyncDate' && event.anchorSyncDate != null) {
-            dataBouncer(`anchorSyncDate: ${event.anchorSyncDate}`, 236);
-        } else if (key === 'effectiveDateStart' && event.effectiveDateStart != null) {
-            dataBouncer(`effectiveDateStart: ${event.effectiveDateStart}`, 240);
-        } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
-            dataBouncer(`effectiveDateEnd: ${event.effectiveDateEnd}`, 250);
-        } else if (key === 'timeZoneEventSource' && event.timeZoneEventSource != null) {
-            dataBouncer(`timeZoneEventSource: ${event.timeZoneEventSource}`, 260);
-        } else if (key === 'timeZoneObserverSource' && event.timeZoneObserverSource != null) {
-            dataBouncer(`timeZoneObserverSource: ${event.timeZoneObserverSource}`, 270);
-        } else if (key === 'dateTimeStartEventSource' && event.dateTimeStartEventSource != null) {
-            dataBouncer(`dateTimeStartEventSource: ${event.dateTimeStartEventSource}`, 280);
-        } else if (key === 'dateTimeObserverSource' && event.dateTimeObserverSource != null) {
-            dataBouncer(`dateTimeObserverSource: ${event.dateTimeObserverSource}`, 290);
-        } else if (
-            key !== 'name' &&
-            key !== 'type' &&
-            key !== 'frequency' &&
-            key !== 'context' &&
-            key !== 'currencySymbol' &&
-            key !== 'amount' &&
-            key !== 'amountConverted' &&
-            key !== 'balanceBeginning' &&
-            key !== 'balanceEnding' &&
-            key !== 'currencyEventSource' &&
-            key !== 'currencyObserverSource' &&
-            key !== 'sortPriority' &&
-            key !== 'timeZone' &&
-            key !== 'timeZoneType' &&
-            key !== 'timeStart' &&
-            key !== 'timeEnd' &&
-            key !== 'dateStart' &&
-            key !== 'dateEnd' &&
-            key !== 'weekdayStart' &&
-            key !== 'weekdayEnd' &&
-            key !== 'spanningDays' &&
-            key !== 'spanningHours' &&
-            key !== 'spanningMinutes' &&
-            key !== 'cycle' &&
-            key !== 'modulus' &&
-            key !== 'anchorSyncDate' &&
-            key !== 'effectiveDateStart' &&
-            key !== 'effectiveDateEnd' &&
-            key !== 'timeZoneEventSource' &&
-            key !== 'timeZoneObserverSource' &&
-            key !== 'dateTimeStartEventSource' &&
-            key !== 'dateTimeObserverSource'
-        ) {
-            // eslint-disable-next-line no-console
-            dataBouncer(`${key}: ${value}`, 300);
+        if (key !== 'specialAdjustments' && key !== 'exclusions' && key !== 'processDate' && key !== 'frequency') {
+            if (key === 'name' && event.name != null) {
+                dataBouncer(`name: ${event.name}`, 10); // eslint-disable-line quotes
+            } else if (key === 'type') {
+                dataBouncer(`type: ${event.type}`, 20);
+            } else if (key === 'frequency' && typeof event.frequency === 'string') {
+                dataBouncer(`frequency: ${event.frequency}`, 30); // code check: this line might be redundant, check to see if we are deleting frequency (if not a string) from the event printing process
+            } else if (key === 'context') {
+                dataBouncer(`context: ${event.context}`, 40);
+            } else if (key === 'currencySymbol' && !isUndefinedOrNull(event.amount)) {
+                dataBouncer(`currencySymbol: ${event.currencySymbol}`, 50);
+            } else if (key === 'amount') {
+                dataBouncer(
+                    `amount: ${formattingFunction(event.amount, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: event.currencySymbol || CURRENCY_DEFAULT
+                    })}`,
+                    60
+                );
+            } else if (
+                key === 'amountConverted' &&
+                !isUndefinedOrNull(event.amount) &&
+                event.currencySymbol !== currencySymbol
+            ) {
+                dataBouncer(
+                    `amountConverted: ${formattingFunction(event.amountConverted, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: currencySymbol || CURRENCY_DEFAULT
+                    })}`,
+                    70
+                );
+            } else if (key === 'balanceBeginning' && !isUndefinedOrNull(event.amount)) {
+                dataBouncer(
+                    `balanceBeginning: ${formattingFunction(event.balanceBeginning, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: currencySymbol || CURRENCY_DEFAULT
+                    })}`,
+                    80
+                );
+            } else if (key === 'balanceEnding' && !isUndefinedOrNull(event.amount)) {
+                dataBouncer(
+                    `balanceEnding: ${formattingFunction(event.balanceEnding, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: currencySymbol || CURRENCY_DEFAULT
+                    })}`,
+                    90
+                );
+            } else if (
+                key === 'currencyEventSource' &&
+                event.currencyEventSource != null &&
+                !isUndefinedOrNull(event.amount) &&
+                event.currencySymbol !== currencySymbol
+            ) {
+                dataBouncer(`currencyEventSource: ${event.currencyEventSource}`, 100);
+            } else if (
+                key === 'currencyObserverSource' &&
+                event.currencyObserverSource != null &&
+                !isUndefinedOrNull(event.amount) &&
+                event.currencySymbol !== currencySymbol
+            ) {
+                dataBouncer(`currencyObserverSource: ${event.currencyObserverSource}`, 110);
+            } else if (key === 'sortPriority' && key.sortPriority != null) {
+                dataBouncer(`sortPriority: ${event.sortPriority}`, 150);
+            } else if (key === 'timeZone') {
+                dataBouncer(`timeZone: ${event.timeZone}`, 160);
+            } else if (key === 'timeZoneType') {
+                dataBouncer(`timeZoneType: ${event.timeZoneType}`, 170);
+            } else if (key === 'timeStart' && event.timeStart != null) {
+                dataBouncer(`timeStart: ${event.timeStart}`, 180);
+            } else if (key === 'timeEnd' && event.timeEnd != null) {
+                dataBouncer(`timeEnd: ${event.timeEnd}`, 190);
+            } else if (key === 'dateStart' && event.dateStart != null) {
+                dataBouncer(`dateStart: ${event.dateStart}`, 200);
+            } else if (key === 'dateEnd' && event.dateEnd != null) {
+                dataBouncer(`dateEnd: ${event.dateEnd}`, 210);
+            } else if (key === 'weekdayStart' && event.weekdayStart != null) {
+                const weekdayString = getWeekdayString(event.weekdayStart);
+                dataBouncer(`weekdayStart: ${weekdayString}`, 220);
+            } else if (key === 'weekdayEnd' && event.weekdayEnd != null) {
+                const weekdayString = getWeekdayString(event.weekdayEnd);
+                dataBouncer(`weekdayEnd: ${weekdayString}`, 230);
+            } else if (key === 'spanningDays' && event.spanningDays != null) {
+                dataBouncer(`spanningDays: ${event.spanningDays}`, 231);
+            } else if (key === 'spanningHours' && event.spanningHours != null) {
+                dataBouncer(`spanningHours: ${event.spanningHours}`, 232);
+            } else if (key === 'spanningMinutes' && event.spanningMinutes != null) {
+                dataBouncer(`spanningMinutes: ${event.spanningMinutes}`, 233);
+            } else if (key === 'cycle' && event.cycle != null) {
+                dataBouncer(`cycle: ${event.cycle}`, 234);
+            } else if (key === 'modulus' && event.modulus != null) {
+                dataBouncer(`modulus: ${event.modulus}`, 235);
+            } else if (key === 'anchorSyncDate' && event.anchorSyncDate != null) {
+                dataBouncer(`anchorSyncDate: ${event.anchorSyncDate}`, 236);
+            } else if (key === 'effectiveDateStart' && event.effectiveDateStart != null) {
+                dataBouncer(`effectiveDateStart: ${event.effectiveDateStart}`, 240);
+            } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
+                dataBouncer(`effectiveDateEnd: ${event.effectiveDateEnd}`, 250);
+            } else if (key === 'timeZoneEventSource' && event.timeZoneEventSource != null) {
+                dataBouncer(`timeZoneEventSource: ${event.timeZoneEventSource}`, 260);
+            } else if (key === 'timeZoneObserverSource' && event.timeZoneObserverSource != null) {
+                dataBouncer(`timeZoneObserverSource: ${event.timeZoneObserverSource}`, 270);
+            } else if (key === 'dateTimeStartEventSource' && event.dateTimeStartEventSource != null) {
+                dataBouncer(`dateTimeStartEventSource: ${event.dateTimeStartEventSource}`, 280);
+            } else if (key === 'dateTimeObserverSource' && event.dateTimeObserverSource != null) {
+                dataBouncer(`dateTimeObserverSource: ${event.dateTimeObserverSource}`, 290);
+            } else if (
+                key !== 'name' &&
+                key !== 'type' &&
+                key !== 'frequency' &&
+                key !== 'context' &&
+                key !== 'currencySymbol' &&
+                key !== 'amount' &&
+                key !== 'amountConverted' &&
+                key !== 'balanceBeginning' &&
+                key !== 'balanceEnding' &&
+                key !== 'currencyEventSource' &&
+                key !== 'currencyObserverSource' &&
+                key !== 'sortPriority' &&
+                key !== 'timeZone' &&
+                key !== 'timeZoneType' &&
+                key !== 'timeStart' &&
+                key !== 'timeEnd' &&
+                key !== 'dateStart' &&
+                key !== 'dateEnd' &&
+                key !== 'weekdayStart' &&
+                key !== 'weekdayEnd' &&
+                key !== 'spanningDays' &&
+                key !== 'spanningHours' &&
+                key !== 'spanningMinutes' &&
+                key !== 'cycle' &&
+                key !== 'modulus' &&
+                key !== 'anchorSyncDate' &&
+                key !== 'effectiveDateStart' &&
+                key !== 'effectiveDateEnd' &&
+                key !== 'timeZoneEventSource' &&
+                key !== 'timeZoneObserverSource' &&
+                key !== 'dateTimeStartEventSource' &&
+                key !== 'dateTimeObserverSource'
+            ) {
+                // eslint-disable-next-line no-console
+                dataBouncer(`${key}: ${value}`, 300);
+            }
         }
     });
     const ttyMessageStackOrdered = ttyMessageStack.slice().sort((a, b) => {
-        if(a.order > b.order){
+        if (a.order > b.order) {
             return 1;
-        } else if(a.order < b.order) {
+        } else if (a.order < b.order) {
             return -1;
         } else {
             return 0;
