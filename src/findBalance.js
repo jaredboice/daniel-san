@@ -432,7 +432,7 @@ const checkForInputErrors = ({ danielSan, effectiveDateStartString, effectiveDat
     }
 };
 
-const findBalance = (danielSan = {}, { skipValidateAndConfigure, skipDeleteIrrelevantRules }) => {
+const findBalance = (danielSan = {}, options) => {
     /*
         executtion options for enhancing performance
             if you  know for a fact that your danielSan object and your rules are validated/configured according to that function's specifications, then you can skip that phase
