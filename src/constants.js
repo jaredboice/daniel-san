@@ -7,6 +7,7 @@ const DATE_TIME_DELIMITER = 'T';
 const appConstants = {
     APP_NAME: 'daniel-san',
     DEFAULT_ERROR_MESSAGE: 'something bad happened and a lot of robots died',
+    COMPOUND_DATA_DELIMITER: '::',
     DATE_DELIMITER,
     TIME_DELIMITER,
     DATE_TIME_DELIMITER,

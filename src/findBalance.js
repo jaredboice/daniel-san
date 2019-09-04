@@ -47,7 +47,8 @@ const {
     RETIRING_RULES,
     STANDARD_EVENT_ROUTINE,
     STANDARD_EVENT_REMINDER,
-    CURRENCY_DEFAULT
+    CURRENCY_DEFAULT,
+    COMPOUND_DATA_DELIMITER
 } = require('./constants');
 
 const discardEventsOutsideDateRange = (danielSan) => {
@@ -61,10 +62,10 @@ const discardEventsOutsideDateRange = (danielSan) => {
             dateString: effectiveDateStart,
             timeString: timeStart
         });
-        const dateStart = createTimeZone({
+        const eventDateStart = createTimeZone({
             timeZone,
             timeZoneType,
-            dateString: event.dateStart,
+            dateString: event.eventDateStart,
             timeString: event.timeStart
         });
         const dateToEnd = createTimeZone({
@@ -73,7 +74,7 @@ const discardEventsOutsideDateRange = (danielSan) => {
             dateString: effectiveDateEnd,
             timeString: timeEnd || timeStart
         });
-        if (dateStart.isBefore(dateToStart) || dateStart.isAfter(dateToEnd)) {
+        if (eventDateStart.isBefore(dateToStart) || eventDateStart.isAfter(dateToEnd)) {
             eventsToDiscard.push(event);
         } else {
             newEventList.push(event);
@@ -86,7 +87,8 @@ const discardEventsOutsideDateRange = (danielSan) => {
     }
 };
 
-const buildEvents = ({ danielSan, rules, date }) => {
+const buildEvents = ({ danielSan, rules, date, options = {} }) => {
+    const { skipTimeTravel } = options;
     let processPhase;
     let convertedDate;
     let ruleTracker; // for errorDisc
@@ -109,17 +111,17 @@ const buildEvents = ({ danielSan, rules, date }) => {
                     case STANDARD_EVENT:
                     case STANDARD_EVENT_ROUTINE:
                     case STANDARD_EVENT_REMINDER:
-                        processPhase = buildStandardEvent({ danielSan, rule, date: convertedDate });
+                        processPhase = buildStandardEvent({ danielSan, rule, date: convertedDate, skipTimeTravel });
                         break;
                     case NTH_WEEKDAYS_OF_MONTH:
                     case NTH_WEEKDAYS_OF_MONTH_ROUTINE:
                     case NTH_WEEKDAYS_OF_MONTH_REMINDER:
-                        processPhase = nthWeekdaysOfMonth({ danielSan, rule, date: convertedDate });
+                        processPhase = nthWeekdaysOfMonth({ danielSan, rule, date: convertedDate, skipTimeTravel });
                         break;
                     case WEEKDAY_ON_DATE:
                     case WEEKDAY_ON_DATE_ROUTINE:
                     case WEEKDAY_ON_DATE_REMINDER:
-                        processPhase = weekdayOnDate({ danielSan, rule, date: convertedDate });
+                        processPhase = weekdayOnDate({ danielSan, rule, date: convertedDate, skipTimeTravel });
                         break;
                     default:
                         break;
@@ -178,7 +180,7 @@ const buildEvents = ({ danielSan, rules, date }) => {
         });
         retireRules({ danielSan });
     } catch (err) {
-        throw errorDisc({ err, data: { date, processPhase, convertedDate, rule: ruleTracker, indexTracker } });
+        throw errorDisc({ err, data: { date, processPhase, convertedDate, rule: ruleTracker, indexTracker, options } });
     }
 };
 
@@ -376,7 +378,8 @@ const validateAndConfigure = ({ danielSan, date }) => {
 const executeEvents = ({ danielSan }) => {
     danielSan.events.forEach((event, index) => {
         try {
-            event.balanceBeginning = index === 0 ? danielSan.balanceBeginning : danielSan.events[index - 1].balanceEnding;
+            event.balanceBeginning =
+                index === 0 ? danielSan.balanceBeginning : danielSan.events[index - 1].balanceEnding;
             event.balanceEnding = event.balanceBeginning; // default value in case there is no amount field
             let amountConverted = 0;
             if (!isUndefinedOrNull(event.amount)) {
@@ -392,16 +395,15 @@ const executeEvents = ({ danielSan }) => {
                               })
                             : event.amount;
                 }
+                event.context = OBSERVER_SOURCE_CONTEXT;
                 event.balanceEnding = event.balanceBeginning + amountConverted; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
                 event.amountConverted = amountConverted;
-                event.currencyEventSource = `${event.currencySymbol} ${event.amount}`; // for future convenience
-                event.currencyObserverSource = `${danielSan.currencySymbol} ${event.amountConverted}`; // for future convenience
+                event.currencyEventSource = `${event.currencySymbol}${COMPOUND_DATA_DELIMITER}${event.amount}`; // for future convenience
+                event.currencyObserverSource = `${danielSan.currencySymbol}${COMPOUND_DATA_DELIMITER}${event.amountConverted}`; // for future convenience
                 event.currencySymbol = danielSan.currencySymbol;
             }
-            event.timeZoneType = danielSan.timeZoneType;
-            event.timeZone = danielSan.timeZone;
         } catch (err) {
-            throw errorDisc({ err, data: { event, index } }); 
+            throw errorDisc({ err, data: { event, index } });
         }
     });
 };
@@ -434,11 +436,19 @@ const checkForInputErrors = ({ danielSan, effectiveDateStartString, effectiveDat
 
 const findBalance = (danielSan = {}, options = {}) => {
     /*
-        executtion options for enhancing performance
+        the first parameter is the dentire danielSan bonzai tree of data that you configure.
+        the options parameter defines execution options for enhancing performance
             if you  know for a fact that your danielSan object and your rules are validated/configured according to that function's specifications, then you can skip that phase
             likewise, you can skip deleteIrrelevantRules if you have already removed irrelevant rules manually
+            and you can skip time travel when appropriate
+            see the options from the object destructuring below
     */
-    const { skipValidateAndConfigure = null, skipDeleteIrrelevantRules = null } = options;
+    const {
+        skipValidateAndConfigure = null,
+        skipDeleteIrrelevantRules = null,
+        skipTimeTravel = null,
+        skipDiscardEventsOutsideDateRange = null
+    } = options;
     const newDanielSan = deepCopy(danielSan);
     try {
         if (isUndefinedOrNull(newDanielSan.timeZoneType) || isUndefinedOrNull(newDanielSan.timeZone)) {
@@ -460,10 +470,10 @@ const findBalance = (danielSan = {}, options = {}) => {
             timeZone,
             timeZoneType
         });
-        if(!skipValidateAndConfigure){
+        if (!skipValidateAndConfigure) {
             validateAndConfigure({ danielSan: newDanielSan, date: timeStream.looperDate });
         }
-        if(!skipDeleteIrrelevantRules){
+        if (!skipDeleteIrrelevantRules) {
             deleteIrrelevantRules({
                 danielSan: newDanielSan
             }); // this follows validateAndConfigure just in case timezones were not yet present where they needed to be
@@ -472,12 +482,18 @@ const findBalance = (danielSan = {}, options = {}) => {
             buildEvents({
                 danielSan: newDanielSan,
                 rules: newDanielSan.rules,
-                date: timeStream.looperDate
+                date: timeStream.looperDate,
+                options
             });
         } while (timeStream.stream1DayForward());
-        timeTravel(newDanielSan); // note: newDanielSan timezones must be converted prior to sorting and executing events
+        // note: newDanielSan timezones must be converted prior to sorting and executing events
+        if (!skipTimeTravel) {
+            timeTravel(newDanielSan);
+        }
         sortDanielSan(newDanielSan); // note: newDanielSan must be sorted prior to executing events
-        discardEventsOutsideDateRange(newDanielSan);
+        if (!skipDiscardEventsOutsideDateRange) {
+            discardEventsOutsideDateRange(newDanielSan);
+        }
         executeEvents({ danielSan: newDanielSan });
 
         if (newDanielSan.events.length > 0) {

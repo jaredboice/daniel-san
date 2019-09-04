@@ -3,6 +3,7 @@ const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { streamForward } = require('../timeStream');
 const { createTimeZone } = require('../timeZone');
+const { generateEvent } = require('../common');
 const {
     getRelevantDateSegmentByFrequency,
     exclusionsPhase
@@ -98,7 +99,7 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
     ];
 
 */
-const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
+const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel }) => {
     let processPhase = EVALUATING_RULE_INSERTION;
     let nthProcessDayTracker;
     let looperDateTracker;
@@ -123,9 +124,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
                     processPhase = EXECUTING_RULE_INSERTION;
                     processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
                     if (processPhase !== EXECUTION_REJECTED) {
-                        rule.dateStart = date.format(DATE_FORMAT_STRING);
-                        danielSan.events.push({ ...rule });
-                        processPhase = MODIFIED;
+                        processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
                     }
                 }
             });
@@ -141,7 +140,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date }) => {
     processDate: '13',
 
 */
-const weekdayOnDate = ({ danielSan, rule, date }) => {
+const weekdayOnDate = ({ danielSan, rule, date, skipTimeTravel }) => {
     let processPhase = EVALUATING_RULE_INSERTION;
     try {
         const thisProcessDate = getRelevantDateSegmentByFrequency({
@@ -160,9 +159,7 @@ const weekdayOnDate = ({ danielSan, rule, date }) => {
             processPhase = EXECUTING_RULE_INSERTION;
             processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
             if (processPhase !== EXECUTION_REJECTED) {
-                rule.dateStart = date.format(DATE_FORMAT_STRING);
-                danielSan.events.push({ ...rule });
-                processPhase = MODIFIED;
+                processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
             }
         }
         return processPhase;

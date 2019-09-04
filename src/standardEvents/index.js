@@ -1,6 +1,7 @@
 const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { _28DayCondition } = require('./conditional');
+const { generateEvent } = require('../common');
 const { getRelevantDateSegmentByFrequency, exclusionsPhase } = require('../standardEvents/common');
 const { cycleModulusUp, isCycleAtModulus } = require('../modulusCycle');
 const {
@@ -31,7 +32,7 @@ const modulusPhase = ({ rule, processPhase }) => {
     }
 };
 
-const buildStandardEvent = ({ danielSan, rule, date }) => {
+const buildStandardEvent = ({ danielSan, rule, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = EVALUATING_RULE_INSERTION;
@@ -54,9 +55,7 @@ const buildStandardEvent = ({ danielSan, rule, date }) => {
             processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
             processPhase = modulusPhase({ rule, processPhase });
             if (processPhase === EXECUTING_RULE_INSERTION) {
-                rule.dateStart = date.format(DATE_FORMAT_STRING);
-                danielSan.events.push({ ...rule });
-                processPhase = MODIFIED;
+                processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
             }
         }
         return processPhase;

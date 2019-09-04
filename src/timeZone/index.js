@@ -5,11 +5,13 @@ const {
     AM,
     PM,
     TIME_DELIMITER,
+    COMPOUND_DATA_DELIMITER,
     DATE_TIME_DELIMITER,
     DATE_FORMAT_STRING,
     TIME_FORMAT_STRING,
     OBSERVER_SOURCE_CONTEXT
 } = require('../constants');
+const { generateTimeSpan } = require('../common');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { errorDisc } = require('../utility/errorHandling');
 
@@ -75,33 +77,19 @@ const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
 
 const timeTravel = (danielSan) => {
     const { timeZone, timeZoneType } = danielSan;
-    let newTargetTimeStartDate;
+    let eventTracker; // for errorDisc
     let targetTimeStartObj = {};
-    let newTargetTimeEndDate;
     try {
         danielSan.events.forEach((event) => {
-            newTargetTimeStartDate = createTimeZone({
-                timeZone: event.timeZone,
-                timeZoneType: event.timeZoneType,
-                dateString: event.dateStart,
-                timeString: event.timeStart
-            });
-            newTargetTimeEndDate = createTimeZone({
-                timeZone: event.timeZone,
-                timeZoneType: event.timeZoneType,
-                dateString: event.dateStart, // assigning dateStart as default value
-                timeString: event.timeStart
-            });
+            eventTracker = event;
             targetTimeStartObj = convertTimeZone({
                 timeZone,
                 timeZoneType,
-                date: newTargetTimeStartDate,
+                date: event.dateTimeStartEventSource,
                 timeString: event.timeStart
             });
             event.context = OBSERVER_SOURCE_CONTEXT;
-            event.timeZoneEventSource = `${event.timeZone} ${event.timeZoneType}`; // for future convenience
-            event.timeZoneObserverSource = `${timeZone} ${timeZoneType}`; // for future convenience
-            event.dateTimeStartEventSource = newTargetTimeStartDate; // for future convenience, store the full original moment-timezone date from the rule
+            event.timeZoneObserverSource = `${timeZone}${COMPOUND_DATA_DELIMITER}${timeZoneType}`; // for future convenience
             event.dateTimeStartObserverSource = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
             if (event.effectiveDateStart) {
                 const transientDateObj = createTimeZone({
@@ -142,58 +130,15 @@ const timeTravel = (danielSan) => {
                 }); // for future convenience
                 event.anchorSyncDate = transientDateObjConverted.date.format(DATE_FORMAT_STRING);
             }
-            event.timeZone = danielSan.timeZone;
-            event.timeZoneType = danielSan.timeZoneType; // this is currently redundant since we are auto-assigning the danielSan value to event
-            // however, if we ever want to change that behavior and add additional options, we'd still want to be sure that this value matches the event output
+            
             event.dateStart = targetTimeStartObj.dateString; // as seen from the observer
             event.timeStart = event.timeStart ? targetTimeStartObj.timeString : null;
-            event.weekdayStart = targetTimeStartObj.weekday;
-            event.timeEnd = null;
-            if (event.timeStart) {
-                newTargetTimeEndDate = createTimeZone({
-                    timeZone: event.timeZone,
-                    timeZoneType: event.timeZoneType,
-                    dateString: event.dateStart,
-                    timeString: event.timeStart
-                });
-                let spanningTime = false;
-                const targetTimeEndDateClone = targetTimeStartObj.date;
-                if (event.spanningMinutes) {
-                    targetTimeEndDateClone.add(event.spanningMinutes, 'minute');
-                    spanningTime = true;
-                }
-                if (event.spanningHours) {
-                    targetTimeEndDateClone.add(event.spanningHours, 'hour');
-                    spanningTime = true;
-                }
-                if (event.spanningDays) {
-                    targetTimeEndDateClone.add(event.spanningDays, 'day');
-                    spanningTime = true;
-                }
-                if (spanningTime) {
-                    const DATE_TIME_FORMAT_STRING = `${DATE_FORMAT_STRING}${DATE_TIME_DELIMITER}${TIME_FORMAT_STRING}`;
-                    const dateTimeString = targetTimeEndDateClone.format(DATE_TIME_FORMAT_STRING); // lowercase the AM/PM
-                    const [dateString, newTimeString] = dateTimeString.split(DATE_TIME_DELIMITER);
-                    event.dateEnd = dateString;
-                    event.timeEnd = newTimeString.toLowerCase();
-                    event.weekdayEnd = targetTimeEndDateClone.day();
-                }
-            }
-            // delete irrelevant data:
-            delete event.specialAdjustments;
-            delete event.exclusions;
-            delete event.processDate;
-            if (typeof event.frequency !== 'string') {
-                delete event.frequency;
-            }
-            // the idea is that we should only provide useful data that makes sense in the context of each event
-            // as it may relate to timezone or currency conversion
-            // any other information that may be required can be gathered from the original rule (matched via name or custom id property)
+            generateTimeSpan({ event, date: targetTimeStartObj.date, weekday: targetTimeStartObj.weekday });
         });
     } catch (err) {
         throw errorDisc({
             err,
-            data: { timeZone, timeZoneType, newTargetTimeStartDate, targetTimeStartObj, newTargetTimeEndDate }
+            data: { timeZone, timeZoneType, event: eventTracker, targetTimeStartObj }
         });
     }
 };

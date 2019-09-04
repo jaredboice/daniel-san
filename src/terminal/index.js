@@ -475,11 +475,11 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             dataBouncer(`effectiveDateStart: ${event.effectiveDateStart}`, 240);
         } else if (key === 'effectiveDateEnd' && event.effectiveDateEnd != null) {
             dataBouncer(`effectiveDateEnd: ${event.effectiveDateEnd}`, 250);
-        } else if (key === 'timeZoneEventSource' && event.timeZoneEventSource != null && event.timeZoneEventSource !== event.timeZoneObserverSource) {
+        } else if (key === 'timeZoneEventSource' && event.timeZoneEventSource != null) {
             dataBouncer(`timeZoneEventSource: ${event.timeZoneEventSource}`, 260);
         } else if (key === 'timeZoneObserverSource' && event.timeZoneObserverSource != null) {
             dataBouncer(`timeZoneObserverSource: ${event.timeZoneObserverSource}`, 270);
-        } else if (key === 'dateTimeStartEventSource' && event.dateTimeStartEventSource != null && event.timeZoneEventSource !== event.timeZoneObserverSource) {
+        } else if (key === 'dateTimeStartEventSource' && event.dateTimeStartEventSource != null) {
             dataBouncer(`dateTimeStartEventSource: ${event.dateTimeStartEventSource}`, 280);
         } else if (key === 'dateTimeObserverSource' && event.dateTimeObserverSource != null) {
             dataBouncer(`dateTimeObserverSource: ${event.dateTimeObserverSource}`, 290);
