@@ -432,13 +432,13 @@ const checkForInputErrors = ({ danielSan, effectiveDateStartString, effectiveDat
     }
 };
 
-const findBalance = (danielSan = {}, options) => {
+const findBalance = (danielSan = {}, { skipValidateAndConfigure, skipDeleteIrrelevantRules }) => {
     /*
         executtion options for enhancing performance
             if you  know for a fact that your danielSan object and your rules are validated/configured according to that function's specifications, then you can skip that phase
             likewise, you can skip deleteIrrelevantRules if you have already removed irrelevant rules manually
     */
-    const { skipValidateAndConfigure, skipDeleteIrrelevantRules } = options;
+    const { skipValidateAndConfigure = null, skipDeleteIrrelevantRules = null } = options;
     const newDanielSan = deepCopy(danielSan);
     try {
         if (isUndefinedOrNull(newDanielSan.timeZoneType) || isUndefinedOrNull(newDanielSan.timeZone)) {
