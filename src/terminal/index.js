@@ -573,6 +573,8 @@ const eventsLogger = ({ events, terminalOptions, currencySymbol }) => {
 
 const standardTerminalHeader = ({ terminalOptions }) => {
     terminalBoundary(5);
+    lineHeading(' daniel-san: astral-projecting your budget with a crane-kick to the face ');
+    terminalBoundary(5);
     lineHeading(' must find balance, daniel-san ');
     lineHeading(` terminal type: ${terminalOptions.type} `);
     lineHeading(` terminal mode: ${terminalOptions.mode} `);
@@ -1136,6 +1138,8 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
             // eslint-disable-next-line no-console
             console.log(err);
         }
+    } else {
+        lineHeading(' the danielSan bonzai tree is likely null or undefined ');
     }
 };
 
