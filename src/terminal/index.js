@@ -1132,14 +1132,16 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
             // eslint-disable-next-line no-console
             console.log(getRandomMiyagiQuote());
             lineSeparator(2);
-            terminalBoundary(5);
+            terminalBoundary(2);
+            lineHeading(' daniel-san: astral-projecting your budget with a crane-kick to the face ');
+            terminalBoundary(2);
         } catch (err) {
             lineHeading(' something bad happened and a lot of robots died ');
             // eslint-disable-next-line no-console
             console.log(err);
         }
     } else {
-        lineHeading(' the danielSan bonzai tree is likely null or undefined ');
+        lineHeading(' the danielSan bonsai tree is likely null or undefined ');
     }
 };
 

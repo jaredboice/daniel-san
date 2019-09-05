@@ -459,11 +459,11 @@ const cleanUpData = (danielSan) => {
 
 const findBalance = (danielSan = {}, options = {}) => {
     /*
-        the first parameter is the entire danielSan bonzai tree of data that you configure.
+        the first parameter is the entire danielSan bonsai tree of data that you configure.
         the options parameter defines execution options for enhancing performance
             if you  know for a fact that your danielSan object and your rules are validated/configured according to that function's specifications, then you can skip that phase
             likewise, you can skip deleteIrrelevantRules if you have already removed irrelevant rules manually
-            and you can skip time travel when appropriate, just keep in mind that timeTravel assumes that all of the rules are in sync with the daniel-san bonzai tree's time zone data (the MCU / Master Control Unit)
+            and you can skip time travel when appropriate, just keep in mind that timeTravel assumes that all of the rules are in sync with the daniel-san bonsai tree's time zone data (the MCU / Master Control Unit)
             see the options from the object destructuring below
     */
     const {
