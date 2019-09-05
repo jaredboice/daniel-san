@@ -9,7 +9,7 @@ const {
     DATE_TIME_DELIMITER,
     DATE_FORMAT_STRING,
     TIME_FORMAT_STRING,
-    OBSERVER_SOURCE_CONTEXT
+    OBSERVER_SOURCE
 } = require('../constants');
 const { generateTimeSpan } = require('../common');
 const { isUndefinedOrNull } = require('../utility/validation');
@@ -88,7 +88,7 @@ const timeTravel = (danielSan) => {
                 date: event.dateTimeStartEventSource,
                 timeString: event.timeStart
             });
-            event.context = OBSERVER_SOURCE_CONTEXT;
+            event.context = OBSERVER_SOURCE;
             event.timeZoneObserverSource = `${timeZone}${COMPOUND_DATA_DELIMITER}${timeZoneType}`; // for future convenience
             event.dateTimeStartObserverSource = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
             if (event.effectiveDateStart) {

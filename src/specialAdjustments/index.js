@@ -13,8 +13,8 @@ const {
     ONCE,
     EXECUTING_RULE_ADJUSTMENT,
     MODIFIED,
-    EVENT_SOURCE_CONTEXT,
-    OBSERVER_SOURCE_CONTEXT,
+    EVENT_SOURCE,
+    OBSERVER_SOURCE,
     BOTH
 } = require('../constants');
 
@@ -30,16 +30,16 @@ const reusableLogicForDateMovements = ({
 }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     if (dateArray) {
-        // note: timezone for "OBSERVER_SOURCE_CONTEXT" is actually coming from the root of the master danielSan controller for all the projections.
+        // note: timezone for "OBSERVER_SOURCE" is actually coming from the root of the master danielSan controller for all the projections.
         // Because that will be the final assigned timezone for the event.
-        // even though the timezones for "EVENT_SOURCE_CONTEXT" are coming from the event object,
+        // even though the timezones for "EVENT_SOURCE" are coming from the event object,
         // their below dates are calcluated via the rule timezone data (which is still the original data as it hasn't changed to the converted timezone yet)
         let ruleContextLooperDate = date;
         let ruleContextLooperDateString = getRelevantDateSegmentByFrequency({
             frequency,
             date: ruleContextLooperDate
         });
-        // note: the following 2 variables would only be used in OBSERVER_SOURCE_CONTEXT or BOTH
+        // note: the following 2 variables would only be used in OBSERVER_SOURCE or BOTH
         let observerContextLooperDate = convertTimeZone({
             timeZone: danielSan.timeZone,
             timeZoneType: danielSan.timeZoneType,
@@ -50,8 +50,8 @@ const reusableLogicForDateMovements = ({
             date: observerContextLooperDate.date
         });
         /* begin big code block */
-        /* conditions: EVENT_SOURCE_CONTEXT / OBSERVER_SOURCE_CONTEXT / BOTH */
-        if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === EVENT_SOURCE_CONTEXT) {
+        /* conditions: EVENT_SOURCE / OBSERVER_SOURCE / BOTH */
+        if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === EVENT_SOURCE) {
             while (dateArray.includes(ruleContextLooperDateString)) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
@@ -68,7 +68,7 @@ const reusableLogicForDateMovements = ({
                     date: ruleContextLooperDate
                 });
             }
-        } else if (specialAdjustment.context === OBSERVER_SOURCE_CONTEXT) {
+        } else if (specialAdjustment.context === OBSERVER_SOURCE) {
             while (dateArray.includes(observerContextLooperDateString)) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
@@ -294,10 +294,10 @@ const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
             if (ruleContextLooperDate === event.dateStart && event.amount) {
                 if (
                     isUndefinedOrNull(specialAdjustment.context) ||
-                    specialAdjustment.context === EVENT_SOURCE_CONTEXT
+                    specialAdjustment.context === EVENT_SOURCE
                 ) {
                     event.amount += specialAdjustment.amounts[looperDateIndex];
-                } else if (specialAdjustment.context === OBSERVER_SOURCE_CONTEXT) {
+                } else if (specialAdjustment.context === OBSERVER_SOURCE) {
                     const adjustmentConverted =
                         danielSan.currencySymbol &&
                         event.currencySymbol &&

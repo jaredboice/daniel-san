@@ -20,8 +20,8 @@ const { cycleModulusUpToDate, cycleModulusDownToDate } = require('./modulusCycle
 const {
     LOCAL,
     UTC,
-    EVENT_SOURCE_CONTEXT,
-    OBSERVER_SOURCE_CONTEXT,
+    EVENT_SOURCE,
+    OBSERVER_SOURCE,
     DATE_FORMAT_STRING,
     DATE_DELIMITER,
     STANDARD_EVENT,
@@ -314,7 +314,7 @@ const validateAndConfigure = ({ danielSan, date }) => {
     danielSan.rules.forEach((rule, index) => {
         ruleTracker = rule;
         indexTracker = index;
-        rule.context = EVENT_SOURCE_CONTEXT;
+        rule.context = EVENT_SOURCE;
         if (isUndefinedOrNull(rule.currencySymbol)) {
             rule.currencySymbol = CURRENCY_DEFAULT;
         } else {
@@ -404,7 +404,7 @@ const executeEvents = ({ danielSan }) => {
                               })
                             : event.amount;
                 }
-                event.context = OBSERVER_SOURCE_CONTEXT;
+                event.context = OBSERVER_SOURCE;
                 event.balanceEnding = event.balanceBeginning + amountConverted; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
                 event.amountConverted = amountConverted;
                 event.currencyEventSource = `${event.currencySymbol}${COMPOUND_DATA_DELIMITER}${event.amount}`; // for future convenience
