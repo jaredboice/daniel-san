@@ -12,7 +12,7 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-St
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Time zones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. The user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. And beyond that, daniel-san is completely customizable. Create your own custom properties that you track on your own. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
 
 ## Breaking Change in v8.0.0
 In keeping with the trend of adding clarity and consistency to variable names, the following properties have been changed accordingly. beginBalance is now balanceBeginning. endBalance is now balanceEnding. And syncDate is now anchorSyncDate.  
@@ -107,7 +107,16 @@ const craneKick = findBalance(danielSan);
 -   `type: 'STANDARD_EVENT_ROUTINE'` _(same as above but does not need an amount field)_
 -   `type: 'STANDARD_EVENT_REMINDER'` _(same as above but does not need an amount field, solely for semantic differentiation)_
 
-_includes all standard frequencies: 'ANNUALLY', 'MONTHLY', 'WEEKLY', 'DAILY', and 'ONCE'_
+_includes all standard frequencies: 'ONCE', 'ANNUALLY', 'MONTHLY', 'WEEKLY', and 'DAILY'_
+
+the processDate formats for each frequency, in the same order, are:
+
+ONCE - '2020-01-29',  
+ANNUALLY - '01-29',  
+MONTHLY - '29'  
+WEEKLY - an integer between 0-6 for weekdays. constants for the weekday integers, such as SUNDAY and MONDAY, are available as imports.  
+DAILY - needs no processDate
+
 
 ```javascript
 const danielSan = {
@@ -143,6 +152,14 @@ const danielSan = {
     events: [] // future balance projections stored here
 };
 ```
+
+**Date Arrays**
+
+STANDARD_EVENTS also accept date arrays for processDate. This applies to all possible frequency types of STANDARD_EVENTS, including ONCE. The format of the date elements must all match the date format for that particular frequency, While it would seem like overkill to use the modulus/cycle feature with date arrays, it is certainly possible to do. Be aware that, when using date arrays, the program will look for any possible match within the array. Any match will modulate the cycle. So order of the elements does not matter:
+
+eg. frequency === ANNUALLY
+processDate: ['12-24', '12-25', '01-01']
+
 
 **Special Events**
 
@@ -324,6 +341,39 @@ const danielSan = {
     events: [] // future balance projections stored here
 };
 ```
+
+## Dynamic Rule Modification
+
+**Growth and Decay Capability**
+
+If added to a rule, the ruleModification function will execute after eaching passing day of the projection phase. While it was initially added for the capability to modify the amount field over time, you are being provided with enough parameters to do some damage if you don't know what you're doing. You get access to the full danielSan bonsai tree, the rule, and two moment dates, including the convertedDate via time zone functionality. You are also encouraged to store temporary data for calculations in the object, rule.transientData. That specific field gets deleted for you in the cleanUpData phase, after the completion of all event generation.
+
+
+```javascript
+const danielSan = {
+    balanceBeginning: 1618.03, // always required
+    balanceEnding: null, // future end balance is stored here
+    effectiveDateStart: '2019-03-20', // always required
+    effectiveDateEnd: '2019-12-13', // always required
+    rules: [
+        { // rule 1
+            type: STANDARD_EVENT,
+            frequency: MONTHLY,
+            name: 'projected revenue',
+            amount: -5.00,
+            effectiveDateStart: '2019-01-01',
+            effectiveDateEnd: null,
+            ruleModification: ({ danielSan, rule, date, convertedDate }) => {
+                // every SUNDAY, we expect that day of revenue to increase by 100
+                if (convertedDate.day() === 0) {
+                    rule.amount += 100;
+                }
+            }
+        }
+    ],
+    events: [] // future balance projections stored here
+};
+
 
 ## Exclusions
 

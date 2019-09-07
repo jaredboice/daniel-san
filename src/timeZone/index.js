@@ -1,19 +1,14 @@
 const moment = require('moment-timezone');
+const { errorDisc } = require('../utility/errorHandling');
+const { generateTimeSpan } = require('../core/eventGeneration');
 const {
     UTC,
-    LOCAL,
-    AM,
-    PM,
-    TIME_DELIMITER,
     COMPOUND_DATA_DELIMITER,
     DATE_TIME_DELIMITER,
     DATE_FORMAT_STRING,
     TIME_FORMAT_STRING,
     OBSERVER_SOURCE
 } = require('../constants');
-const { generateTimeSpan } = require('../common');
-const { isUndefinedOrNull } = require('../utility/validation');
-const { errorDisc } = require('../utility/errorHandling');
 
 const initializeTimeZoneData = (obj) => {
     try {

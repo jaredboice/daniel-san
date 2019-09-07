@@ -1,18 +1,6 @@
-const moment = require('moment-timezone');
-const { DATE_FORMAT_STRING, ONCE, LOCAL } = require('../constants');
-const { initializeTimeZoneData, createTimeZone, convertTimeZone } = require('../timeZone');
-const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
 const { isUndefinedOrNull } = require('../utility/validation');
-
-const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0, propertyKey = 'balanceEnding' }) => {
-    let criticalSnapshots = null;
-    if (!isUndefinedOrNull(criticalThreshold)) {
-        criticalSnapshots = danielSan.events.filter((event) => {
-            return event[propertyKey] < criticalThreshold;
-        });
-    }
-    return criticalSnapshots;
-};
+const { initializeTimeZoneData, createTimeZone, convertTimeZone } = require('../timeZone');
+const { DATE_FORMAT_STRING, ONCE } = require('../constants');
 
 // finds rules with end dates that are less than the beginning date range of the budget projection
 const findRulesToRetire = (danielSan) => {
@@ -35,7 +23,11 @@ const findRulesToRetire = (danielSan) => {
         if (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateStartString) {
             rule.ruleIndex = index;
             return rule;
-        } else if (rule.frequency === ONCE && rule.processDate < convertedDateStartString) {
+        } else if (
+            rule.frequency === ONCE &&
+            typeof rule.processDate === 'string' &&
+            rule.processDate < convertedDateStartString
+        ) {
             rule.ruleIndex = index;
             return rule;
         }
@@ -48,66 +40,6 @@ const findRulesToRetire = (danielSan) => {
     }
     // eslint-disable-next-line no-unreachable
     return null; // this line satisfies another linting error
-};
-
-// returns/removes rules that have no chance ot being included into a projected event
-const seekAndDestroyIrrelevantRules = (danielSan) => {
-    const { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType } = danielSan;
-    const relevantRules = [];
-    const irrelevantRules = [];
-    // eslint-disable-next-line array-callback-return
-    danielSan.rules.forEach((rule, index) => {
-        const dateToStart = createTimeZone({
-            timeZone,
-            timeZoneType,
-            dateString: effectiveDateStart
-        });
-        const convertedDateToStart = convertTimeZone({
-            timeZone: rule.timeZone,
-            timeZoneType: rule.timeZoneType,
-            date: dateToStart
-        }).date;
-        const convertedDateToStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
-        const dateToEnd = createTimeZone({
-            timeZone,
-            timeZoneType,
-            dateString: effectiveDateEnd
-        });
-        const convertedDateToEnd = convertTimeZone({
-            timeZone: rule.timeZone,
-            timeZoneType: rule.timeZoneType,
-            date: dateToEnd
-        }).date;
-        const convertedDateToEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
-        let allowToLive = true;
-        
-        if (
-            (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateToStartString) ||
-            (!isUndefinedOrNull(rule.effectiveDateStart) && rule.effectiveDateStart > convertedDateToEndString)
-        ) {
-            // exclude
-            allowToLive = false;
-            // eslint-disable-next-line no-else-return
-        } else if (rule.frequency === ONCE && rule.processDate < convertedDateToStartString) {
-            // exclude:
-            allowToLive = false;
-        } else if (isUndefinedOrNull(rule.effectiveDateEnd)) {
-            // include
-            allowToLive = true;
-        } else {
-            // include
-            allowToLive = true;
-        }
-
-        if (allowToLive) {
-            relevantRules.push(rule);
-        } else {
-            rule.ruleIndex = index;
-            irrelevantRules.push(rule);
-        }
-    });
-    danielSan.rules = relevantRules; // remove irrelevantRules from the danielSan reference
-    return irrelevantRules; // return irrelevantRules if needed
 };
 
 const findEventsWithProperty = ({ events, propertyKey }) => {
@@ -174,6 +106,16 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     return null; // this line satisfies another linting error
 };
 
+const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0, propertyKey = 'balanceEnding' }) => {
+    let criticalSnapshots = null;
+    if (!isUndefinedOrNull(criticalThreshold)) {
+        criticalSnapshots = danielSan.events.filter((event) => {
+            return event[propertyKey] < criticalThreshold;
+        });
+    }
+    return criticalSnapshots;
+};
+
 const findSnapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey = 'balanceEnding' }) => {
     const newCollection = collection.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > amount) {
@@ -203,6 +145,7 @@ const findGreatestValueSnapshots = ({
             return -1;
         } else if (a[propertyKey] < b[propertyKey]) {
             return 1;
+            // eslint-disable-next-line no-else-return
         } else {
             return 0;
         }
@@ -247,7 +190,6 @@ module.exports = {
     findSnapshotsLessThanAmount,
     findCriticalSnapshots,
     findRulesToRetire,
-    seekAndDestroyIrrelevantRules,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,

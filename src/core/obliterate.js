@@ -1,53 +1,15 @@
+const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { createTimeZone, convertTimeZone } = require('../timeZone');
-const { errorDisc } = require('../utility/errorHandling');
+const { getRelevantDateSegmentByFrequency } = require('./dateUtility');
 const {
-    DATE_FORMAT_STRING,
-    MODIFIED,
-    ONCE,
-    DAILY,
-    WEEKLY,
-    MONTHLY,
-    ANNUALLY,
-    DATE_DELIMITER,
-    DATE_TIME_DELIMITER,
-    TIME_FORMAT_STRING,
-    COMPOUND_DATA_DELIMITER,
-    EXECUTION_REJECTED,
     EVENT_SOURCE,
     OBSERVER_SOURCE,
-    BOTH
+    BOTH,
+    DATE_FORMAT_STRING,
+    EXECUTION_REJECTED,
+    ONCE
 } = require('../constants');
-
-/*
-    function: getRelevantDateSegmentByFrequency
-    description:
-        returns the relevant part of the date.
-        example:
-            for WEEKLY frequency it only needs to return the weekday (as a number 0-6).
-            for ANNUAL frequency it returns something like "12-31"
-
-
-*/
-const getRelevantDateSegmentByFrequency = ({ frequency, date }) => {
-    const currentDateString = date.format(DATE_FORMAT_STRING);
-    const [currentYearString, currentMonthString, currentDayString] = currentDateString.split(DATE_DELIMITER);
-    const currentWeekday = date.day();
-    switch (frequency) {
-        case ANNUALLY:
-            return `${currentMonthString}${DATE_DELIMITER}${currentDayString}`;
-        case MONTHLY:
-            return currentDayString;
-        case WEEKLY:
-            return currentWeekday;
-        case DAILY:
-            break;
-        case ONCE:
-            return `${currentYearString}${DATE_DELIMITER}${currentMonthString}${DATE_DELIMITER}${currentDayString}`;
-        default:
-            break;
-    }
-};
 
 // flags a rule that is no longer relevant for active budget-projection calculations
 const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
@@ -56,7 +18,7 @@ const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
         const dateString = date.format(DATE_FORMAT_STRING);
         if (
             (!isUndefinedOrNull(rule.effectiveDateEnd) && dateString >= rule.effectiveDateEnd) ||
-            (rule.frequency === ONCE && dateString >= rule.processDate)
+            (rule.frequency === ONCE && typeof rule.processDate === 'string' && dateString >= rule.processDate)
         ) {
             danielSan.retiredRuleIndices.push(index);
         }
@@ -81,6 +43,111 @@ const retireRules = ({ danielSan }) => {
         }
     } catch (err) {
         throw errorDisc({ err, data: { retiredRuleIndices: danielSan.retiredRuleIndices, looper } });
+    }
+};
+
+// returns/removes rules that have no chance ot being included into a projected event
+const seekAndDestroyIrrelevantRules = (danielSan) => {
+    const { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType } = danielSan;
+    const relevantRules = [];
+    const irrelevantRules = [];
+    // eslint-disable-next-line array-callback-return
+    danielSan.rules.forEach((rule, index) => {
+        const dateToStart = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: effectiveDateStart
+        });
+        const convertedDateToStart = convertTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.timeZoneType,
+            date: dateToStart
+        }).date;
+        const convertedDateToStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
+        const dateToEnd = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: effectiveDateEnd
+        });
+        const convertedDateToEnd = convertTimeZone({
+            timeZone: rule.timeZone,
+            timeZoneType: rule.timeZoneType,
+            date: dateToEnd
+        }).date;
+        const convertedDateToEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
+        let allowToLive = true;
+        
+        if (
+            (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateToStartString) ||
+            (!isUndefinedOrNull(rule.effectiveDateStart) && rule.effectiveDateStart > convertedDateToEndString)
+        ) {
+            // exclude
+            allowToLive = false;
+            // eslint-disable-next-line no-else-return
+        } else if (rule.frequency === ONCE && typeof rule.processDate === 'string' && rule.processDate < convertedDateToStartString) {
+            // exclude:
+            allowToLive = false;
+        } else if (isUndefinedOrNull(rule.effectiveDateEnd)) {
+            // include
+            allowToLive = true;
+        } else {
+            // include
+            allowToLive = true;
+        }
+
+        if (allowToLive) {
+            relevantRules.push(rule);
+        } else {
+            rule.ruleIndex = index;
+            irrelevantRules.push(rule);
+        }
+    });
+    danielSan.rules = relevantRules; // remove irrelevantRules from the danielSan reference
+    return irrelevantRules; // return irrelevantRules if needed
+};
+
+const deleteIrrelevantRules = ({ danielSan, effectiveDateStartString }) => {
+    try {
+        const irrelevantRules = seekAndDestroyIrrelevantRules(danielSan);
+        danielSan.irrelevantRules = irrelevantRules;
+    } catch (err) {
+        throw errorDisc({ err, data: { effectiveDateStartString } });
+    }
+};
+
+const discardEventsOutsideDateRange = (danielSan) => {
+    const { effectiveDateStart, timeStart, effectiveDateEnd, timeEnd, timeZone, timeZoneType } = danielSan;
+    const eventsToDiscard = [];
+    const newEventList = [];
+    danielSan.events.forEach((event) => {
+        const dateToStart = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: effectiveDateStart,
+            timeString: timeStart
+        });
+        const eventDateStart = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: event.dateStart,
+            timeString: event.timeStart
+        });
+        const dateToEnd = createTimeZone({
+            timeZone,
+            timeZoneType,
+            dateString: effectiveDateEnd,
+            timeString: timeEnd || timeStart
+        });
+        if (eventDateStart.isBefore(dateToStart) || eventDateStart.isAfter(dateToEnd)) {
+            eventsToDiscard.push(event);
+        } else {
+            newEventList.push(event);
+        }
+    });
+    danielSan.discardedEvents = eventsToDiscard;
+    // we only need to re-reference danielSan.events if we are discarding anything
+    if (eventsToDiscard.length > 0) {
+        danielSan.events = newEventList;
     }
 };
 
@@ -165,8 +232,5 @@ const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
 };
 
 module.exports = {
-    getRelevantDateSegmentByFrequency,
-    retireRules,
-    flagRuleForRetirement,
-    exclusionsPhase
+    flagRuleForRetirement, retireRules, seekAndDestroyIrrelevantRules, deleteIrrelevantRules, discardEventsOutsideDateRange, exclusionsPhase
 };

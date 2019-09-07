@@ -1,6 +1,4 @@
-const { isUndefinedOrNull } = require('../utility/validation');
 let { createTimeZone } = require('../timeZone');
-const { errorDisc } = require('../utility/errorHandling');
 const {
     DATE_FORMAT_STRING,
     MODIFIED,
@@ -38,10 +36,10 @@ const generateTimeSpan = ({ event, date, weekday }) => {
     }
 };
 
-const reDefineTimeStartAndTimeSpan = ({ event, skipTimeTravel }) => {
+const redefineTimeStartAndTimeSpan = ({ event, skipTimeTravel }) => {
     if (!createTimeZone) {
         // TODO: check to see why this function was undefined at runtime
-        createTimeZone = require('../timeZone').createTimeZone;
+        createTimeZone = require('../timeZone').createTimeZone; // eslint-disable-line global-require
     }
     const newTargetTimeStartDate = createTimeZone({
         timeZone: event.timeZone,
@@ -63,7 +61,7 @@ const reDefineTimeStartAndTimeSpan = ({ event, skipTimeTravel }) => {
         } else {
             event.timeStart = null;
         }
-        generateTimeSpan({ event: event, date: newTargetTimeStartDate, weekday: newTargetTimeStartDate.day() });
+        generateTimeSpan({ event, date: newTargetTimeStartDate, weekday: newTargetTimeStartDate.day() });
     }
 };
 
@@ -73,8 +71,7 @@ const reDefineTimeStartAndTimeSpan = ({ event, skipTimeTravel }) => {
         when a rule satisfies all of its conditions, the rule gets imprinted as an event in this function
 
 */
-const generateEvent = ({ danielSan, rule, date, skipTimeTravel = null, useOriginalReference }) => {
-    const { timeZone, timeZoneType } = danielSan;
+const generateEvent = ({ danielSan, rule, date, skipTimeTravel = null }) => {
     const newEvent = { ...rule };
     // define dateStart
     newEvent.dateStart = date.format(DATE_FORMAT_STRING);
@@ -85,14 +82,15 @@ const generateEvent = ({ danielSan, rule, date, skipTimeTravel = null, useOrigin
     newEvent.timeZoneEventSource = `${newEvent.timeZone}${COMPOUND_DATA_DELIMITER}${newEvent.timeZoneType}`; // for future convenience
     newEvent.timeZoneObserverSource = `${danielSan.timeZone}${COMPOUND_DATA_DELIMITER}${danielSan.timeZoneType}`; // default value and for future convenience
     // related code block
-    reDefineTimeStartAndTimeSpan({ event: newEvent, skipTimeTravel });
+    redefineTimeStartAndTimeSpan({ event: newEvent, skipTimeTravel });
     danielSan.events.push({ ...newEvent });
     const processPhase = MODIFIED;
     return processPhase;
 };
 
 module.exports = {
-    reDefineTimeStartAndTimeSpan,
+    redefineTimeStartAndTimeSpan,
     generateTimeSpan,
     generateEvent
 };
+

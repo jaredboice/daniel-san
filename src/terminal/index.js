@@ -142,12 +142,6 @@ const lineSeparator = (loops = 1) => {
     }
 };
 
-const showNothingToDisplay = () => {
-    // eslint-disable-next-line quotes
-    lineHeading(` nothing to display `);
-    lineSeparator(2);
-};
-
 const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
     const formattingOptions = terminalOptions.formatting || {};
     const formattingFunction =
@@ -183,32 +177,38 @@ const getDefaultParamsForDecimalFormatter = (terminalOptions) => {
 const getWeekdayString = (weekday) => {
     let weekdayString;
     switch (weekday) {
-        case MONDAY:
-            weekdayString = 'monday';
-            break;
-        case TUESDAY:
-            weekdayString = 'tuesday';
-            break;
-        case WEDNESDAY:
-            weekdayString = 'wednesday';
-            break;
-        case THURSDAY:
-            weekdayString = 'thursday';
-            break;
-        case FRIDAY:
-            weekdayString = 'friday';
-            break;
-        case SATURDAY:
-            weekdayString = 'saturday';
-            break;
-        case SUNDAY:
-            weekdayString = 'sunday';
-            break;
-        default:
-            weekdayString = 'some day';
-            break;
+    case MONDAY:
+        weekdayString = 'monday';
+        break;
+    case TUESDAY:
+        weekdayString = 'tuesday';
+        break;
+    case WEDNESDAY:
+        weekdayString = 'wednesday';
+        break;
+    case THURSDAY:
+        weekdayString = 'thursday';
+        break;
+    case FRIDAY:
+        weekdayString = 'friday';
+        break;
+    case SATURDAY:
+        weekdayString = 'saturday';
+        break;
+    case SUNDAY:
+        weekdayString = 'sunday';
+        break;
+    default:
+        weekdayString = 'some day';
+        break;
     }
     return weekdayString;
+};
+
+const showNothingToDisplay = () => {
+    // eslint-disable-next-line quotes
+    lineHeading(` nothing to display `);
+    lineSeparator(2);
 };
 
 const shyOutput = ({ event, terminalOptions, currencySymbol }) => {
@@ -354,7 +354,7 @@ const conciseOutput = ({ event, terminalOptions, currencySymbol }) => {
     if (!isUndefinedOrNull(event.weekdayEnd)) {
         const weekdayString = getWeekdayString(event.weekdayEnd);
         console.log(`weekdayEnd: ${weekdayString}`); // eslint-disable-line no-console
-    }
+    } // eslint-disable-next-line no-console
     if (!isUndefinedOrNull(event.notes)) console.log(`notes: `, event.notes); // eslint-disable-line quotes
     lineSeparator(1);
 };
@@ -374,7 +374,7 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
         ttyMessageStack.push({ message, order });
     };
     Object.entries(event).forEach(([key, value]) => {
-        if (key !== 'specialAdjustments' && key !== 'exclusions' && key !== 'processDate' && key !== 'frequency') {
+        if (key !== 'specialAdjustments' && key !== 'exclusions' && key !== 'processDate' && key !== 'frequency' && key !== 'ruleModification' && key !== 'transientData') {
             if (key === 'name' && event.name != null) {
                 dataBouncer(`name: ${event.name}`, 10); // eslint-disable-line quotes
             } else if (key === 'type') {
@@ -539,35 +539,36 @@ const verboseOutput = ({ event, terminalOptions, currencySymbol }) => {
             return 1;
         } else if (a.order < b.order) {
             return -1;
+            // eslint-disable-next-line no-else-return
         } else {
             return 0;
         }
     });
     ttyMessageStackOrdered.forEach((obj) => {
-        console.log(obj.message);
+        console.log(obj.message); // eslint-disable-line no-console
     });
     lineSeparator(1);
 };
 
 const eventsLogger = ({ events, terminalOptions, currencySymbol }) => {
     switch (terminalOptions.mode) {
-        case VERBOSE:
-            events.forEach((event) => {
-                verboseOutput({ event, terminalOptions, currencySymbol });
-            });
-            break;
-        case CONCISE:
-            events.forEach((event) => {
-                conciseOutput({ event, terminalOptions, currencySymbol });
-            });
-            break;
-        case SHY:
-            events.forEach((event) => {
-                shyOutput({ event, terminalOptions, currencySymbol });
-            });
-            break;
-        default:
-            break;
+    case VERBOSE:
+        events.forEach((event) => {
+            verboseOutput({ event, terminalOptions, currencySymbol });
+        });
+        break;
+    case CONCISE:
+        events.forEach((event) => {
+            conciseOutput({ event, terminalOptions, currencySymbol });
+        });
+        break;
+    case SHY:
+        events.forEach((event) => {
+            shyOutput({ event, terminalOptions, currencySymbol });
+        });
+        break;
+    default:
+        break;
     }
 };
 
@@ -1036,95 +1037,95 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
             // eslint-disable-next-line no-lonely-if
             if (!terminalOptions.type) terminalOptions.type = STANDARD_TERMINAL_OUTPUT;
             switch (terminalOptions.type) {
-                case DISPLAY_EVENTS:
-                case STANDARD_TERMINAL_OUTPUT:
-                    standardTerminalOutput({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_EVENTS_BY_GROUP:
-                case DISPLAY_EVENTS_BY_GROUPS:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'group'
-                    });
-                    break;
-                case DISPLAY_EVENTS_BY_NAME:
-                case DISPLAY_EVENTS_BY_NAMES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'name'
-                    });
-                    break;
-                case DISPLAY_EVENTS_BY_TYPE:
-                case DISPLAY_EVENTS_BY_TYPES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type'
-                    });
-                    break;
-                case DISPLAY_CRITICAL_SNAPSHOTS:
-                    displayCriticalSnapshots({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_DISCARDED_EVENTS:
-                    displayDiscardedEvents({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_IMPORTANT_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'important'
-                    });
-                    break;
-                case DISPLAY_TIME_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'timeStart'
-                    });
-                    break;
-                case DISPLAY_ROUTINE_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type',
-                        substring: 'ROUTINE'
-                    });
-                    break;
-                case DISPLAY_REMINDER_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan,
-                        terminalOptions,
-                        propertyKey: 'type',
-                        substring: 'REMINDER'
-                    });
-                    break;
-                case DISPLAY_RULES_TO_RETIRE:
-                    displayRulesToRetire({ danielSan: originalDanielSan || danielSan, terminalOptions });
-                    break;
-                case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
-                case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
-                    displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
-                case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
-                    displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
-                    displayBalanceEndingSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
-                    displayBalanceEndingSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
-                    displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
-                    break;
-                case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
-                    displayLeastBalanceEndingSnapshots({ danielSan, terminalOptions });
-                    break;
-                default:
-                    break;
+            case DISPLAY_EVENTS:
+            case STANDARD_TERMINAL_OUTPUT:
+                standardTerminalOutput({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_EVENTS_BY_GROUP:
+            case DISPLAY_EVENTS_BY_GROUPS:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'group'
+                });
+                break;
+            case DISPLAY_EVENTS_BY_NAME:
+            case DISPLAY_EVENTS_BY_NAMES:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'name'
+                });
+                break;
+            case DISPLAY_EVENTS_BY_TYPE:
+            case DISPLAY_EVENTS_BY_TYPES:
+                displayEventsByPropertyKeyAndValues({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type'
+                });
+                break;
+            case DISPLAY_CRITICAL_SNAPSHOTS:
+                displayCriticalSnapshots({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_DISCARDED_EVENTS:
+                displayDiscardedEvents({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_IMPORTANT_EVENTS:
+                displayEventsWithProperty({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'important'
+                });
+                break;
+            case DISPLAY_TIME_EVENTS:
+                displayEventsWithProperty({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'timeStart'
+                });
+                break;
+            case DISPLAY_ROUTINE_EVENTS:
+                displayEventsWithPropertyKeyContainingSubstring({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type',
+                    substring: 'ROUTINE'
+                });
+                break;
+            case DISPLAY_REMINDER_EVENTS:
+                displayEventsWithPropertyKeyContainingSubstring({
+                    danielSan,
+                    terminalOptions,
+                    propertyKey: 'type',
+                    substring: 'REMINDER'
+                });
+                break;
+            case DISPLAY_RULES_TO_RETIRE:
+                displayRulesToRetire({ danielSan: originalDanielSan || danielSan, terminalOptions });
+                break;
+            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
+            case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
+                displaySumOfAllPositiveEventAmounts({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
+            case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
+                displaySumOfAllNegativeEventAmounts({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT:
+                displayBalanceEndingSnapshotsGreaterThanMaxAmount({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                displayBalanceEndingSnapshotsLessThanMinAmount({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS:
+                displayfindGreatestValueSnapshots({ danielSan, terminalOptions });
+                break;
+            case DISPLAY_LEAST_END_BALANCE_SNAPSHOTS:
+                displayLeastBalanceEndingSnapshots({ danielSan, terminalOptions });
+                break;
+            default:
+                break;
             }
             lineSeparator(2);
             standardTerminalSubheader({ danielSan, terminalOptions });

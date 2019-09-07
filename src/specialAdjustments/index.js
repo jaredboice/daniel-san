@@ -1,13 +1,10 @@
-const moment = require('moment');
-const { reDefineTimeStartAndTimeSpan, generateTimeSpan } = require('../common');
-const { isUndefinedOrNull } = require('../utility/validation');
 const { errorDisc } = require('../utility/errorHandling');
-const { streamForward, streamBackward } = require('../timeStream');
+const { isUndefinedOrNull } = require('../utility/validation');
 const { createTimeZone, convertTimeZone } = require('../timeZone');
-const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
+const { streamForward, streamBackward } = require('../timeStream');
+const { redefineTimeStartAndTimeSpan } = require('../core/eventGeneration');
+const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const {
-    DATE_TIME_DELIMITER,
-    TIME_FORMAT_STRING,
     DATE_FORMAT_STRING,
     WEEKLY,
     ONCE,
@@ -55,7 +52,7 @@ const reusableLogicForDateMovements = ({
             while (dateArray.includes(ruleContextLooperDateString)) {
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
-                reDefineTimeStartAndTimeSpan({ event, skipTimeTravel });
+                redefineTimeStartAndTimeSpan({ event, skipTimeTravel });
                 processPhase = MODIFIED;
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
@@ -73,7 +70,7 @@ const reusableLogicForDateMovements = ({
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
                 processPhase = MODIFIED;
-                reDefineTimeStartAndTimeSpan({ event, skipTimeTravel });
+                redefineTimeStartAndTimeSpan({ event, skipTimeTravel });
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
@@ -98,7 +95,7 @@ const reusableLogicForDateMovements = ({
                 ruleContextLooperDate = streamForwardOrBackWard(ruleContextLooperDate);
                 event.dateStart = ruleContextLooperDate.format(DATE_FORMAT_STRING);
                 processPhase = MODIFIED;
-                reDefineTimeStartAndTimeSpan({ event, skipTimeTravel });
+                redefineTimeStartAndTimeSpan({ event, skipTimeTravel });
                 ruleContextLooperDate = createTimeZone({
                     timeZone: event.timeZone,
                     timeZoneType: event.timeZoneType,
@@ -303,10 +300,10 @@ const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
                         event.currencySymbol &&
                         danielSan.currencySymbol !== event.currencySymbol
                             ? danielSan.currencyConversion({
-                                  amount: specialAdjustment.amounts[looperDateIndex],
-                                  inputSymbol: event.currencySymbol,
-                                  outputSymbol: danielSan.currencySymbol
-                              })
+                                amount: specialAdjustment.amounts[looperDateIndex],
+                                inputSymbol: event.currencySymbol,
+                                outputSymbol: danielSan.currencySymbol
+                            })
                             : specialAdjustment.amounts[looperDateIndex];
                     event.amount += adjustmentConverted;
                 }

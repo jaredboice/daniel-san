@@ -1,18 +1,14 @@
-const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
-const { streamForward } = require('../timeStream');
 const { createTimeZone } = require('../timeZone');
-const { generateEvent } = require('../common');
-const {
-    getRelevantDateSegmentByFrequency,
-    exclusionsPhase
-} = require('../standardEvents/common');
+const { streamForward } = require('../timeStream');
+const { generateEvent } = require('../core/eventGeneration');
+const { exclusionsPhase } = require('../core/obliterate');
+const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const {
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
     EXECUTION_REJECTED,
-    MODIFIED,
     DATE_FORMAT_STRING,
     WEEKLY,
     MONTHLY,

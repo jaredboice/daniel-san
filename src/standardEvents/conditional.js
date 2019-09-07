@@ -1,7 +1,6 @@
-const { isUndefinedOrNull } = require('../utility/validation');
 const { errorDisc } = require('../utility/errorHandling');
 const { createTimeZone } = require('../timeZone');
-const { getRelevantDateSegmentByFrequency } = require('./common');
+const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const { MONTHLY } = require('../constants');
 
 // eslint-disable-next-line max-len
@@ -29,7 +28,7 @@ const _28DayCondition = ({ processDate, date, frequency, timeZone = null, timeZo
         } else {
             return false;
         }
-    } catch(err){
+    } catch (err) {
         throw errorDisc({ err, data: { date, frequency, timeZone, timeZoneType, processDate } });
     }
 };

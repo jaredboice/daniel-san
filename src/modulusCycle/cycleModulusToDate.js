@@ -1,16 +1,17 @@
-const { createTimeZone } = require('../timeZone');
-const { cycleModulusUp, cycleModulusDown } = require('./index.js');
-const { streamForward } = require('../timeStream');
 const { isUndefinedOrNull } = require('../utility/validation');
-const { getRelevantDateSegmentByFrequency } = require('../standardEvents/common');
-const {
-    DATE_FORMAT_STRING,
-    DAILY
-} = require('../constants');
+const { createTimeZone } = require('../timeZone');
+const { streamForward } = require('../timeStream');
+const { cycleModulusUp, cycleModulusDown } = require('./index.js');
+const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
+const { DATE_FORMAT_STRING, DAILY } = require('../constants');
 
 const cycleModulusUpToDate = ({ rule, effectiveDateStartString }) => {
     // note: for when anchorSyncDate input is less than effectiveDateStartString
-    let looperDate = createTimeZone({ timeZone: rule.timeZone, timeZoneType: rule.timeZoneType, dateString: rule.anchorSyncDate });
+    let looperDate = createTimeZone({
+        timeZone: rule.timeZone,
+        timeZoneType: rule.timeZoneType,
+        dateString: rule.anchorSyncDate
+    });
     let looperDateFormatted = looperDate.format(DATE_FORMAT_STRING);
     switch (rule.frequency) {
     case DAILY:
@@ -24,6 +25,13 @@ const cycleModulusUpToDate = ({ rule, effectiveDateStartString }) => {
         break;
     // eslint-disable-next-line no-case-declarations
     default:
+        // treat every rule.processDate like an array for simplicity
+        let processDates = [];
+        if (!Array.isArray(rule.processDate)) {
+            processDates.push(rule.processDate);
+        } else {
+            processDates = [...rule.processDate];
+        }
         let relevantDateSegmentByFrequency = getRelevantDateSegmentByFrequency({
             frequency: rule.frequency,
             date: looperDate
@@ -33,8 +41,12 @@ const cycleModulusUpToDate = ({ rule, effectiveDateStartString }) => {
                 frequency: rule.frequency,
                 date: looperDate
             });
-            if (!isUndefinedOrNull(rule.processDate) && rule.processDate === relevantDateSegmentByFrequency) {
-                cycleModulusUp(rule);
+            for(let looper = 0; looper < processDates.length; looper++){
+                const processDate = processDates[looper];
+                if (!isUndefinedOrNull(processDate) && processDate === relevantDateSegmentByFrequency) {
+                    cycleModulusUp(rule);
+                    break; // exit loop
+                }
             }
             looperDate = streamForward(looperDate);
             looperDateFormatted = looperDate.format(DATE_FORMAT_STRING);
