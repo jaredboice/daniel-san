@@ -96,7 +96,6 @@ const craneKick = findBalance(danielSan);
 ```javascript
 // after executing findBalance with danielSan, craneKick will embody the danielSan object with the newly produced events
 const craneKick = findBalance(danielSan);
-);
 ```
 
 ## Event Types
@@ -155,12 +154,12 @@ const danielSan = {
 
 **Date Arrays**
 
-STANDARD_EVENTS also accept date arrays for processDate. This applies to all possible frequency types of STANDARD_EVENTS, including ONCE. The format of the date elements must all match the date format for that particular frequency, While it would seem like overkill to use the modulus/cycle feature with date arrays, it is certainly possible to do. Be aware that, when using date arrays, the program will look for any possible match within the array. Any match will modulate the cycle. So order of the elements does not matter:
+STANDARD_EVENTS also accept date arrays for processDate. This applies to all possible frequency types of STANDARD_EVENTS, including ONCE. The format of the date elements must all match the date format for that particular frequency. While it would seem like overkill to use the modulus/cycle feature with date arrays, it is certainly possible to do. Be aware that, when using date arrays, the program will look for any possible match within the array. Any match will modulate the cycle. So order of the elements does not matter:
 
-eg. frequency === ANNUALLY
-processDate: ['12-24', '12-25', '01-01']
-
-
+eg. frequency === ANNUALLY process  
+Date: ['12-24', '12-25', '01-01']  
+  
+    
 **Special Events**
 
 -   `type: 'NTH_WEEKDAYS_OF_MONTH'` _(trigger an event process every 1st and 3rd Friday)_
@@ -373,7 +372,7 @@ const danielSan = {
     ],
     events: [] // future balance projections stored here
 };
-
+```
 
 ## Exclusions
 
