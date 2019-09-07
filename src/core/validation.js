@@ -85,9 +85,9 @@ const validateAndConfigureRules = ({ danielSan, date }) => {
             rule.type === STANDARD_EVENT_REMINDER
         ) {
             try {
-                if (isUndefinedOrNull(rule.modulus) || isUndefinedOrNull(rule.cycle) || rule.frequency === ONCE) {
-                    rule.modulus = 0;
-                    rule.cycle = 0;
+                if (!rule.modulus || !rule.cycle || (rule.frequency === ONCE && !Array.isArray(rule.processDate))) {
+                    rule.modulus = null;
+                    rule.cycle = null;
                 } else {
                     // if we made it to this block of code then at least a modulus or cycle attribute is present
                     //  check for input errors to modulus/cycle attributes
