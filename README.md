@@ -113,7 +113,7 @@ the processDate formats for each frequency, in the same order, are:
 ONCE - '2020-01-29',  
 ANNUALLY - '01-29',  
 MONTHLY - '29'  
-WEEKLY - an integer between 0-6 for weekdays. constants for the weekday integers, such as SUNDAY and MONDAY, are available as imports.  
+WEEKLY - an integer between 0-6 for weekdays. constants for the weekday integers can be imported
 DAILY - needs no processDate
 
 
