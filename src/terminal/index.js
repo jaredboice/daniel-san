@@ -732,6 +732,7 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
 };
 
 const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
+    // when executing in this context, there is a chance that the configuration has not yet been validated
     validateAndConfigureBonsaiTree({ danielSan, effectiveDateStartString: danielSan.effectiveDateStart, effectiveDateEndString: danielSan.effectiveDateEnd });
     const timeStream = new TimeStream({
         effectiveDateStartString: danielSan.effectiveDateStart,

@@ -43,6 +43,7 @@ const findRulesToRetire = (danielSan) => {
 };
 
 // finds rules that have no chance of being triggered via the current configuration
+// TODO: we should determine why we are using initializeTimeZoneData in findRulesToRetire and not here
 const findIrrelevantRules = (danielSan) => {
     const { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType, rules } = danielSan;
     const relevantRules = [];
