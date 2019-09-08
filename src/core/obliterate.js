@@ -2,6 +2,7 @@ const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { createTimeZone, convertTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('./dateUtility');
+const { findIrrelevantRules } = require('../analytics');
 const {
     EVENT_SOURCE,
     OBSERVER_SOURCE,
@@ -48,60 +49,7 @@ const retireRules = ({ danielSan }) => {
 
 // returns/removes rules that have no chance ot being included into a projected event
 const seekAndDestroyIrrelevantRules = (danielSan) => {
-    const { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType } = danielSan;
-    const relevantRules = [];
-    const irrelevantRules = [];
-    // eslint-disable-next-line array-callback-return
-    danielSan.rules.forEach((rule, index) => {
-        const dateToStart = createTimeZone({
-            timeZone,
-            timeZoneType,
-            dateString: effectiveDateStart
-        });
-        const convertedDateToStart = convertTimeZone({
-            timeZone: rule.timeZone,
-            timeZoneType: rule.timeZoneType,
-            date: dateToStart
-        }).date;
-        const convertedDateToStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
-        const dateToEnd = createTimeZone({
-            timeZone,
-            timeZoneType,
-            dateString: effectiveDateEnd
-        });
-        const convertedDateToEnd = convertTimeZone({
-            timeZone: rule.timeZone,
-            timeZoneType: rule.timeZoneType,
-            date: dateToEnd
-        }).date;
-        const convertedDateToEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
-        let allowToLive = true;
-        
-        if (
-            (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateToStartString) ||
-            (!isUndefinedOrNull(rule.effectiveDateStart) && rule.effectiveDateStart > convertedDateToEndString)
-        ) {
-            // exclude
-            allowToLive = false;
-            // eslint-disable-next-line no-else-return
-        } else if (rule.frequency === ONCE && typeof rule.processDate === 'string' && rule.processDate < convertedDateToStartString) {
-            // exclude:
-            allowToLive = false;
-        } else if (isUndefinedOrNull(rule.effectiveDateEnd)) {
-            // include
-            allowToLive = true;
-        } else {
-            // include
-            allowToLive = true;
-        }
-
-        if (allowToLive) {
-            relevantRules.push(rule);
-        } else {
-            rule.ruleIndex = index;
-            irrelevantRules.push(rule);
-        }
-    });
+    const { relevantRules, irrelevantRules } = findIrrelevantRules(danielSan);
     danielSan.rules = relevantRules; // remove irrelevantRules from the danielSan reference
     return irrelevantRules; // return irrelevantRules if needed
 };

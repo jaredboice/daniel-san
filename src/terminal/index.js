@@ -38,6 +38,7 @@ const {
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
+    DISPLAY_IRRELEVANT_RULES,
     DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
     DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
     DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
@@ -594,6 +595,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
+    lineHeading(` config `);
     if (!isUndefinedOrNull(danielSan['balanceBeginning'])) {
         lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
         lineHeading(
@@ -638,6 +640,7 @@ const showDiscardedEvents = ({ danielSan, terminalOptions }) => {
         terminalBoundary(3);
         lineHeading(' begin discarded events ');
         lineHeading(' these events were excluded for residing beyond the provided date range ');
+        lineHeading(' discardedEvents ');
         lineSeparator(2);
         eventsLogger({
             events: discardedEvents,
@@ -668,6 +671,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
         } = getDefaultParamsForDecimalFormatter(terminalOptions);
         terminalBoundary(3);
         lineHeading(' begin critical snapshots ');
+        lineHeading(' events ');
         if (!isUndefinedOrNull(terminalOptions.criticalThreshold)) {
             lineHeading(
                 ` critical threshold: < ${formattingFunction(terminalOptions.criticalThreshold, {
@@ -720,6 +724,24 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
         });
         lineSeparator(2);
         lineHeading(' end showRulesToRetire ');
+        lineSeparator(2);
+    }
+};
+
+const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
+    const { irrelevantRules } = findIrrelevantRules(danielSan);
+    if (irrelevantRules && irrelevantRules.length > 0) {
+        terminalBoundary(3);
+        lineHeading(' begin showIrrelevantRules ');
+        lineHeading(' the following rules would not be triggered via the current configuration ');
+        lineSeparator(2);
+        eventsLogger({
+            events: irrelevantRules,
+            terminalOptions,
+            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+        });
+        lineSeparator(2);
+        lineHeading(' end showIrrelevantRules ');
         lineSeparator(2);
     }
 };
@@ -798,6 +820,12 @@ const displayRulesToRetire = ({ danielSan, terminalOptions }) => {
     terminalBoundary(3);
 };
 
+const displayIrrelevantRules = ({ danielSan, terminalOptions }) => {
+    standardTerminalHeader({ terminalOptions });
+    showIrrelevantRules({ danielSan, terminalOptions });
+    terminalBoundary(3);
+};
+
 const displayDiscardedEvents = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
@@ -821,6 +849,7 @@ const displayBalanceEndingSnapshotsGreaterThanMaxAmount = ({ danielSan, terminal
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin displayBalanceEndingSnapshotsGreaterThanMaxAmount ');
+    lineHeading(' events ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -847,6 +876,7 @@ const displayBalanceEndingSnapshotsLessThanMinAmount = ({ danielSan, terminalOpt
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin displayBalanceEndingSnapshotsLessThanMinAmount ');
+    lineHeading(' events ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -874,6 +904,7 @@ const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin displayfindGreatestValueSnapshots ');
+    lineHeading(' events ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -901,6 +932,7 @@ const displayLeastBalanceEndingSnapshots = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin displayLeastBalanceEndingSnapshots');
+    lineHeading(' events ');
     lineSeparator(2);
     const relevantEvents = collection;
     if (relevantEvents) {
@@ -922,6 +954,7 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin standardTerminalOutput ');
+    lineHeading(' events ');
     lineSeparator(2);
     const relevantEvents = danielSan.events;
     if (relevantEvents) {
@@ -952,6 +985,7 @@ const displayEventsWithProperty = ({
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin displayEventsWithProperty ');
+    lineHeading(' events ');
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey });
     if (relevantEvents) {
@@ -978,6 +1012,7 @@ const displayEventsByPropertyKeyAndValues = ({
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin displayEventsByPropertyKeyAndValues ');
+    lineHeading(' events ');
     lineSeparator(2);
     const { searchValues } = terminalOptions;
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, searchValues });
@@ -1006,6 +1041,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
     standardTerminalHeader({ terminalOptions });
     standardTerminalSubheader({ danielSan, terminalOptions });
     lineHeading(' begin displayEventsWithPropertyKeyContainingSubstring ');
+    lineHeading(' events ');
     lineSeparator(2);
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, substring });
     if (relevantEvents) {
@@ -1103,6 +1139,9 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
                 break;
             case DISPLAY_RULES_TO_RETIRE:
                 displayRulesToRetire({ danielSan: originalDanielSan || danielSan, terminalOptions });
+                break;
+            case DISPLAY_IRRELEVANT_RULES:
+                displayIrrelevantRules({ danielSan: originalDanielSan || danielSan, terminalOptions });
                 break;
             case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
             case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:

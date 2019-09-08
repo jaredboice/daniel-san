@@ -536,7 +536,7 @@ In Addition, when applying PRE_PAY and POST_PAY specialAdjustments, or exclusion
 options in the above scenario include:  
 
 -   `context: EVENT_SOURCE` _(default value)_
--   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the event's final calculated time zone via the timeZone indicator on the root-level of the danielSan object, aka the MCU, ie. the Master Control Unit)_
+-   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the event's final calculated time zone via the timeZone indicator on the root-level of the danielSan object, aka the bonsai tree, aka the MCU, ie. the Master Control Unit)_
 -   `context: BOTH` _(applies the adjustment with respect to both of the contexts mentioned above; As an example of usage, BOTH is great when you don't want a weekend or corporate holiday to trigger in ANY context)_
 
 -all constants are available for import-
@@ -546,7 +546,7 @@ options in the above scenario include:
 
 **Logging Results to the Command-Line**
 
-_note: the terminal options are executed in the context of events (not rules), with exception to DISPLAY_RULES_TO_RETIRE_
+_note: the terminal options are executed in the context of events (not rules), with exception to DISPLAY_RULES_TO_RETIRE and DISPLAY_IRRELEVANT_RULES_
   
 
 ```javascript
@@ -572,8 +572,10 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
 -   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
 -   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
--   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
--   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing - since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_
+-   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_  
+-   `type: 'DISPLAY_IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration_  
+-   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing - 
+since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_
 
 **Terminal Mode Options**
 
@@ -778,6 +780,7 @@ const {
     DISPLAY_TIME_EVENTS,
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
-    DISPLAY_RULES_TO_RETIRE
+    DISPLAY_RULES_TO_RETIRE,
+    DISPLAY_IRRELEVANT_RULES_
 } = require('daniel-san/constants');
 ```
