@@ -714,11 +714,13 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
 };
 
 const showRulesToRetire = ({ danielSan, terminalOptions }) => {
+    // TODO: determine why we are doing things a litle differently (with regard to validation) between this function and showIrrelevantRules 
     const rulesToRetire = findRulesToRetire(danielSan);
     if (rulesToRetire) {
         terminalBoundary(3);
         lineHeading(' begin showRulesToRetire ');
         lineHeading(' the following rules have obsolete effectiveDateEnd values ');
+        lineHeading(' retiredRules ');
         lineSeparator(2);
         eventsLogger({
             events: rulesToRetire,
@@ -748,6 +750,7 @@ const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
         terminalBoundary(3);
         lineHeading(' begin showIrrelevantRules ');
         lineHeading(' the following rules would not be triggered via the current configuration ');
+        lineHeading(' irrelevantRules ');
         lineSeparator(2);
         eventsLogger({
             events: irrelevantRules,
