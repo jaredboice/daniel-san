@@ -15,12 +15,8 @@ const {
 
 const validateAndConfigureBonsaiTree = ({ danielSan, effectiveDateStartString, effectiveDateEndString }) => {
     let errorMessage = null;
-    if (
-        isUndefinedOrNull(danielSan) ||
-        (!Array.isArray(danielSan.rules) || danielSan.rules.length === 0)
-    ) {
-        errorMessage =
-            'expected a danielSan object with an array of rules';
+    if (isUndefinedOrNull(danielSan) || (!Array.isArray(danielSan.rules) || danielSan.rules.length === 0)) {
+        errorMessage = 'expected a danielSan object with an array of rules';
     }
     if (
         isUndefinedOrNull(effectiveDateStartString) ||
@@ -78,66 +74,60 @@ const validateAndConfigureRules = ({ danielSan, date }) => {
             rule.timeZoneType = danielSan.timeZoneType; // assign the danielSan timeZoneType value to each rule
             rule.timeZone = initialTimeZoneData.timeZone;
         }
-        // if standard event, check to pre-modulate
-        if (
-            rule.type === STANDARD_EVENT ||
-            rule.type === STANDARD_EVENT_ROUTINE ||
-            rule.type === STANDARD_EVENT_REMINDER
-        ) {
-            try {
-                if (!rule.modulus || !rule.cycle || (rule.frequency === ONCE && !Array.isArray(rule.processDate))) {
-                    rule.modulus = null;
-                    rule.cycle = null;
-                } else {
-                    // if we made it to this block of code then at least a modulus or cycle attribute is present
-                    //  check for input errors to modulus/cycle attributes
-                    if (!rule.modulus) {
-                        rule.modulus = 1;
-                    }
-                    if (!rule.cycle) {
-                        rule.cycle = 1;
-                    }
-                    // if there is an effectiveDateStart without an anchorSyncDate, then just assign it to the anchorSyncDate
-                    if (!rule.anchorSyncDate && rule.effectiveDateStart) {
-                        rule.anchorSyncDate = rule.effectiveDateStart;
-                    }
-                    const convertedDate = convertTimeZone({
-                        timeZone: rule.timeZone,
-                        timeZoneType: rule.timeZoneType,
-                        date
-                    }).date;
-                    const effectiveDateStartString = getRelevantDateSegmentByFrequency({
-                        frequency: ONCE,
-                        date: convertedDate
-                    });
-                    // if the following condition is not true, there is no reason to modify the modulus cycle
-                    // eslint-disable-next-line no-lonely-if
-                    if (rule.anchorSyncDate && rule.anchorSyncDate !== effectiveDateStartString) {
-                        if (rule.anchorSyncDate > effectiveDateStartString) {
-                            // pre-modulation is not necessary here since we will simply start the cycle in the future
-                            rule.effectiveDateStart = rule.anchorSyncDate; // future date
-                            rule.anchorSyncDate = null;
-                        } else {
-                            rule.effectiveDateStart = null;
-                            modulateCycleUpToDate({
-                                rule,
-                                effectiveDateStartString,
-                                skipTimeTravel: danielSan.skipTimeTravel
-                            });
-                        }
+        try {
+            if (!rule.modulus || !rule.cycle || (rule.frequency === ONCE && !Array.isArray(rule.processDate))) {
+                rule.modulus = null;
+                rule.cycle = null;
+            } else {
+                // if we made it to this block of code then at least a modulus or cycle attribute is present
+                //  check for input errors to modulus/cycle attributes
+                if (!rule.modulus) {
+                    rule.modulus = 1;
+                }
+                if (!rule.cycle) {
+                    rule.cycle = 1;
+                }
+                // if there is an effectiveDateStart without an anchorSyncDate, then just assign it to the anchorSyncDate
+                if (!rule.anchorSyncDate && rule.effectiveDateStart) {
+                    rule.anchorSyncDate = rule.effectiveDateStart;
+                }
+                const convertedDate = convertTimeZone({
+                    timeZone: rule.timeZone,
+                    timeZoneType: rule.timeZoneType,
+                    date
+                }).date;
+                const effectiveDateStartString = getRelevantDateSegmentByFrequency({
+                    frequency: ONCE,
+                    date: convertedDate
+                });
+                // if the following condition is not true, there is no reason to modify the modulus cycle
+                // eslint-disable-next-line no-lonely-if
+                if (rule.anchorSyncDate && rule.anchorSyncDate !== effectiveDateStartString) {
+                    if (rule.anchorSyncDate > effectiveDateStartString) {
+                        // pre-modulation is not necessary here since we will simply start the cycle in the future
+                        rule.effectiveDateStart = rule.anchorSyncDate; // future date
+                        rule.anchorSyncDate = null;
+                    } else {
+                        rule.effectiveDateStart = null;
+                        modulateCycleUpToDate({
+                            danielSan,
+                            rule,
+                            effectiveDateStartString,
+                            skipTimeTravel: danielSan.skipTimeTravel
+                        });
                     }
                 }
-                if (rule.frequency === DAILY) {
-                    rule.processDate = null;
-                }
-            } catch (err) {
-                throw errorDisc({ err, data: { date, rule: ruleTracker, indexTracker } });
             }
+            if (rule.frequency === DAILY) {
+                rule.processDate = null;
+            }
+        } catch (err) {
+            throw errorDisc({ err, data: { date, rule: ruleTracker, indexTracker } });
         }
     });
 };
 
 module.exports = {
-    validateAndConfigureBonsaiTree, validateAndConfigureRules
+    validateAndConfigureBonsaiTree,
+    validateAndConfigureRules
 };
-

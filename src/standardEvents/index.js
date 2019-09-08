@@ -5,13 +5,9 @@ const { modulusPhase } = require('../modulusCycle');
 const { exclusionsPhase } = require('../core/obliterate');
 const { generateEvent } = require('../core/eventGeneration');
 const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
-const {
-    DAILY,
-    EVALUATING_RULE_INSERTION,
-    EXECUTING_RULE_INSERTION
-} = require('../constants');
+const { DAILY, EVALUATING_RULE_INSERTION, EXECUTING_RULE_INSERTION } = require('../constants');
 
-const buildStandardEvent = ({ danielSan, rule, date, skipTimeTravel }) => {
+const buildStandardEvent = ({ danielSan, rule, date, skipTimeTravel, eventGen = true }) => {
     let processPhase;
     try {
         const relevantDateSegmentByFrequency = getRelevantDateSegmentByFrequency({
@@ -43,7 +39,10 @@ const buildStandardEvent = ({ danielSan, rule, date, skipTimeTravel }) => {
                 processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
                 processPhase = modulusPhase({ rule, processPhase });
                 if (processPhase === EXECUTING_RULE_INSERTION) {
-                    processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
+                    // when we are pre-modulating the cycle during validation, we do not want to generate an event
+                    if (eventGen) {
+                        processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
+                    }
                     break; // exit loop
                 }
             }

@@ -3,6 +3,7 @@ const { isUndefinedOrNull } = require('../utility/validation');
 const { createTimeZone } = require('../timeZone');
 const { streamForward } = require('../timeStream');
 const { generateEvent } = require('../core/eventGeneration');
+const { modulusPhase } = require('../modulusCycle');
 const { exclusionsPhase } = require('../core/obliterate');
 const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const {
@@ -121,10 +122,9 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel, eventGen = 
                         nthProcessDay.rank === 0 ||
                         (nthProcessDay.rank < 0 && looperDateIndex === sizeOfObjectKeyArray - 1))
                 ) {
-                    processPhase = EXECUTING_RULE_INSERTION;
                     processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
                     processPhase = modulusPhase({ rule, processPhase });
-                    if (processPhase !== EXECUTION_REJECTED) {
+                    if (processPhase === EXECUTING_RULE_INSERTION) {
                         // when we are pre-modulating the cycle during validation, we do not want to generate an event
                         if (eventGen) {
                             processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
@@ -164,15 +164,15 @@ const weekdayOnDate = ({ danielSan, rule, date, skipTimeTravel, eventGen = true 
         if (Array.isArray(rule.frequency)) {
             rule.frequency.some((element) => {
                 if (element.processDate === thisProcessDate && element.weekday === thisWeekday) {
-                    processPhase = EXECUTING_RULE_INSERTION;
                     processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
                     processPhase = modulusPhase({ rule, processPhase });
-                    if (processPhase !== EXECUTION_REJECTED) {
+                    if (processPhase === EXECUTING_RULE_INSERTION) {
                         // when we are pre-modulating the cycle during validation, we do not want to generate an event
                         if (eventGen) {
                             processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
                         }
                         return true;
+                        // eslint-disable-next-line no-else-return
                     } else {
                         return false;
                     }
