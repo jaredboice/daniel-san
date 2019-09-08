@@ -79,7 +79,7 @@ const danielSan = {
             amount: -5.00,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
-            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENT)
+            exclusions: { // (exclusion hits will still modulate the cycle when using the modulus/cycle feature)
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays (you could have also just imported the WEEKENDS constant and spreaded it within the array here)
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -102,7 +102,7 @@ const craneKick = findBalance(danielSan);
 
 **Standard Events**
 
--   `type: 'STANDARD_EVENT'` _(see "Modulus/Cycle" to review an advanced feature exclusive to Standard Events)_
+-   `type: 'STANDARD_EVENT'` _(see "Modulus/Cycle" to review an advanced feature)_
 -   `type: 'STANDARD_EVENT_ROUTINE'` _(same as above but does not need an amount field)_
 -   `type: 'STANDARD_EVENT_REMINDER'` _(same as above but does not need an amount field, solely for semantic differentiation)_
 
@@ -169,7 +169,7 @@ Date: ['12-24', '12-25', '01-01']
 -   `type: 'WEEKDAY_ON_DATE_ROUTINE'` _(same as above but does not need an amount field)_
 -   `type: 'WEEKDAY_ON_DATE_REMINDER'` _(same as above but does not need an amount field, solely for semantic differentiation)_
 
-_special events do not utilize the modulus/cycle/anchorSyncDate attributes_
+_special events can also utilize the modulus/cycle/anchorSyncDate attributes, however this feature is likely rarely needed with special events_
 
 ```javascript
 const danielSan = {
@@ -183,9 +183,9 @@ const danielSan = {
             amount: -79.83,
             type: NTH_WEEKDAYS_OF_MONTH, // see "Event Types" - import from constants.js
             frequency: [
-                { nthId: 1, weekday: FRIDAY }, // every 1st friday
-                { nthId: 3, weekday: FRIDAY }, // and 3rd friday
-                { nthId: -1, weekday: SUNDAY } // a negative nthId means the last occurence of the month
+                { rank: 1, weekday: FRIDAY }, // every 1st friday
+                { rank: 3, weekday: FRIDAY }, // and 3rd friday
+                { rank: -1, weekday: SUNDAY } // a negative rank means the last occurence of the month
         ],
             effectiveDateStart: '2019-01-01', // date to start evaluating and processing this account
             effectiveDateEnd: null // null effectiveDateEnd represents an ongoing account
@@ -194,8 +194,9 @@ const danielSan = {
             name: 'jasons birthday party',
             amount: -66.6,
             type: WEEKDAY_ON_DATE, // see "Event Types" - import from constants.js
-            weekday: FRIDAY, // for backwards compatibility, you can still use the frequency key instead of weekday (with same type of value)
-            processDate: '13',
+            frequency: [
+                { processDate: 13, weekday: FRIDAY } // process this frequency element every friday the 13th, add more elements as desired
+            ],
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null
         }
@@ -263,9 +264,9 @@ const danielSan = {
             amount: -79.83,
             type: NTH_WEEKDAYS_OF_MONTH, // see "Event Types" - import from constants.js
             frequency: [
-                { nthId: 1, weekday: FRIDAY }, // every 1st friday
-                { nthId: 3, weekday: FRIDAY }, // and 3rd friday
-                { nthId: -1, weekday: SUNDAY } // a negative nthId means the last occurence of the month
+                { rank: 1, weekday: FRIDAY }, // every 1st friday
+                { rank: 3, weekday: FRIDAY }, // and 3rd friday
+                { rank: -1, weekday: SUNDAY } // a negative rank means the last occurence of the month
         ],
             effectiveDateStart: '2019-01-01', // date to start evaluating and processing this account
             effectiveDateEnd: null, // null effectiveDateEnd represents an ongoing account
@@ -288,22 +289,22 @@ const danielSan = {
 };fs
 ```
 
-## Modulus/Cycle _(only for STANDARD_EVENT, STANDARD_EVENT_ROUTINE and STANDARD_EVENT_REMINDER)_
+## Modulus/Cycle
 
 **Custom BIWEEKLY / BIMONTHLY Event Types**
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
 the current phase towards the modulus (in this case it represents the 1st month out of the 3 total modulus cycles). The cycle fires on the modulus, and then it loops back around to 1.
-If your cycle/modulus isn't getting expected results, try modifying the cycle (a anchorSyncDate can also modify results as explained below, which is used if you are applying the modulus/cycle attributes). If you are confused, it will make sense after trying a couple different settings.
+If your cycle/modulus isn't getting expected results, try modifying the cycle (an anchorSyncDate can also modify results as explained below, which is used if you are applying the modulus/cycle attributes). If you are confused, it will make sense after trying a couple different settings.
 
-As of daniel-san version 6.1.0, adding a effectiveDateStart to any rule with modulus/cycle attributes will automatically assign that effectiveDateStart value to anchorSyncDate. So manuallly adding anchorSyncDate is no longer required. If the date is in the future, it will simply treat it as effectiveDateStart as explained below. Read on, however, to understand the functionality of anchorSyncDate.
+As of daniel-san version 6.1.0, adding an effectiveDateStart to any rule with modulus/cycle attributes will automatically assign that effectiveDateStart value to anchorSyncDate. So manuallly adding anchorSyncDate is no longer required. If the date is in the future, it will simply treat it as effectiveDateStart as explained below. Read on, however, to understand the functionality of anchorSyncDate.
 
-Adding a anchorSyncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process-execution "anchor" date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on a anchorSyncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that anchorSyncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the anchorSyncDate every so often will increase performance since this feature requires more computation.  
+Adding an anchorSyncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process-execution "anchor" date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on an anchorSyncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that anchorSyncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the anchorSyncDate every so often will increase performance since this feature requires more computation.  
 
-Adding a effectiveDateStart WITH a anchorSyncDate is redundant to daniel-san. You can, however, still start the cycle in the future. When you set a anchorSyncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the effectiveDateStart attribute for that rule (while assigning null to anchorSyncDate) so it will begin its forward-moving cycle at that time. When that same anchorSyncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
+Adding an effectiveDateStart WITH an anchorSyncDate is redundant to daniel-san. You can, however, still start the cycle in the future. When you set an anchorSyncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the effectiveDateStart attribute for that rule (while assigning null to anchorSyncDate) so it will begin its forward-moving cycle at that time. When that same anchorSyncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
 
-The bottom line is this: if you are using modulus/cycle values of anything other than 1/1 (which would equate to normal behavior for any STANDARD_EVENT), you should also be using a anchorSyncDate.
+The bottom line is this: if you are using modulus/cycle values of anything other than 1/1 (which would equate to normal behavior for any event), you should also be using an anchorSyncDate.
 
 
 ```javascript
@@ -377,7 +378,7 @@ const danielSan = {
 ## Exclusions
 
 Exclusions will skip an event trigger entirely. If an exclusion is triggered, not even special adjustments will fire as exclusions precede them.
-_(When making use of the modulus/cycle operators on STANDARD_EVENT, exclusion hits will still cycle the modulus)_
+_(When making use of the modulus/cycle operators, exclusion hits will still modulate the cycle)_
 
 
 ```javascript
@@ -394,7 +395,7 @@ const danielSan = {
             amount: -5.00,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
-            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENT)
+            exclusions: { // (exclusion hits will still modulate the cycle for STANDARD_EVENT)
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
@@ -706,7 +707,7 @@ const seventHighestValues = findGreatestValueSnapshots({ collection: danielSan.e
 const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
 const bigSnapshots = findSnapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'balanceEnding' });
 const smallSnapshots = findSnapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' }); 
-const rulesToRetire = findRulesToRetire(danielSan); // finds rules with a effectiveDateEnd lower than the global effectiveDateStart value, and rules with effectiveDateStart that are higher than the global effectiveDateEnd. 
+const rulesToRetire = findRulesToRetire(danielSan); // finds rules with an effectiveDateEnd lower than the global effectiveDateStart value, and rules with effectiveDateStart that are higher than the global effectiveDateEnd. 
 // also adds a ruleIndex on each rule so that you can delete them from the original array if required
 // rules are auto retired during the budget projection process, however, so if you want to find rules that you need to retire/
 // then make sure you perform it on the original danielSan and not the resulting danielSan object that is returned from findBalance()

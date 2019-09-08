@@ -46,29 +46,29 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
                     date: thisLooperDate
                 });
                 switch (thisWeekday) {
-                case SUNDAY:
-                    monthlyWeekdayConstruct[SUNDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                    break;
-                case MONDAY:
-                    monthlyWeekdayConstruct[MONDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                    break;
-                case TUESDAY:
-                    monthlyWeekdayConstruct[TUESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                    break;
-                case WEDNESDAY:
-                    monthlyWeekdayConstruct[WEDNESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                    break;
-                case THURSDAY:
-                    monthlyWeekdayConstruct[THURSDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                    break;
-                case FRIDAY:
-                    monthlyWeekdayConstruct[FRIDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                    break;
-                case SATURDAY:
-                    monthlyWeekdayConstruct[SATURDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                    break;
-                default:
-                    break;
+                    case SUNDAY:
+                        monthlyWeekdayConstruct[SUNDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                        break;
+                    case MONDAY:
+                        monthlyWeekdayConstruct[MONDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                        break;
+                    case TUESDAY:
+                        monthlyWeekdayConstruct[TUESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                        break;
+                    case WEDNESDAY:
+                        monthlyWeekdayConstruct[WEDNESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                        break;
+                    case THURSDAY:
+                        monthlyWeekdayConstruct[THURSDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                        break;
+                    case FRIDAY:
+                        monthlyWeekdayConstruct[FRIDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                        break;
+                    case SATURDAY:
+                        monthlyWeekdayConstruct[SATURDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                        break;
+                    default:
+                        break;
                 }
             } catch (err) {
                 throw errorDisc({ err, data: { thisLooperDate } });
@@ -89,21 +89,25 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
 
 /*
     frequency = [
-        { nthId: 1, weekday: FRIDAY },
-        { nthId: 3, weekday: FRIDAY }
-        { nthId: -1, weekday: SUNDAY } // a negative nthId means the last occurence of the month
+        { rank: 1, weekday: FRIDAY },
+        { rank: 3, weekday: FRIDAY }
+        { rank: -1, weekday: SUNDAY } // a negative rank means the last occurence of the month
     ];
 
 */
-const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel }) => {
+const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel, eventGen = true }) => {
     let processPhase = EVALUATING_RULE_INSERTION;
     let nthProcessDayTracker;
     let looperDateTracker;
     let looperDateIndexTracker;
     try {
-        const nthProcessDays = rule.frequency;
-        const weekdaysInMonth = findAllWeekdaysInTheMonth({ date, timeZone: rule.timeZone, timeZoneType: rule.timeZoneType });
-        nthProcessDays.forEach((nthProcessDay) => {
+        const nthProcessDays = Array.isArray(rule.frequency) ? rule.frequency : [];
+        const weekdaysInMonth = findAllWeekdaysInTheMonth({
+            date,
+            timeZone: rule.timeZone,
+            timeZoneType: rule.timeZoneType
+        });
+        nthProcessDays.some((nthProcessDay) => {
             nthProcessDayTracker = nthProcessDay;
             const objectKey = nthProcessDay.weekday;
             const sizeOfObjectKeyArray = weekdaysInMonth[objectKey].length;
@@ -113,21 +117,31 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel }) => {
                 processPhase = EVALUATING_RULE_INSERTION;
                 if (
                     date.format(DATE_FORMAT_STRING) === looperDate &&
-                    (nthProcessDay.nthId === looperDateIndex + 1 ||
-                        nthProcessDay.nthId === 0 ||
-                        (nthProcessDay.nthId < 0 && looperDateIndex === sizeOfObjectKeyArray - 1))
+                    (nthProcessDay.rank === looperDateIndex + 1 ||
+                        nthProcessDay.rank === 0 ||
+                        (nthProcessDay.rank < 0 && looperDateIndex === sizeOfObjectKeyArray - 1))
                 ) {
                     processPhase = EXECUTING_RULE_INSERTION;
                     processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
+                    processPhase = modulusPhase({ rule, processPhase });
                     if (processPhase !== EXECUTION_REJECTED) {
-                        processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
+                        // when we are pre-modulating the cycle during validation, we do not want to generate an event
+                        if (eventGen) {
+                            processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
+                        }
+                        return true;
                     }
+                } else {
+                    return false;
                 }
             });
         });
         return processPhase;
     } catch (err) {
-        throw errorDisc({ err, data: { rule, date, processPhase, nthProcessDayTracker, looperDateTracker, looperDateIndexTracker } });
+        throw errorDisc({
+            err,
+            data: { rule, date, processPhase, nthProcessDayTracker, looperDateTracker, looperDateIndexTracker }
+        });
     }
 };
 
@@ -136,7 +150,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel }) => {
     processDate: '13',
 
 */
-const weekdayOnDate = ({ danielSan, rule, date, skipTimeTravel }) => {
+const weekdayOnDate = ({ danielSan, rule, date, skipTimeTravel, eventGen = true }) => {
     let processPhase = EVALUATING_RULE_INSERTION;
     try {
         const thisProcessDate = getRelevantDateSegmentByFrequency({
@@ -147,16 +161,23 @@ const weekdayOnDate = ({ danielSan, rule, date, skipTimeTravel }) => {
             frequency: WEEKLY,
             date
         });
-        // this block ensures backward compatibility when frequency was used for the weekday
-        if(!isUndefinedOrNull(rule.weekday)){
-            rule.frequency = rule.weekday;
-        }
-        if (rule.processDate === thisProcessDate && rule.frequency === thisWeekday) {
-            processPhase = EXECUTING_RULE_INSERTION;
-            processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
-            if (processPhase !== EXECUTION_REJECTED) {
-                processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
-            }
+        if (Array.isArray(rule.frequency)) {
+            rule.frequency.some((element) => {
+                if (element.processDate === thisProcessDate && element.weekday === thisWeekday) {
+                    processPhase = EXECUTING_RULE_INSERTION;
+                    processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
+                    processPhase = modulusPhase({ rule, processPhase });
+                    if (processPhase !== EXECUTION_REJECTED) {
+                        // when we are pre-modulating the cycle during validation, we do not want to generate an event
+                        if (eventGen) {
+                            processPhase = generateEvent({ danielSan, rule, date, skipTimeTravel });
+                        }
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            });
         }
         return processPhase;
     } catch (err) {

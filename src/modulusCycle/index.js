@@ -4,12 +4,12 @@ const {
     EXECUTION_REJECTED
 } = require('../constants');
 
-const cycleModulusUp = (rule) => {
+const modulateCycleUp = (rule) => {
     const newCycle = (rule.cycle % rule.modulus) + 1;
     rule.cycle = newCycle;
 };
 
-const cycleModulusDown = (rule) => {
+const modulateCycleDown = (rule) => {
     let newCycle = rule.cycle - 1;
     if (newCycle === 0) newCycle = rule.modulus;
     rule.cycle = newCycle;
@@ -33,7 +33,7 @@ const modulusPhase = ({ rule, processPhase }) => {
             if (transientProcessPhase !== EXECUTION_REJECTED && isCycleAtModulus(rule)) {
                 transientProcessPhase = EXECUTING_RULE_INSERTION;
             }
-            cycleModulusUp(rule);
+            modulateCycleUp(rule);
         } else if (transientProcessPhase !== EXECUTION_REJECTED) {
             transientProcessPhase = EXECUTING_RULE_INSERTION;
         }
@@ -44,8 +44,8 @@ const modulusPhase = ({ rule, processPhase }) => {
 };
 
 module.exports = {
-    cycleModulusUp,
-    cycleModulusDown,
+    modulateCycleUp,
+    modulateCycleDown,
     isCycleAtModulus,
     modulusPhase
 };

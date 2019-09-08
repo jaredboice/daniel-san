@@ -2,7 +2,7 @@ const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { initializeTimeZoneData, convertTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
-const { cycleModulusUpToDate } = require('../modulusCycle/cycleModulusToDate');
+const { modulateCycleUpToDate } = require('../modulusCycle/modulateCycleToDate');
 const {
     EVENT_SOURCE,
     STANDARD_EVENT,
@@ -97,7 +97,7 @@ const validateAndConfigureRules = ({ danielSan, date }) => {
                     if (!rule.cycle) {
                         rule.cycle = 1;
                     }
-                    // if there is a effectiveDateStart without a anchorSyncDate, then just assign it to the anchorSyncDate
+                    // if there is an effectiveDateStart without an anchorSyncDate, then just assign it to the anchorSyncDate
                     if (!rule.anchorSyncDate && rule.effectiveDateStart) {
                         rule.anchorSyncDate = rule.effectiveDateStart;
                     }
@@ -119,9 +119,10 @@ const validateAndConfigureRules = ({ danielSan, date }) => {
                             rule.anchorSyncDate = null;
                         } else {
                             rule.effectiveDateStart = null;
-                            cycleModulusUpToDate({
+                            modulateCycleUpToDate({
                                 rule,
-                                effectiveDateStartString
+                                effectiveDateStartString,
+                                skipTimeTravel: danielSan.skipTimeTravel
                             });
                         }
                     }

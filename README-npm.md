@@ -78,7 +78,7 @@ const danielSan = {
             amount: -5.00,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
-            exclusions: { // (exclusion hits will still cycle the modulus for STANDARD_EVENTS
+            exclusions: { // (exclusion hits will still modulate the cycle when using the modulus/cycle feature)
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
             }
