@@ -150,7 +150,11 @@ const danielSan = {
     ],
     events: [] // future balance projections stored here
 };
-```
+```  
+
+**28 Day Rule**
+
+For MONTHLY frequencies of STANDARD_EVENTS, any rule with a processDate greater than '28' will check to see if it is an actual date for that month. If it is not, it will use the last date of the month instead, leap years included.
 
 **Date Arrays**
 
@@ -195,7 +199,7 @@ const danielSan = {
             amount: -66.6,
             type: WEEKDAY_ON_DATE, // see "Event Types" - import from constants.js
             frequency: [
-                { processDate: 13, weekday: FRIDAY } // process this frequency element every friday the 13th, add more elements as desired
+                { processDate: '13', weekday: FRIDAY } // process this frequency element every friday the 13th, add more elements as desired
             ],
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null
