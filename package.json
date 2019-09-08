@@ -2,7 +2,7 @@
     "name": "daniel-san",
     "author": "jared boice",
     "description": "a node-based budget-projection engine that helps your routines and finances find balance.  Featuring multi-currency, multi-frequency triggers, time zones, prepay, postpay and dynamic rule modification.",
-    "version": "9.7.3",
+    "version": "9.7.4",
     "license": "MIT",
     "repository": {
         "type": "git",

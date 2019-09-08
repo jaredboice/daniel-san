@@ -2,6 +2,7 @@ const { isUndefinedOrNull } = require('../utility/validation');
 const {
     findCriticalSnapshots,
     findRulesToRetire,
+    findIrrelevantRules,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,
