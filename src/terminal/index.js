@@ -1,4 +1,6 @@
 const { isUndefinedOrNull } = require('../utility/validation');
+const { TimeStream } = require('../timeStream');
+const { validateAndConfigureBonsaiTree, validateAndConfigureRules } = require('../core/validation');
 const {
     findCriticalSnapshots,
     findRulesToRetire,
@@ -730,6 +732,16 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
 };
 
 const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
+    validateAndConfigureBonsaiTree({ danielSan, effectiveDateStartString: danielSan.effectiveDateStart, effectiveDateEndString: danielSan.effectiveDateEnd });
+    const timeStream = new TimeStream({
+        effectiveDateStartString: danielSan.effectiveDateStart,
+        effectiveDateEndString: danielSan.effectiveDateEnd,
+        timeStartString: danielSan.timeStart,
+        timeEndString: danielSan.timeEnd,
+        timeZone: danielSan.timeZone,
+        timeZoneType: danielSan.timeZoneType
+    });
+    validateAndConfigureRules({ danielSan, date: timeStream.effectiveDateStart });
     const { irrelevantRules } = findIrrelevantRules(danielSan);
     if (irrelevantRules && irrelevantRules.length > 0) {
         terminalBoundary(3);
