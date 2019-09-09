@@ -49,7 +49,7 @@ const buildStandardEvent = ({ danielSan, rule, date, skipTimeTravel, eventGen = 
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc({ err, data: { rule, date, processPhase } });
+        throw errorDisc({ err, data: { rule, date, processPhase, skipTimeTravel, eventGen } });
     }
 };
 

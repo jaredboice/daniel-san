@@ -744,7 +744,9 @@ const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
         timeZone: danielSan.timeZone,
         timeZoneType: danielSan.timeZoneType
     });
-    validateAndConfigureRules({ danielSan, date: timeStream.effectiveDateStart });
+    // we will pass false for skipTimeTravel since as long as both the main config and the rule time zone data are equivalent
+    // as would be assumed when wanting to skipTimeTravel, the additional performance overhead in this context is minor
+    validateAndConfigureRules({ danielSan, date: timeStream.effectiveDateStart, skipTimeTravel: false });
     const { irrelevantRules } = findIrrelevantRules(danielSan);
     if (irrelevantRules && irrelevantRules.length > 0) {
         terminalBoundary(3);

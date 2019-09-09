@@ -36,7 +36,7 @@ const generateTimeSpan = ({ event, date, weekday }) => {
     }
 };
 
-const redefineTimeStartAndTimeSpan = ({ event, skipTimeTravel }) => {
+const redefineTimeStartAndTimeSpan = ({ event, skipTimeTravel = null }) => {
     if (!createTimeZone) {
         // TODO: check to see why this function was undefined at runtime
         createTimeZone = require('../timeZone').createTimeZone; // eslint-disable-line global-require

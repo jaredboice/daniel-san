@@ -56,7 +56,7 @@ const validateAndConfigureBonsaiTree = ({ danielSan, effectiveDateStartString, e
     }
 };
 
-const validateAndConfigureRules = ({ danielSan, date }) => {
+const validateAndConfigureRules = ({ danielSan, date, skipTimeTravel = null }) => {
     let ruleTracker; // for errorDisc
     let indexTracker; // for errorDisc
     danielSan.rules.forEach((rule, index) => {
@@ -113,7 +113,7 @@ const validateAndConfigureRules = ({ danielSan, date }) => {
                             danielSan,
                             rule,
                             effectiveDateStartString,
-                            skipTimeTravel: danielSan.skipTimeTravel
+                            skipTimeTravel
                         });
                     }
                 }
@@ -122,7 +122,7 @@ const validateAndConfigureRules = ({ danielSan, date }) => {
                 rule.processDate = null;
             }
         } catch (err) {
-            throw errorDisc({ err, data: { date, rule: ruleTracker, indexTracker } });
+            throw errorDisc({ err, data: { date, rule: ruleTracker, indexTracker, skipTimeTravel } });
         }
     });
 };

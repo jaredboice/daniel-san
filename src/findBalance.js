@@ -46,7 +46,7 @@ const findBalance = (danielSan = {}, options = {}) => {
             timeZoneType
         });
         if (!skipValidateAndConfigure) {
-            validateAndConfigureRules({ danielSan: newDanielSan, date: timeStream.looperDate });
+            validateAndConfigureRules({ danielSan: newDanielSan, date: timeStream.looperDate, skipTimeTravel });
         }
         if (!skipDeleteIrrelevantRules) {
             deleteIrrelevantRules({
@@ -82,7 +82,7 @@ const findBalance = (danielSan = {}, options = {}) => {
         };
     } catch (err) {
         return {
-            err: errorDisc({ err, data: { skipValidateAndConfigure, skipDeleteIrrelevantRules } })
+            err: errorDisc({ err, data: { options } })
         };
     }
 };

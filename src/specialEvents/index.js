@@ -140,7 +140,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel, eventGen = 
     } catch (err) {
         throw errorDisc({
             err,
-            data: { rule, date, processPhase, nthProcessDayTracker, looperDateTracker, looperDateIndexTracker }
+            data: { rule, date, processPhase, nthProcessDayTracker, looperDateTracker, looperDateIndexTracker, skipTimeTravel, eventGen }
         });
     }
 };
@@ -181,7 +181,7 @@ const weekdayOnDate = ({ danielSan, rule, date, skipTimeTravel, eventGen = true 
         }
         return processPhase;
     } catch (err) {
-        throw errorDisc({ err, data: { rule, date, processPhase } });
+        throw errorDisc({ err, data: { rule, date, processPhase, skipTimeTravel, eventGen } });
     }
 };
 
