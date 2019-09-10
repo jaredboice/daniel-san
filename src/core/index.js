@@ -154,19 +154,19 @@ const executeEvents = ({ danielSan }) => {
     danielSan.events.forEach((event, index) => {
         try {
             event.balanceBeginning =
-                index === 0 ? danielSan.balanceBeginning : danielSan.events[index - 1].balanceEnding;
-            event.balanceEnding = event.balanceBeginning; // default value in case there is no amount field
+                index === 0 ? danielSan.config.balanceBeginning : danielSan.events[index - 1].balanceEnding;
+            event.balanceEnding = event.balanceBeginning; // default value in case there is no amount field on the rule with which to adjust it
             let amountConverted = 0;
             if (!isUndefinedOrNull(event.amount)) {
                 if (event.amount !== 0) {
                     amountConverted =
-                        danielSan.currencySymbol &&
+                        danielSan.config.currencySymbol &&
                         event.currencySymbol &&
-                        danielSan.currencySymbol !== event.currencySymbol
-                            ? danielSan.currencyConversion({
+                        danielSan.config.currencySymbol !== event.currencySymbol
+                            ? danielSan.config.currencyConversion({
                                   amount: event.amount,
                                   inputSymbol: event.currencySymbol,
-                                  outputSymbol: danielSan.currencySymbol
+                                  outputSymbol: danielSan.config.currencySymbol
                               })
                             : event.amount;
                 }
@@ -174,8 +174,8 @@ const executeEvents = ({ danielSan }) => {
                 event.balanceEnding = event.balanceBeginning + amountConverted; // routine types like STANDARD_EVENT_ROUTINE do not require an amount field
                 event.amountConverted = amountConverted;
                 event.currencyEventSource = `${event.currencySymbol}${COMPOUND_DATA_DELIMITER}${event.amount}`; // for future convenience
-                event.currencyObserverSource = `${danielSan.currencySymbol}${COMPOUND_DATA_DELIMITER}${event.amountConverted}`; // for future convenience
-                event.currencySymbol = danielSan.currencySymbol;
+                event.currencyObserverSource = `${danielSan.config.currencySymbol}${COMPOUND_DATA_DELIMITER}${event.amountConverted}`; // for future convenience
+                event.currencySymbol = danielSan.config.currencySymbol;
             }
         } catch (err) {
             throw errorDisc({ err, data: { event, index } });
@@ -183,7 +183,7 @@ const executeEvents = ({ danielSan }) => {
     });
 };
 
-const cleanUpData = (danielSan) => {
+const cleanUpEvents = (danielSan) => {
     // the idea is that we should only provide useful data that makes sense in the context of each event
     // as it may relate to timezone or currency conversion
     // any other information that may be required can be gathered from the original rule (matched via name or custom id property)
@@ -200,5 +200,5 @@ const cleanUpData = (danielSan) => {
 };
 
 module.exports = {
-    buildEvents, executeEvents, cleanUpData
+    buildEvents, executeEvents, cleanUpEvents
 };

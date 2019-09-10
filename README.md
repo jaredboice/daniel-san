@@ -5,22 +5,30 @@
 ![Daniel-San](screenshots/daniel-san-logo.png 'Daniel-San')
 
 ## Donations - Bitcoin: 19XgiRojJnv9VDhyW9HmF6oKQeVc7k9McU
+
 (use this address until 2022)
 
 ## Starter Kit
-click [here](https://github.com/jaredboice/daniel-san-starter-kit "Daniel-San-Starter-Kit")
+
+click [here](https://github.com/jaredboice/daniel-san-starter-kit 'Daniel-San-Starter-Kit')
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance.  The program features multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance. The program features multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+
+## Breaking Change in v10.0.0
+all non-rule configuration for the danielSan object have been moved into the new "config" field.
 
 ## Breaking Change in v8.0.0
-In keeping with the trend of adding clarity and consistency to variable names, the following properties have been changed accordingly. beginBalance is now balanceBeginning. endBalance is now balanceEnding. And syncDate is now anchorSyncDate.  
+
+In keeping with the trend of adding clarity and consistency to variable names, the following properties have been changed accordingly. beginBalance is now balanceBeginning. endBalance is now balanceEnding. And syncDate is now anchorSyncDate.
 
 ## Breaking Change in v8.0.0
+
 As of v8.0.0, to make way for a cleaner distinction between event dates and effective dates, dateStart and dateEnd at the top-level of the danielSan master control unit are now effectiveDateStart and effectiveDateEnd, respectively. And the eventDate on the event level has been changed to dateStart as a cleaner approach to applying time spans to events.
 
 ## Breaking Change in v3.0.0
+
 In v3.0, the currencyConversion function parameters have changed from currentSymbol and futureSymbol to inputSymbol and outputSymbol, respectively. Because naming things is hard.
 
 ## Install, Import & Execute
@@ -37,26 +45,27 @@ const terminal = require('daniel-san/terminal');
 const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = require('daniel-san/constants');
 ```
 
-**Defining Accounts/Cashflow Rules**
+**Defining Rules**
 
 Plase note that the format of property values are strict. For example, Years are always strings in the format YYYY, months are always MM, and days are always DD. Weekdays are an integer between 0-6, and times are always strings in the format hh:mm:am or hh:mm:pm (case sensitive on the am and pm).
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03, // always required
-    balanceEnding: null, // future end balance is stored here
-    effectiveDateStart: '2019-03-20', // always required - inclusive (effectiveDateStart is included in the budget projection)
-    effectiveDateEnd: '2019-12-13', // always required - inclusive (effectiveDateEnd is included in the budget projection)
-    timeStart: null, // optional: '09:00am'
-    timeEnd: null, // optional: '05:00pm'
+    config: {
+        balanceBeginning: 1618.03, // always required / the final balanceBeginning and balanceEnding results will be added to the root of this danielSan bonsai-tree
+        effectiveDateStart: '2019-03-20', // always required - inclusive (effectiveDateStart is included in the budget projection)
+        effectiveDateEnd: '2019-12-13', // always required - inclusive (effectiveDateEnd is included in the budget projection)
+        timeStart: null, // optional: '09:00am'
+        timeEnd: null // optional: '05:00pm'
+    },
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
             amount: -79.83, // negative amount subtracts, positive amount adds
-            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
+            type: STANDARD_EVENT, // see "Event Types" - import from constants.js / see list of importable constants at the bottom of this readme
             frequency: MONTHLY,
             processDate: '30', // for MONTHLY events, this string represents the day within that month
-            effectiveDateStart: '2019-01-01' // date to start evaluating and processing this account, if there is no start date, daniel-san will try to determine the first process date
+            effectiveDateStart: '2019-01-01', // date to start evaluating and processing this account, if there is no start date, daniel-san will determine the first process date
             effectiveDateEnd: null, // null effectiveDateEnd represents an ongoing account
             modulus: 1, // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
             cycle: 1 // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
@@ -68,9 +77,9 @@ const danielSan = {
             frequency: WEEKLY,
             processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
             effectiveDateStart: '2019-01-01',
-            effectiveDateEnd: null,
-            modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
-            cycle: 1
+            effectiveDateEnd: null, // null effectiveDateEnd represents an ongoing account
+            modulus: 2, // See "Modulus/Cycle" to review this advanced feature
+            cycle: 1 // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
         },
         { // rule 3
             type: STANDARD_EVENT,
@@ -79,13 +88,30 @@ const danielSan = {
             amount: -5.00,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
-            exclusions: { // (exclusion hits will still modulate the cycle when using the modulus/cycle feature)
+            exclusions: { // exclusion matches will still modulate the cycle when using the modulus/cycle feature
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays (you could have also just imported the WEEKENDS constant and spreaded it within the array here)
-                dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
+                dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates (always in this exact string format: YYYY-MM-DD)
             }
+        },
+        { // rule 4
+            name: 'fitness routine',
+            type: STANDARD_EVENT_ROUTINE, // no amount field needed
+            frequency: WEEKLY,
+            processDate: SATURDAY,
+            effectiveDateStart: '2019-01-01',
+            effectiveDateEnd: null,
+            note: '20 minutes of jogging, 20 minutes of cycling, free weights'
+        },
+        { // rule 5
+            name: 'new years party arrangements',
+            type: STANDARD_EVENT_REMINDER, // no amount field needed
+            frequency: DAILY, // no processDate needed for DAILY events
+            effectiveDateStart: '2020-12-13',
+            effectiveDateEnd: '2020-12-21', // remind me daily until the 21st
+            note: 'finalize arrangements for the party'
         }
     ],
-    events: [] // future balance projections stored here
+    events: [] // future balance projections stored here and a balanceEnding field is assigned to each event
 };
 
 const craneKick = findBalance(danielSan);
@@ -94,7 +120,8 @@ const craneKick = findBalance(danielSan);
 **Execution Example**
 
 ```javascript
-// after executing findBalance with danielSan, craneKick will embody the danielSan object with the newly produced events
+// after executing findBalance with danielSan, craneKick will embody the danielSan object with the newly produced events, 
+// and it will contain an object called "err" if there are errors during execution
 const craneKick = findBalance(danielSan);
 ```
 
@@ -116,41 +143,39 @@ MONTHLY - '29'
 WEEKLY - an integer between 0-6 for weekdays. constants for the weekday integers can be imported  
 DAILY - needs no processDate
 
-
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03,
-    balanceEnding: null, // future end balance is stored here
-    effectiveDateStart: '2019-03-20',
-    effectiveDateEnd: '2019-12-13',
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13'
+    },
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
-            amount: -79.83, // negative amount signifies an outflow of cash
-            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
+            amount: -79.83,
+            type: STANDARD_EVENT, 
             frequency: MONTHLY, // if a MONTHLY processDate is greater than days in month, it resorts to match against the last day of the month;
-                                // so 31 will always fire on the last day of the month
-            processDate: '28', // for MONTHLY events, this string represents the day within that month
-            effectiveDateStart: '2019-01-01' // date to start evaluating and processing this account
-            effectiveDateEnd: null, // null effectiveDateEnd represents an ongoing account
-            modulus: 1, // not required - see "Modulus/Cycle" to review this advanced feature
-            cycle: 1 // not required - see "Modulus/Cycle" to review this advanced feature
+                                // so 31 will always execute on the last day of the month
+            processDate: '28',
+            effectiveDateStart: '2019-01-01',
+            effectiveDateEnd: null
         },
         { // rule 2
             name: 'tri-monthly stipend',
             amount: 2035.56, // positive amount signifies an inflow of cash
-            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
+            type: STANDARD_EVENT,
             frequency: MONTHLY,
-            processDate: '01', // for MONTHLY events, this string represents the day within that month
-            effectiveDateStart: '2019-01-01' // date to start evaluating and processing this account
+            processDate: '01',
+            effectiveDateStart: '2019-01-01',
             effectiveDateEnd: '2019-12-13'
-            modulus: 3, // in conjunction with cycle, this attribute signifies every THIRD match will trigger a processing event
-            cycle: 1 // the cycle of this modulus - see "Modulus/Cycle" to review this advanced feature
+            modulus: 3, // this attribute signifies every THIRD match will trigger a processing event
+            cycle: 1 // the current cycle of this modulation phase - see "Modulus/Cycle" to review this advanced feature
         },
     ],
     events: [] // future balance projections stored here
 };
-```  
+```
 
 **28 Day Rule**
 
@@ -161,9 +186,8 @@ For MONTHLY frequencies of STANDARD_EVENTS, any rule with a processDate greater 
 STANDARD_EVENTS also accept date arrays for processDate. This applies to all possible frequency types of STANDARD_EVENTS, including ONCE. The format of the date elements must all match the date format for that particular frequency. While it would seem like overkill to use the modulus/cycle feature with date arrays, it is certainly possible to do. Be aware that, when using date arrays, the program will look for any possible match within the array. Any match will modulate the cycle. So order of the elements does not matter:
 
 eg. frequency === ANNUALLY process  
-Date: ['12-24', '12-25', '01-01']  
-  
-    
+Date: ['12-24', '12-25', '01-01']
+
 **Special Events**
 
 -   `type: 'NTH_WEEKDAYS_OF_MONTH'` _(trigger an event process every 1st and 3rd Friday)_
@@ -177,12 +201,14 @@ _special events can also utilize the modulus/cycle/anchorSyncDate attributes, ho
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03,
-    balanceEnding: null, // future end balance is stored here
-    effectiveDateStart: '2019-03-20',
-    effectiveDateEnd: '2019-12-13',
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13'
+    },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             name: 'monthly bitcoin investment',
             amount: -79.83,
             type: NTH_WEEKDAYS_OF_MONTH, // see "Event Types" - import from constants.js
@@ -190,11 +216,12 @@ const danielSan = {
                 { rank: 1, weekday: FRIDAY }, // every 1st friday
                 { rank: 3, weekday: FRIDAY }, // and 3rd friday
                 { rank: -1, weekday: SUNDAY } // a negative rank means the last occurence of the month
-        ],
-            effectiveDateStart: '2019-01-01', // date to start evaluating and processing this account
-            effectiveDateEnd: null // null effectiveDateEnd represents an ongoing account
+            ],
+            effectiveDateStart: '2019-01-01',
+            effectiveDateEnd: null
         },
-        { // rule 2
+        {
+            // rule 2
             name: 'jasons birthday party',
             amount: -66.6,
             type: WEEKDAY_ON_DATE, // see "Event Types" - import from constants.js
@@ -221,49 +248,51 @@ When using time zones or multi-currency conversions, special adjustments take pl
 -   `type: 'MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES' or simply 'POST_PAY'` _(postpay: delay processing after specific dates of the month with an optional weekdays attribute)_
 -   `type: 'ADJUST_AMOUNT_ON_THESE_DATES' or simply 'ADJUST_AMOUNT'` _(add/subtract to/from the amount on a specific date)_
 
-
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03,
-    balanceEnding: null, // future end balance is stored here
-    effectiveDateStart: '2019-03-20',
-    effectiveDateEnd: '2019-12-13',
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13'
+    },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             name: 'le cinema',
             amount: -23.57,
-            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
+            type: STANDARD_EVENT,
             frequency: WEEKLY,
-            processDate: 0, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
+            processDate: 0, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported, such as FRIDAY
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
             specialAdjustments: [
-                { // the moving of process dates should generally come last in the array of adjustments
+                {
+                    // the moving of process dates should generally come last in the array of adjustments
                     // the below type is synonymous with MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES
-                    type: PRE_PAY, // to postpay after the specified dates, use POST_PAY or the equivalent constant, MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES 
+                    type: PRE_PAY, // to postpay after the specified dates, use POST_PAY or the equivalent constant, MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES
                     dates: ['2019-07-04', '2019-12-25'], // if a processing date falls on one of these dates it will roll back to precede it
                     weekdays: [SATURDAY, SUNDAY] // weekdays are optional for both PRE_PAY and POST_PAY. If falling on a provided weekday, it will roll back to precede it
                 }
             ]
         },
-        { // rule 2, this specific specialAdjustment example focuses on weekdays ONLY
+        {
+            // rule 2, this specific specialAdjustment example focuses on weekdays ONLY
             name: 'fortress mortgage',
             amount: -2357.11,
-            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
+            type: STANDARD_EVENT,
             frequency: MONTHLY,
-            effectiveDateStart: '2019-01-01', // date to start evaluating and processing this account
-            effectiveDateEnd: null, // null effectiveDateEnd represents an ongoing account
-            processDate: '30', // for MONTHLY events, this string represents the day within that month
-            modulus: 1, // not required - see "Modulus/Cycle" to review this advanced feature
-            cycle: 1, // not required - see "Modulus/Cycle" to review this advanced feature
+            effectiveDateStart: '2019-01-01',
+            effectiveDateEnd: null,
             specialAdjustments: [
-                { // the moving of process dates should generally come last in the array of adjustments
+                {
+                    // the moving of process dates should generally come last in the array of adjustments
                     type: MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS, // to prepay before the specified days, use MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS
-                    weekdays: [SATURDAY, SUNDAY] 
+                    weekdays: [SATURDAY, SUNDAY]
                 }
             ]
         },
-        { // rule 3
+        {
+            // rule 3
             name: 'monthly bitcoin investment',
             amount: -79.83,
             type: NTH_WEEKDAYS_OF_MONTH, // see "Event Types" - import from constants.js
@@ -271,31 +300,27 @@ const danielSan = {
                 { rank: 1, weekday: FRIDAY }, // every 1st friday
                 { rank: 3, weekday: FRIDAY }, // and 3rd friday
                 { rank: -1, weekday: SUNDAY } // a negative rank means the last occurence of the month
-        ],
-            effectiveDateStart: '2019-01-01', // date to start evaluating and processing this account
-            effectiveDateEnd: null, // null effectiveDateEnd represents an ongoing account
+            ],
+            effectiveDateStart: '2019-01-01',
+            effectiveDateEnd: null,
             specialAdjustments: [
-                { 
+                {
                     type: ADJUST_AMOUNT,
-                    dates: [
-                        '2019-09-17', 
-                        '2019-12-25'
-                    ],
-                    amounts: [
-                        223.00,
-                        271.00
-                    ] // dates and amounts are parallel arrays
+                    dates: ['2019-09-17', '2019-12-25'],
+                    amounts: [223.0, 271.0] // dates and amounts are parallel arrays
                 }
             ]
-        },
+        }
     ],
     events: [] // future balance projections stored here
-};fs
+};
 ```
 
 ## Modulus/Cycle
 
 **Custom BIWEEKLY / BIMONTHLY Event Types**
+
+Note: when using the Modulus/Cycle feature, you should ALWAYS set an effectiveDateStart.
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
@@ -304,29 +329,28 @@ If your cycle/modulus isn't getting expected results, try modifying the cycle (a
 
 As of daniel-san version 6.1.0, adding an effectiveDateStart to any rule with modulus/cycle attributes will automatically assign that effectiveDateStart value to anchorSyncDate. So manuallly adding anchorSyncDate is no longer required. If the date is in the future, it will simply treat it as effectiveDateStart as explained below. Read on, however, to understand the functionality of anchorSyncDate.
 
-Adding an anchorSyncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process-execution "anchor" date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on an anchorSyncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that anchorSyncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the anchorSyncDate every so often will increase performance since this feature requires more computation.  
+Adding an anchorSyncDate attribute (as seen in the 'shenanigans' account/rule) can make your life easier by syncing the appropriate cycle/modulus phase to a specific process-execution "anchor" date in the past. For example, by syncing a cycle of 2 within a modulus of 2 on an anchorSyncDate of '2019-08-12' you are "syncing" that specific phase of the 2/2 cycle to that date (cycling forward into the future). So whatever the cycle value is on that anchorSyncDate will be locked in its position at that time and that will dictate how the cycle will moduluate into the future. This will keep that account/rule moduluating as you expect without any further adjustments ever needed. However, updating the anchorSyncDate every so often will increase performance since this feature requires more computation.
 
-Adding an effectiveDateStart WITH an anchorSyncDate is redundant to daniel-san. You can, however, still start the cycle in the future. When you set an anchorSyncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the effectiveDateStart attribute for that rule (while assigning null to anchorSyncDate) so it will begin its forward-moving cycle at that time. When that same anchorSyncDate is eventually found to be less than the start date of the projections (due to manually moving the global start date forward through the normal course of using the program), it will then be used to sync the modulation cycle to that point in the past. 
+Adding an effectiveDateStart WITH an anchorSyncDate is redundant to daniel-san. You can, however, still start the cycle in the future. When you set an anchorSyncDate at some point in the future (after the start date of the projections) daniel-san will simply assign that value to the effectiveDateStart attribute for that rule (while assigning null to anchorSyncDate) so it will begin its forward-moving cycle at that time. When that same anchorSyncDate is eventually found to be less than the effectiveDateStart of the projections (due to manually moving the effectiveDateStart forward through the normal course of using the program), it will then be used to sync the modulation cycle to that anchor point now in the past.
 
-The bottom line is this: if you are using modulus/cycle values of anything other than 1/1 (which would equate to normal behavior for any event), you should also be using an anchorSyncDate.
-
+The bottom line is this: if you are using modulus/cycle values of anything other than 1/1 (which would equate to normal behavior for any event), you should always have an anchorSyncDate (which you can achieve by simply setting the effectiveDateStart attribute on every rule that applies this modulus/cycle feature).
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03, // always required
-    balanceEnding: null, // future end balance is stored here
-    effectiveDateStart: '2020-09-17', // always required
-    effectiveDateEnd: '2019-12-13', // always required
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2020-09-17',
+        effectiveDateEnd: '2019-12-13'
+    },
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
-            amount: -79.83, // negative amount subtracts, positive amount adds
-            type: STANDARD_EVENT, // see "Event Types" - import from constants.js
+            amount: -79.83,
+            type: STANDARD_EVENT,
             frequency: MONTHLY,
-            processDate: '30', // for MONTHLY events, this string represents the day within that month
-            effectiveDateStart: '2019-01-01' // date to start evaluating and processing this account
-            // since it is before the global date start of all the projections, the cycle will start on 2019-09-17
-            effectiveDateEnd: null, // null effectiveDateEnd represents an ongoing account
+            processDate: '30',
+            effectiveDateStart: '2019-01-01', // since the effectiveDateStart is set BEFORE the config's effectiveDateStart, the cycle will start on 2019-09-17
+            effectiveDateEnd: null,
             modulus: 3,
             cycle: 1
         },
@@ -336,7 +360,7 @@ const danielSan = {
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
             processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
-            anchorSyncDate: '2019-08-12',
+            anchorSyncDate: '2019-08-12', // you can actually just use effectiveDateStart here, instead of anchorSyncDate, since version 6.1.0, although anchorSyncDate is still being used in the background
             effectiveDateEnd: null,
             modulus: 2, // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
             cycle: 1
@@ -350,27 +374,29 @@ const danielSan = {
 
 **Growth and Decay Capability**
 
-If added to a rule, the ruleModification function will execute after eaching passing day of the projection phase. While it was initially added for the capability to modify the amount field over time, you are being provided with enough parameters to do some damage if you don't know what you're doing. You get access to the full danielSan bonsai tree, the rule, and two moment dates, including the convertedDate via time zone functionality. You are also encouraged to store temporary data for calculations in the object, rule.transientData. That specific field gets deleted for you in the cleanUpData phase, after the completion of all event generation.
-
+If added to a rule, the ruleModification function will execute after eaching passing day of the projection phase. While it was initially added for the capability to modify the amount field over time, you are being provided with enough parameters to do some damage if you don't know what you're doing. You get access to the full danielSan bonsai tree, the rule, and two moment dates, including the convertedDate via time zone functionality. You are also encouraged to store temporary data for calculations in the object, rule.transientData. That specific field gets deleted for you in the cleanUpEvents phase, after the completion of all event generation.
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03, // always required
-    balanceEnding: null, // future end balance is stored here
-    effectiveDateStart: '2019-03-20', // always required
-    effectiveDateEnd: '2019-12-13', // always required
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13'
+    },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             type: STANDARD_EVENT,
             frequency: MONTHLY,
             name: 'projected revenue',
-            amount: -5.00,
+            amount: +25.0,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
             ruleModification: ({ danielSan, rule, date, convertedDate }) => {
                 // every SUNDAY, we expect that day of revenue to increase by 100
+                // so the first SUNDAY it adds 25 to the balanceEnding field, and the next SUNDAY it adds 125, and the next, 225, etc..
                 if (convertedDate.day() === 0) {
-                    rule.amount += 100;
+                    rule.amount += 100; // if you were modifying an expense (instead of revenue) you'd subtract from the amount field instead, for example, when anticipating greater losses
                 }
             }
         }
@@ -382,26 +408,28 @@ const danielSan = {
 ## Exclusions
 
 Exclusions will skip an event trigger entirely. If an exclusion is triggered, not even special adjustments will fire as exclusions precede them.
-_(When making use of the modulus/cycle operators, exclusion hits will still modulate the cycle)_
-
+_(when making use of the modulus/cycle operators, exclusion hits will still modulate the cycle)_
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03, // always required
-    balanceEnding: null, // future end balance is stored here
-    effectiveDateStart: '2019-03-20', // always required
-    effectiveDateEnd: '2019-12-13', // always required
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13'
+    },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             type: STANDARD_EVENT,
             frequency: DAILY,
             name: 'cafeteria breakfast',
-            amount: -5.00,
+            amount: -5.0,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
-            exclusions: { // (exclusion hits will still modulate the cycle for STANDARD_EVENT)
-                weekdays: [SATURDAY, SUNDAY], // excluding these weekdays
-                dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates
+            exclusions: {
+                // (exclusion hits will still modulate the cycle for STANDARD_EVENT)
+                weekdays: [SATURDAY, SUNDAY], // event triggers will exclude these weekdays
+                dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // and exclude these specific dates
             }
         }
     ],
@@ -415,61 +443,62 @@ const danielSan = {
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03,
-    balanceEnding: null,
-    effectiveDateStart: '2019-03-20',
-    effectiveDateEnd: '2019-12-13',
-    currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represetns the outputSymbol parameter in the currencyConversion function
-    // (when using the terminalOptions, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
-    currencyConversion: ({ amount, inputSymbol, outputSymbol }) => {
-        // a global currency conversion function that will return the converted amount
-        // the amount parameter represents the rule amount (as defined below for each provided rule)
-        // the inputSymbol parameter here represents the currencySymbol property field from the rule
-        // outputSymbol represents the output currency you will be converting to (the primary-output USD value above)
-        // even if you do not add a currencyConversion function, a default function is added to the danielSan object for you 
-        // (so a currencyConversion function is used in every calculation regardless)
-        // the default currencyConversion returns the same amount that is passed in
-       const UsdSymbolEnum = {
-           'USD': 1,   // in this case, USD represents the root field of this usd enum so its conversion factor should be 1, since 1 USD is worth 1 USD
-           'EUR': 0.88, // 1 USD is worth 0.88 EUR
-           'CNY': 6.75 // 1 USD is worth 6.75 CNY
-       };
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13',
+        currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represents the outputSymbol parameter in the currencyConversion function
+        // (when using the terminalOptions, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
+        currencyConversion: ({ amount, inputSymbol, outputSymbol }) => {
+            // a global currency conversion function that will return the converted amount.
+            // the amount parameter represents the rule amount (as defined below for each provided rule)
+            // the inputSymbol parameter here represents the currencySymbol property field from the rule
+            // outputSymbol represents the output currency you will be converting to (the primary-output USD value above, as defined in the config branch)
+            // even if you do not add a currencyConversion function, a default function is added to the danielSan object for you
+            // (so a currencyConversion function is used in every calculation, regardless, which by default returns the same amount passed in)
+            const UsdSymbolEnum = {
+                'USD': 1,   // in this case, USD represents the root field of this usd enum so its conversion factor should be 1, since 1 USD is worth 1 USD
+                'EUR': 0.88, // 1 USD is worth 0.88 EUR
+                'CNY': 6.75 // 1 USD is worth 6.75 CNY
+            };
 
-       const EurSymbolEnum = {
-           'EUR': 1,
-           'USD': 1.14,
-           'CNY': 0.15
-       };
-       // you may have a need for multiple switch-case rules (and associated  enums) that execute based on different primary-output currency symbols
-       // eg. when switching your primary-output currency symbol to some other symbol, (as shown above the currencyConversion function) 
-       // so for each possible primary-output, you need to define different enums for potential output and/or input symbol (notice the EUR case example below)
-       switch (outputSymbol) {
-       case 'USD': // since our primary-output is USD, this case will convert the rule amount symbol (CNY) to USD
-           return amount * (UsdSymbolEnum[inputSymbol] || 1); // defensive programming example in cases when inputSymbol is null/undefined
-       case 'EUR': // this case would only execute if you changed your primary-output symbol to EUR
-           return amount * (EurSymbolEnum[inputSymbol] || 1);
-       default:
-           return amount;
-       }
-       // since this function provides you will all the necessary parameters, 
-       // you could of course create your currencyConversion function however you want as long as it computes and returns accurate results
-       // if you are using an api call to get real time figures for the enums prior to running your projections, 
-       // you could just define the currencyConversion function dynamically at runtime
-   },
+            const EurSymbolEnum = {
+                'EUR': 1,
+                'USD': 1.14,
+                'CNY': 0.15
+            };
+            // you may have a need for multiple switch-case rules (and associated  enums) that execute based on different primary-output currency symbols
+            // eg. when switching your primary-output currency symbol to some other symbol, (as shown above the currencyConversion function)
+            // so for each possible primary-output, you need to define different enums for potential output and/or input symbol (notice the EUR case example below)
+            switch (outputSymbol) {
+            case 'USD': // since our primary-output is USD, this case will convert the rule amount symbol (CNY) to USD
+                return amount * (UsdSymbolEnum[inputSymbol] || 1); // defensive programming example in cases when inputSymbol is null/undefined
+            case 'EUR': // this case would only execute if you changed your primary-output symbol to EUR
+                return amount * (EurSymbolEnum[inputSymbol] || 1);
+            default:
+                return amount;
+            }
+            // since this function provides you with all the necessary parameters,
+            // you could of course create your currencyConversion function however you want as long as it computes and returns accurate results
+            // if you are using an api call to get real time figures for the enums prior to running your projections,
+            // you could just define the currencyConversion function dynamically at runtime
+        }
+    },
     rules: [
         { // rule 1
             type: STANDARD_EVENT,
             frequency: DAILY,
             name: 'cafeteria breakfast',
             amount: -5.00,
-            currencySymbol: 'CNY' // in this context, CNY will be passed as the currentSumbol argument in the currencyConversion function and get converted to USD (the primary-output symbol)
+            currencySymbol: 'CNY' // in this context, CNY will be passed as the currentSymbol argument in the currencyConversion function and get converted to USD (the primary-output symbol)
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
         }
     ],
-    events: [] // future balance projections stored here
+    events: []
 };
 ```
+
 **Pro Tip**
 
 When applying the ADJUST_AMOUNT specialAdjustment for rules with multi-currency data, the following property is useful:
@@ -479,21 +508,19 @@ When applying the ADJUST_AMOUNT specialAdjustment for rules with multi-currency 
 options in the above scenario include:
 
 -   `context: EVENT_SOURCE` _(default value)_
--   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the final converted currency value via the currencySymbol on the root=level of the danielSan object, aka the MCU, ie. the Master Control Unit)_
+-   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the final converted currency value via the currencySymbol in the config object)_
 
 -all constants are available for import-
 
-
 ##Time
 
-timeStart and timeEnd are optional fields for the master controller context (at the root level of the danielSan object). Any events that fall outside of those beginning and end time values will be discarded. 
+timeStart and timeEnd are optional fields for the config object. Any events that fall outside of those start and end time values will be discarded.
 
-timeStart is optional at the rule level as well. However, in this context, timeEnd is calculated for you, specifically when applying any of the following time-span fields (individually or combined) to a rule:
+timeStart is optional at the rule level as well. However, in rule context, timeEnd is calculated for you, specifically when applying any of the following time-span fields (individually or combined) to a rule:
 
 -   `spanningMinutes: 30` _(adds 30 minutes to the event timespan)_
 -   `spanningHours: 3` _(adds 3 hours to the event timespan)_
 -   `spanningDays: 5` _(adds 5 days to the event timespan)_
-
 
 ## Time Zones
 
@@ -501,18 +528,20 @@ timeStart is optional at the rule level as well. However, in this context, timeE
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03,
-    balanceEnding: null,
-    effectiveDateStart: '2019-03-20',
-    effectiveDateEnd: '2019-12-13',
-    timeZone: 'US/Eastern', // the time zone in context of the observer that every rule will be converted to; see moment-timezone for a complete list time zones
-    timeZoneType: LOCAL, // LOCAL and UTC are available to be imported as constants
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13',
+        timeZone: 'US/Eastern', // the time zone in context of the observer that every rule will be converted to; see moment-timezone for a complete list time zones
+        timeZoneType: LOCAL // LOCAL and UTC are available to be imported as constants
+    },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             type: STANDARD_EVENT,
             frequency: DAILY,
             name: 'international video conference',
-            amount: -20.00,
+            amount: -20.0,
             effectiveDateStart: '2019-03-20',
             effectiveDateEnd: '2019-04-01',
             timeZone: 'Europe/Paris', // see immediately below for a time zone list
@@ -525,8 +554,8 @@ const danielSan = {
 ```
 
 ```javascript
-// run the following for a complete list of time zones: 
-const moment = require('moment-timezone'); 
+// run the following for a complete list of time zones:
+const moment = require('moment-timezone');
 moment.tz.names().forEach(name => console.log(name);
 ```
 
@@ -538,25 +567,23 @@ In Addition, when applying PRE_PAY and POST_PAY specialAdjustments, or exclusion
 
 -   `context: EVENT_SOURCE` _(applies the adjustment in the context of the original rule's timeZone data, as seen and interpreted at the source of the event)_
 
-options in the above scenario include:  
+options in the above scenario include:
 
 -   `context: EVENT_SOURCE` _(default value)_
--   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the event's final calculated time zone via the timeZone indicator on the root-level of the danielSan object, aka the bonsai tree, aka the MCU, ie. the Master Control Unit)_
--   `context: BOTH` _(applies the adjustment with respect to both of the contexts mentioned above; As an example of usage, BOTH is great when you don't want a weekend or corporate holiday to trigger in ANY context)_
+-   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the event's final calculated time zone via the timeZone indicator in the config object)_
+-   `context: BOTH` _(applies the adjustment with respect to both of the contexts mentioned above; As an example of usage, BOTH is great when you don't want a weekend or bank holiday to trigger in ANY context)_
 
--all constants are available for import-
-
+-all of the above referenced constants are available for import-
 
 ## Terminal
 
 **Logging Results to the Command-Line**
 
 _note: the terminal options are executed in the context of events (not rules), with exception to DISPLAY_RULES_TO_RETIRE and DISPLAY_IRRELEVANT_RULES_
-  
 
 ```javascript
 // passing a non-null value for error will log it to the console and bypass all other terminal functionality
-terminal({ danielSan, terminalOptions, error });
+terminal({ danielSan, terminalOptions, error, originalDanielSan });// the originalDanielSan is useful for passing the original unmodified danielSan reference to display irrelevant or retired rules.
 ```
 
 **Terminal Type Options**
@@ -577,10 +604,10 @@ terminal({ danielSan, terminalOptions, error });
 -   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
 -   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
 -   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
--   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_  
--   `type: 'DISPLAY_IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration_  
--   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing - 
-since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_
+-   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
+-   `type: 'DISPLAY_IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration - this particular terminal function works on your original danielSan object. However, when executing events as normal, a field called irrelevantRules is populated for you_
+-   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing -
+    since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_
 
 **Terminal Mode Options**
 
@@ -594,68 +621,62 @@ Passing a criticalThreshold property will log snapshots to the command-line when
 
 **Search Values**
 
-searchValues: [string1, string2, string3] is used for the DISPLAY_EVENTS_BY_* terminal types. Case-Sensitive!
+searchValues: [string1, string2, string3] is used for the DISPLAY*EVENTS_BY*\* terminal types. Case-Sensitive!
 
 **Formatting**
 
-See the terminal option configuration example below. If passing a custom formatting function, it must take the form shown below. 
-The default formattingFunction utilizes javascripts built-in toLocaleString() function - via the Intl api
+See the terminal option configuration example below. If passing a custom formatting function, it must take the form shown below.
+The default formattingFunction utilizes javascript's built-in toLocaleString() function - via the Intl api
 
 ```javascript
-const decimalFormatterCustom = (number, { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }) => { /* return formatted */ };
+const decimalFormatterCustom = (number, { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }) => { /* return number formatted */ };
 const terminalOptions = {
-        type: STANDARD_TERMINAL_OUTPUT,
-        mode: CONCISE,
-        criticalThreshold: 577.00,
-        // the formatting object is optional as the following values are defaulted for you
-        // which will format amount, balanceBeginning, and balanceEnding
-        formatting: {
-            formattingFunction: decimalFormatterCustom
-            minIntegerDigits: 1,
-            minDecimalDigits: 2,
-            maxDecimalDigits: 2,
-            locale: 'en-US',
-            style: 'currency', // change to 'decimal' to remove the prepended currency symbol (if using the default formattingFunction)
-            currency: 'USD'
-        }
+    type: STANDARD_TERMINAL_OUTPUT,
+    mode: CONCISE,
+    criticalThreshold: 577.00,
+    // the formatting object is optional as the following values are defaulted for you
+    // which will format amount, balanceBeginning, and balanceEnding
+    formatting: {
+        formattingFunction: decimalFormatterCustom
+        minIntegerDigits: 1,
+        minDecimalDigits: 2,
+        maxDecimalDigits: 2,
+        locale: 'en-US',
+        style: 'currency', // change to 'decimal' to remove the prepended currency symbol (if using the default formattingFunction)
+        currency: 'USD'
+    }
+}
 ```
 
 **Terminal Option Configuration Example**
 
 ```javascript
-    const terminalOptions = {
-        type: STANDARD_TERMINAL_OUTPUT,
-        mode: CONCISE,
-        criticalThreshold: 577.00,
-        // the formatting object is optional as the following values are defaulted for you which will format amount, balanceBeginning, and balanceEnding in mode: CONCISE
-        formatting: {
-            minIntegerDigits: 1,
-            minDecimalDigits: 2,
-            maxDecimalDigits: 2,
-            locale: 'en-US',
-            style: 'currency', // change to 'decimal' to remove the prepended currency symbol if using the default formattingFunction
-            currency: 'USD'
-        } // in addition, you can also pass formattingFunction into the formatting object above and all of the above parameters will be passed into that function call for you
-    };
+const terminalOptions = {
+    type: STANDARD_TERMINAL_OUTPUT,
+    mode: CONCISE,
+    criticalThreshold: 577.0,
+    // the formatting object is optional as the following values are defaulted for you
+    // which will format amount, balanceBeginning, and balanceEnding in mode: CONCISE
+    formatting: {
+        minIntegerDigits: 1,
+        minDecimalDigits: 2,
+        maxDecimalDigits: 2,
+        locale: 'en-US',
+        style: 'currency', // change to 'decimal' to remove the prepended currency symbol if using the default formattingFunction
+        currency: 'USD'
+    } // in addition, you can also pass formattingFunction into the formatting object above and all of the above parameters will be passed into that function call for you
+};
 ```
 
 **An Example Assuming Rules and Terminal Options are Defined**
 
 ```javascript
-const waxOn = require('./rules'); // defined by user as const { rules = {} } = waxOn (so we can use the word waxOn)
+const waxOn = require('./rules'); // so we can use the word waxOn
 const findBalance = require('daniel-san');
 const terminal = require('daniel-san/terminal');
 
 const eventResults = findBalance(waxOn.danielSan);
-if (eventResults.err) {
-    if (terminalOptions) { 
-        terminal({ error: eventResults.err });
-    }
-} else {
-    if {
-        (terminalOptions) terminal({ danielSan: eventResults.danielSan, terminalOptions: terminalOptions });
-    }
-}
+terminal({ danielSan: eventResults.danielSan, terminalOptions: terminalOptions, error: eventResults.err }); // on err, the terminal's error logger will be executed instead of the event logger
 ```
 
 ## More Useful Features
@@ -664,54 +685,55 @@ if (eventResults.err) {
 
 ```javascript
 const danielSan = {
-    balanceBeginning: 1618.03,
-    balanceEnding: null,
-    effectiveDateStart: '2019-03-20',
-    effectiveDateEnd: '2019-12-13',
+    config: {
+        balanceBeginning: 1618.03,
+        effectiveDateStart: '2019-03-20',
+        effectiveDateEnd: '2019-12-13'
+    },
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
             group: 'investments' // optional: assign a group category and filter the results with DISPLAY_EVENTS_BY_GROUP
-            amount: -79.83, 
+            amount: -79.83,
             type: STANDARD_EVENT,
             frequency: MONTHLY,
             processDate: '30',
             timeStart: '09:11am', // optional: assigning a timeStart attribute will order the event appropriately
-            sortPriority: 25,   // optional: forces higher sort priority for event operations, the lower the sortPriority value, 
-                                // the sooner it is applied in the event sequence, (the processed event date and timeStart take precedence over sortPriority)
+            sortPriority: 25,   // optional: forces higher sort priority for event operations, the lower the sortPriority value,
+                                // the sooner it is applied in the event sequence, (the processed event dates and timeStart take precedence over sortPriority)
             notes: 'some message to your future self', // optional
             important: true, // optional: assign important: true and filter the results with DISPLAY_IMPORTANT_EVENTS
-            effectiveDateStart: '2019-01-01'
+            effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
             modulus: 1,
-            cycle: 1 
+            cycle: 1
         }
     ],
-    events: [] // future balance projections stored here
+    events: []
 };
 ```
 
+**Useful Functions**
 
-**Useful Functions**  
-  
-You can always use any exported function in the program by simply requiring it. However, a few such useful functions are shown below. The analytic functions, with exception to findRulesToRetire, are executed on events. If using multi-currency conversion, the analysis takes place in the context of the global currencySymbol at the root of the danielSan object.
+You can always use any exported function in the program by simply requiring it. However, a few such useful functions are shown below. The analytic functions, with exception to findRulesToRetire (and findIrrelevantRules which is also available), are executed on events. If using multi-currency conversion, the analysis takes place in the context of the currencySymbol in the config object.  
+
 
 ```javascript
-const {     
+const {
     findCriticalSnapshots,
     findRulesToRetire,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring } = require('daniel-san/analytics');
 
-// see the source code for real example cases of the following exposed funtions
+// see the source code for real example use cases of the following exposed functions
 // there are also useful functions in the utility directory
-const criticalSnapshots = findCriticalSnapshots({ danielSan, criticalThreshold }); // uses the criticalThreshold field
-const seventHighestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = false });
+const criticalSnapshots = findCriticalSnapshots({ events: danielSan.events, criticalThreshold }); // uses the criticalThreshold field
+const sevenHighestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = false });
 const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
 const bigSnapshots = findSnapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'balanceEnding' });
-const smallSnapshots = findSnapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' }); 
-const rulesToRetire = findRulesToRetire(danielSan); // finds rules with an effectiveDateEnd lower than the global effectiveDateStart value, and rules with effectiveDateStart that are higher than the global effectiveDateEnd. 
+const smallSnapshots = findSnapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' });
+const rulesToRetire = findRulesToRetire(danielSan); // finds rules with an effectiveDateEnd lower than the config's effectiveDateStart value, and rules with effectiveDateStart that are higher than the config's effectiveDateEnd.
 // also adds a ruleIndex on each rule so that you can delete them from the original array if required
 // rules are auto retired during the budget projection process, however, so if you want to find rules that you need to retire/
 // then make sure you perform it on the original danielSan and not the resulting danielSan object that is returned from findBalance()
@@ -725,7 +747,7 @@ const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubs
 **Constants Available For Import**
 
 ```javascript
-const { 
+const {
     UTC,
     LOCAL,
     AM,

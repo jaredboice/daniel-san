@@ -76,11 +76,11 @@ const generateEvent = ({ danielSan, rule, date, skipTimeTravel = null }) => {
     // define dateStart
     newEvent.dateStart = date.format(DATE_FORMAT_STRING);
     // whether or not we timeTravel, the output timeZone is always assumed to be from OBSERVER_SOURCE
-    newEvent.timeZone = danielSan.timeZone;
-    newEvent.timeZoneType = danielSan.timeZoneType; // this is currently redundant since we are auto-assigning the danielSan value to event???
+    newEvent.timeZone = danielSan.config.timeZone;
+    newEvent.timeZoneType = danielSan.config.timeZoneType; // this is currently redundant since we are auto-assigning the danielSan value to event???
     // however, if we ever want to change that behavior and add additional options, we'd still want to be sure that this value matches the event output???
     newEvent.timeZoneEventSource = `${newEvent.timeZone}${COMPOUND_DATA_DELIMITER}${newEvent.timeZoneType}`; // for future convenience
-    newEvent.timeZoneObserverSource = `${danielSan.timeZone}${COMPOUND_DATA_DELIMITER}${danielSan.timeZoneType}`; // default value and for future convenience
+    newEvent.timeZoneObserverSource = `${danielSan.config.timeZone}${COMPOUND_DATA_DELIMITER}${danielSan.config.timeZoneType}`; // default value and for future convenience
     // related code block
     redefineTimeStartAndTimeSpan({ event: newEvent, skipTimeTravel });
     danielSan.events.push({ ...newEvent });

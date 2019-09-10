@@ -1,8 +1,8 @@
 const { TimeStream } = require('./timeStream');
 const { initializeTimeZoneData, timeTravel } = require('./timeZone');
-const { buildEvents, executeEvents, cleanUpData } = require('./core/index');
+const { buildEvents, executeEvents, cleanUpEvents } = require('./core/index');
 const { discardEventsOutsideDateRange, deleteIrrelevantRules } = require('./core/obliterate');
-const { validateAndConfigureBonsaiTree, validateAndConfigureRules } = require('./core/validation');
+const { validateConfig, validateRules } = require('./core/validation');
 const { sortEvents } = require('./core/sorting');
 const { errorDisc } = require('./utility/errorHandling');
 const { isUndefinedOrNull } = require('./utility/validation');
@@ -11,32 +11,32 @@ const { deepCopy } = require('./utility/dataStructures');
 const findBalance = (danielSan = {}, options = {}) => {
     /*
         the first parameter is the entire danielSan bonsai tree of data that you configure.
-        the options parameter defines execution options for enhancing performance
-            if you  know for a fact that your danielSan object and your rules are validated/configured according to that function's specifications, then you can skip that phase
+        the options parameter defines execution options for enhancing performance in appropriate conditions
+            if you  know for a fact that your danielSan config and rules are validated/configured according to required specification, then you can skip that phase
             likewise, you can skip deleteIrrelevantRules if you have already removed irrelevant rules manually
-            and you can skip time travel when appropriate, just keep in mind that timeTravel assumes all of the rules are in sync with the daniel-san bonsai tree's time zone data (the MCU / Master Control Unit)
+            and you can skip time travel when appropriate
+            just keep in mind that timeTravel assumes all of the time zone fields in the rules are in sync with
+            all of the time zone fields in the danielSan config
             see the options from the object destructuring below
     */
     const {
-        skipValidateAndConfigure = null,
+        skipValidateConfig = null,
+        skipValidateRules = null,
         skipDeleteIrrelevantRules = null,
         skipTimeTravel = null,
         skipDiscardEventsOutsideDateRange = null,
-        skipCleanUpData = null
+        skipCleanUpEvents = null
     } = options;
     const newDanielSan = deepCopy(danielSan);
     try {
-        if (isUndefinedOrNull(newDanielSan.timeZoneType) || isUndefinedOrNull(newDanielSan.timeZone)) {
-            const initialTimeZoneData = initializeTimeZoneData(newDanielSan);
-            newDanielSan.timeZoneType = initialTimeZoneData.timeZoneType;
-            newDanielSan.timeZone = initialTimeZoneData.timeZone;
+        if (!skipValidateConfig) {
+            validateConfig({ danielSan: newDanielSan });
         }
-        const timeZone = newDanielSan.timeZone;
-        const timeZoneType = newDanielSan.timeZoneType;
-        const effectiveDateStartString = newDanielSan.effectiveDateStart;
-        const effectiveDateEndString = newDanielSan.effectiveDateEnd;
-        const timeStartString = newDanielSan.timeStart;
-        validateAndConfigureBonsaiTree({ danielSan: newDanielSan, effectiveDateStartString, effectiveDateEndString });
+        const timeZone = newDanielSan.config.timeZone;
+        const timeZoneType = newDanielSan.config.timeZoneType;
+        const effectiveDateStartString = newDanielSan.config.effectiveDateStart;
+        const effectiveDateEndString = newDanielSan.config.effectiveDateEnd;
+        const timeStartString = newDanielSan.config.timeStart;
         const timeStream = new TimeStream({
             effectiveDateStartString,
             effectiveDateEndString,
@@ -45,13 +45,13 @@ const findBalance = (danielSan = {}, options = {}) => {
             timeZone,
             timeZoneType
         });
-        if (!skipValidateAndConfigure) {
-            validateAndConfigureRules({ danielSan: newDanielSan, date: timeStream.looperDate, skipTimeTravel });
+        if (!skipValidateRules) {
+            validateRules({ danielSan: newDanielSan, date: timeStream.looperDate, skipTimeTravel });
         }
         if (!skipDeleteIrrelevantRules) {
             deleteIrrelevantRules({
                 danielSan: newDanielSan
-            }); // this follows validateAndConfigureRules just in case timezones were not yet present where they needed to be
+            }); // this follows validateRules just in case time zones were not yet assigned where they needed to be
         }
         do {
             buildEvents({
@@ -61,19 +61,20 @@ const findBalance = (danielSan = {}, options = {}) => {
                 options
             });
         } while (timeStream.stream1DayForward());
-        // note: newDanielSan timezones must be converted prior to sorting and executing events
+        // note: timezones must be converted prior to sorting and executing events
         if (!skipTimeTravel) {
             timeTravel(newDanielSan);
         }
-        sortEvents(newDanielSan.events); // note: newDanielSan must be sorted prior to executing events
+        sortEvents(newDanielSan.events); // note: events must be sorted prior to executing their linked-list style of sums
         if (!skipDiscardEventsOutsideDateRange) {
             discardEventsOutsideDateRange(newDanielSan);
         }
         executeEvents({ danielSan: newDanielSan });
-        if (!skipCleanUpData) {
-            cleanUpData(newDanielSan);
+        if (!skipCleanUpEvents) {
+            cleanUpEvents(newDanielSan);
         }
         if (newDanielSan.events.length > 0) {
+            newDanielSan.balanceBeginning = newDanielSan.events[0].balanceBeginning;
             newDanielSan.balanceEnding = newDanielSan.events[newDanielSan.events.length - 1].balanceEnding;
         }
         return {

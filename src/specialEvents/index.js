@@ -1,5 +1,4 @@
 const { errorDisc } = require('../utility/errorHandling');
-const { isUndefinedOrNull } = require('../utility/validation');
 const { createTimeZone } = require('../timeZone');
 const { streamForward } = require('../timeStream');
 const { generateEvent } = require('../core/eventGeneration');
@@ -9,7 +8,6 @@ const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const {
     EVALUATING_RULE_INSERTION,
     EXECUTING_RULE_INSERTION,
-    EXECUTION_REJECTED,
     DATE_FORMAT_STRING,
     WEEKLY,
     MONTHLY,
@@ -47,29 +45,29 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
                     date: thisLooperDate
                 });
                 switch (thisWeekday) {
-                    case SUNDAY:
-                        monthlyWeekdayConstruct[SUNDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case MONDAY:
-                        monthlyWeekdayConstruct[MONDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case TUESDAY:
-                        monthlyWeekdayConstruct[TUESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case WEDNESDAY:
-                        monthlyWeekdayConstruct[WEDNESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case THURSDAY:
-                        monthlyWeekdayConstruct[THURSDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case FRIDAY:
-                        monthlyWeekdayConstruct[FRIDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    case SATURDAY:
-                        monthlyWeekdayConstruct[SATURDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
-                        break;
-                    default:
-                        break;
+                case SUNDAY:
+                    monthlyWeekdayConstruct[SUNDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case MONDAY:
+                    monthlyWeekdayConstruct[MONDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case TUESDAY:
+                    monthlyWeekdayConstruct[TUESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case WEDNESDAY:
+                    monthlyWeekdayConstruct[WEDNESDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case THURSDAY:
+                    monthlyWeekdayConstruct[THURSDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case FRIDAY:
+                    monthlyWeekdayConstruct[FRIDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                case SATURDAY:
+                    monthlyWeekdayConstruct[SATURDAY].push(thisLooperDate.format(DATE_FORMAT_STRING));
+                    break;
+                default:
+                    break;
                 }
             } catch (err) {
                 throw errorDisc({ err, data: { thisLooperDate } });
@@ -81,7 +79,7 @@ const findAllWeekdaysInTheMonth = ({ date, timeZone, timeZoneType }) => {
             processThisLooperDate(looperDate);
             looperDate = streamForward(looperDate);
         } while (looperDate.format(DATE_FORMAT_STRING) !== endOfMonth.format(DATE_FORMAT_STRING));
-        processThisLooperDate(looperDate); // post execution for the last day of the month
+        processThisLooperDate(looperDate); // this execution is for the last day of the month
         return monthlyWeekdayConstruct;
     } catch (err) {
         throw errorDisc({ err, data: { date, timeZone, timeZoneType } });

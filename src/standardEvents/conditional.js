@@ -10,7 +10,7 @@ const _28DayCondition = ({ processDate, date, frequency, timeZone = null, timeZo
     try {
         if (frequency === MONTHLY && parseInt(processDate, 10) > 28) {
             const dateString = getRelevantDateSegmentByFrequency({
-                frequency: MONTHLY, // we are going to compare dates like this '2019-06-28' === '2019-06-31'
+                frequency: MONTHLY, // we are going to compare dates like this '31' >= '28'
                 date
             });
             const fullDateOfLastDayOfMonth = createTimeZone({ timeZone, timeZoneType, date }).endOf('month');

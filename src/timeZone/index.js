@@ -63,7 +63,7 @@ const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
             date: outputDate,
             weekday: outputDate.day(),
             dateString, // generic dateString information / without time
-            timeString: timeString ? newTimeString.toLowerCase() : null // only return timeString if the user intended so (via the timeStart property on the rule which will be passed into this function as timeString)
+            timeString: timeString ? newTimeString.toLowerCase() : null // only return timeString if the user intended so (via setting the timeStart property on the rule which will be passed as timeString into this function)
         };
     } catch (err) {
         throw errorDisc({ err, data: { date, timeZone, timeZoneType, timeString } });
@@ -71,7 +71,7 @@ const convertTimeZone = ({ timeZone, timeZoneType, date, timeString }) => {
 };
 
 const timeTravel = (danielSan) => {
-    const { timeZone, timeZoneType } = danielSan;
+    const { config: { timeZone, timeZoneType } } = danielSan;
     let eventTracker; // for errorDisc
     let targetTimeStartObj = {};
     try {

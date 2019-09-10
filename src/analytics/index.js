@@ -4,7 +4,7 @@ const { DATE_FORMAT_STRING, ONCE } = require('../constants');
 
 // finds rules with end dates that are less than the beginning date range of the budget projection
 const findRulesToRetire = (danielSan) => {
-    const { effectiveDateStart } = danielSan;
+    const { config: { effectiveDateStart } } = danielSan;
     // eslint-disable-next-line array-callback-return
     const rulesToRetire = danielSan.rules.filter((rule, index) => {
         const dateToStartConfig = initializeTimeZoneData(danielSan);
@@ -43,9 +43,8 @@ const findRulesToRetire = (danielSan) => {
 };
 
 // finds rules that have no chance of being triggered via the current configuration
-// TODO: we should determine why we are using initializeTimeZoneData in findRulesToRetire and not here
 const findIrrelevantRules = (danielSan) => {
-    const { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType, rules } = danielSan;
+    const { rules, config: { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType } } = danielSan;
     const relevantRules = [];
     const irrelevantRules = [];
     rules.forEach((rule, index) => {
@@ -165,10 +164,10 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     return null; // this line satisfies another linting error
 };
 
-const findCriticalSnapshots = ({ danielSan, criticalThreshold = 0, propertyKey = 'balanceEnding' }) => {
+const findCriticalSnapshots = ({ events, criticalThreshold = 0, propertyKey = 'balanceEnding' }) => {
     let criticalSnapshots = null;
     if (!isUndefinedOrNull(criticalThreshold)) {
-        criticalSnapshots = danielSan.events.filter((event) => {
+        criticalSnapshots = events.filter((event) => {
             return event[propertyKey] < criticalThreshold;
         });
     }

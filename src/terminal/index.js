@@ -1,6 +1,6 @@
 const { isUndefinedOrNull } = require('../utility/validation');
 const { TimeStream } = require('../timeStream');
-const { validateAndConfigureBonsaiTree, validateAndConfigureRules } = require('../core/validation');
+const { validateConfig, validateRules } = require('../core/validation');
 const {
     findCriticalSnapshots,
     findRulesToRetire,
@@ -600,7 +600,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
     } = getDefaultParamsForDecimalFormatter(terminalOptions);
     lineHeading(` config `);
     if (!isUndefinedOrNull(danielSan['balanceBeginning'])) {
-        lineHeading(` currencySymbol: ${danielSan.currencySymbol} `);
+        lineHeading(` currencySymbol: ${danielSan.config.currencySymbol} `);
         lineHeading(
             ` balanceBeginning: ${formattingFunction(danielSan['balanceBeginning'], {
                 minIntegerDigits,
@@ -608,7 +608,7 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
                 maxDecimalDigits,
                 locale,
                 style,
-                currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+                currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
             })} `
         );
     }
@@ -620,20 +620,20 @@ const standardTerminalSubheader = ({ danielSan, terminalOptions }) => {
                 maxDecimalDigits,
                 locale,
                 style,
-                currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+                currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
             })} `
         );
     }
-    if (!isUndefinedOrNull(danielSan.timeZoneType)) {
-        lineHeading(` timeZoneType: ${danielSan.timeZoneType} `);
+    if (!isUndefinedOrNull(danielSan.config.timeZoneType)) {
+        lineHeading(` timeZoneType: ${danielSan.config.timeZoneType} `);
     }
-    if (!isUndefinedOrNull(danielSan.timeZone)) {
-        lineHeading(` timeZone: ${danielSan.timeZone} `);
+    if (!isUndefinedOrNull(danielSan.config.timeZone)) {
+        lineHeading(` timeZone: ${danielSan.config.timeZone} `);
     }
-    lineHeading(` effectiveDateStart: ${danielSan.effectiveDateStart} `);
-    if (danielSan.timeStart) lineHeading(` timeStart: ${danielSan.timeStart} `);
-    lineHeading(` effectiveDateEnd:   ${danielSan.effectiveDateEnd} `);
-    if (danielSan.timeEnd) lineHeading(` timeEnd: ${danielSan.timeEnd} `);
+    lineHeading(` effectiveDateStart: ${danielSan.config.effectiveDateStart} `);
+    if (danielSan.config.timeStart) lineHeading(` timeStart: ${danielSan.config.timeStart} `);
+    lineHeading(` effectiveDateEnd:   ${danielSan.config.effectiveDateEnd} `);
+    if (danielSan.config.timeEnd) lineHeading(` timeEnd: ${danielSan.config.timeEnd} `);
     lineSeparator(2);
 };
 
@@ -648,7 +648,7 @@ const showDiscardedEvents = ({ danielSan, terminalOptions }) => {
         eventsLogger({
             events: discardedEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
         lineSeparator(2);
         lineHeading(` discarded event count: ${discardedEvents.length} `);
@@ -660,7 +660,7 @@ const showDiscardedEvents = ({ danielSan, terminalOptions }) => {
 
 const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
     const criticalSnapshots = findCriticalSnapshots({
-        danielSan,
+        events: danielSan.events,
         criticalThreshold: terminalOptions.criticalThreshold
     });
     if (criticalSnapshots) {
@@ -683,7 +683,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
                     maxDecimalDigits,
                     locale,
                     style,
-                    currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+                    currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
                 })} `
             );
         }
@@ -691,7 +691,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
         eventsLogger({
             events: criticalSnapshots,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
         lineSeparator(2);
         lineHeading(` snapshot count: ${criticalSnapshots.length} `);
@@ -705,7 +705,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
                     maxDecimalDigits,
                     locale,
                     style,
-                    currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+                    currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
                 })} `
             );
         }
@@ -714,7 +714,6 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
 };
 
 const showRulesToRetire = ({ danielSan, terminalOptions }) => {
-    // TODO: determine why we are doing things a litle differently (with regard to validation) between this function and showIrrelevantRules 
     const rulesToRetire = findRulesToRetire(danielSan);
     if (rulesToRetire) {
         terminalBoundary(3);
@@ -725,7 +724,7 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
         eventsLogger({
             events: rulesToRetire,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
         lineSeparator(2);
         lineHeading(' end showRulesToRetire ');
@@ -734,19 +733,19 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
 };
 
 const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
-    // when executing in this context, there is a chance that the configuration has not yet been validated (config is validated prior to calling findIrrelevantRules during the normal projection phase)
-    validateAndConfigureBonsaiTree({ danielSan, effectiveDateStartString: danielSan.effectiveDateStart, effectiveDateEndString: danielSan.effectiveDateEnd });
+    // when executing in this context, there is a chance that the config/rules have not yet been validated (both are validated prior to calling findIrrelevantRules during the normal projection phase)
+    validateConfig({ danielSan, effectiveDateStartString: danielSan.config.effectiveDateStart, effectiveDateEndString: danielSan.config.effectiveDateEnd });
     const timeStream = new TimeStream({
-        effectiveDateStartString: danielSan.effectiveDateStart,
-        effectiveDateEndString: danielSan.effectiveDateEnd,
-        timeStartString: danielSan.timeStart,
-        timeEndString: danielSan.timeEnd,
-        timeZone: danielSan.timeZone,
-        timeZoneType: danielSan.timeZoneType
+        effectiveDateStartString: danielSan.config.effectiveDateStart,
+        effectiveDateEndString: danielSan.config.effectiveDateEnd,
+        timeStartString: danielSan.config.timeStart,
+        timeEndString: danielSan.config.timeEnd,
+        timeZone: danielSan.config.timeZone,
+        timeZoneType: danielSan.config.timeZoneType
     });
-    // we will pass false for skipTimeTravel since as long as both the main config and the rule time zone data are equivalent
-    // as would be assumed when wanting to skipTimeTravel, the additional performance overhead in this context is minor
-    validateAndConfigureRules({ danielSan, date: timeStream.effectiveDateStart, skipTimeTravel: false });
+    // we will pass false for skipTimeTravel for simplicity, since whether or not the time zones in the config are identical to the time zones in rules,
+    // the performance overhead is minor in this case
+    validateRules({ danielSan, date: timeStream.effectiveDateStart, skipTimeTravel: false });
     const { irrelevantRules } = findIrrelevantRules(danielSan);
     if (irrelevantRules && irrelevantRules.length > 0) {
         terminalBoundary(3);
@@ -757,7 +756,7 @@ const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
         eventsLogger({
             events: irrelevantRules,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
         lineSeparator(2);
         lineHeading(' end showIrrelevantRules ');
@@ -786,7 +785,7 @@ const showSumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
             maxDecimalDigits,
             locale,
             style,
-            currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         })
     );
     terminalBoundary(2);
@@ -814,7 +813,7 @@ const showSumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
             maxDecimalDigits,
             locale,
             style,
-            currency: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         })
     );
     terminalBoundary(2);
@@ -875,7 +874,7 @@ const displayBalanceEndingSnapshotsGreaterThanMaxAmount = ({ danielSan, terminal
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -902,7 +901,7 @@ const displayBalanceEndingSnapshotsLessThanMinAmount = ({ danielSan, terminalOpt
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -930,7 +929,7 @@ const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -958,7 +957,7 @@ const displayLeastBalanceEndingSnapshots = ({ danielSan, terminalOptions }) => {
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -980,7 +979,7 @@ const standardTerminalOutput = ({ danielSan, terminalOptions }) => {
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -1011,7 +1010,7 @@ const displayEventsWithProperty = ({
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -1039,7 +1038,7 @@ const displayEventsByPropertyKeyAndValues = ({
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -1067,7 +1066,7 @@ const displayEventsWithPropertyKeyContainingSubstring = ({
         eventsLogger({
             events: relevantEvents,
             terminalOptions,
-            currencySymbol: danielSan.currencySymbol || CURRENCY_DEFAULT
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT
         });
     } else {
         showNothingToDisplay();
@@ -1084,6 +1083,7 @@ const terminal = ({ danielSan, terminalOptions = {}, error = null, originalDanie
         lineHeading(' something bad happened and a lot of robots died ');
         // eslint-disable-next-line no-console
         console.log(error);
+        lineHeading(' !@#$%^& ');
     } else if (danielSan) {
         try {
             if (!terminalOptions) terminalOptions = { type: STANDARD_TERMINAL_OUTPUT, mode: CONCISE };

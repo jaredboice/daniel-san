@@ -27,7 +27,7 @@ const reusableLogicForDateMovements = ({
 }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     if (dateArray) {
-        // note: timezone for "OBSERVER_SOURCE" is actually coming from the root of the master danielSan controller for all the projections.
+        // note: timezone for "OBSERVER_SOURCE" is actually coming from the danielSan config.
         // Because that will be the final assigned timezone for the event.
         // even though the timezones for "EVENT_SOURCE" are coming from the event object,
         // their below dates are calcluated via the rule timezone data (which is still the original data as it hasn't changed to the converted timezone yet)
@@ -38,15 +38,14 @@ const reusableLogicForDateMovements = ({
         });
         // note: the following 2 variables would only be used in OBSERVER_SOURCE or BOTH
         let observerContextLooperDate = convertTimeZone({
-            timeZone: danielSan.timeZone,
-            timeZoneType: danielSan.timeZoneType,
+            timeZone: danielSan.config.timeZone,
+            timeZoneType: danielSan.config.timeZoneType,
             date: ruleContextLooperDate
         });
         let observerContextLooperDateString = getRelevantDateSegmentByFrequency({
             frequency,
             date: observerContextLooperDate.date
         });
-        /* begin big code block */
         /* conditions: EVENT_SOURCE / OBSERVER_SOURCE / BOTH */
         if (isUndefinedOrNull(specialAdjustment.context) || specialAdjustment.context === EVENT_SOURCE) {
             while (dateArray.includes(ruleContextLooperDateString)) {
@@ -78,8 +77,8 @@ const reusableLogicForDateMovements = ({
                     timeString: event.timeStart
                 });
                 observerContextLooperDate = convertTimeZone({
-                    timeZone: danielSan.timeZone,
-                    timeZoneType: danielSan.timeZoneType,
+                    timeZone: danielSan.config.timeZone,
+                    timeZoneType: danielSan.config.timeZoneType,
                     date: ruleContextLooperDate
                 });
                 observerContextLooperDateString = getRelevantDateSegmentByFrequency({
@@ -107,8 +106,8 @@ const reusableLogicForDateMovements = ({
                     date: ruleContextLooperDate
                 });
                 observerContextLooperDate = convertTimeZone({
-                    timeZone: danielSan.timeZone,
-                    timeZoneType: danielSan.timeZoneType,
+                    timeZone: danielSan.config.timeZone,
+                    timeZoneType: danielSan.config.timeZoneType,
                     date: ruleContextLooperDate
                 });
                 observerContextLooperDateString = getRelevantDateSegmentByFrequency({
@@ -296,13 +295,13 @@ const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
                     event.amount += specialAdjustment.amounts[looperDateIndex];
                 } else if (specialAdjustment.context === OBSERVER_SOURCE) {
                     const adjustmentConverted =
-                        danielSan.currencySymbol &&
+                        danielSan.config.currencySymbol &&
                         event.currencySymbol &&
-                        danielSan.currencySymbol !== event.currencySymbol
-                            ? danielSan.currencyConversion({
+                        danielSan.config.currencySymbol !== event.currencySymbol
+                            ? danielSan.config.currencyConversion({
                                 amount: specialAdjustment.amounts[looperDateIndex],
                                 inputSymbol: event.currencySymbol,
-                                outputSymbol: danielSan.currencySymbol
+                                outputSymbol: danielSan.config.currencySymbol
                             })
                             : specialAdjustment.amounts[looperDateIndex];
                     event.amount += adjustmentConverted;

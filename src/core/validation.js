@@ -3,32 +3,23 @@ const { isUndefinedOrNull } = require('../utility/validation');
 const { initializeTimeZoneData, convertTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const { modulateCycleUpToDate } = require('../modulusCycle/modulateCycleToDate');
-const {
-    EVENT_SOURCE,
-    STANDARD_EVENT,
-    DAILY,
-    ONCE,
-    STANDARD_EVENT_ROUTINE,
-    STANDARD_EVENT_REMINDER,
-    CURRENCY_DEFAULT
-} = require('../constants');
+const { EVENT_SOURCE, DAILY, ONCE, CURRENCY_DEFAULT } = require('../constants');
 
-const validateAndConfigureBonsaiTree = ({ danielSan, effectiveDateStartString, effectiveDateEndString }) => {
+const validateConfig = ({ danielSan }) => {
     let errorMessage = null;
     if (isUndefinedOrNull(danielSan) || (!Array.isArray(danielSan.rules) || danielSan.rules.length === 0)) {
         errorMessage = 'expected a danielSan object with an array of rules';
     }
     if (
-        isUndefinedOrNull(effectiveDateStartString) ||
-        isUndefinedOrNull(effectiveDateEndString) ||
-        effectiveDateStartString > effectiveDateEndString
+        isUndefinedOrNull(danielSan.config.effectiveDateStart) ||
+        isUndefinedOrNull(danielSan.config.effectiveDateEnd)
     ) {
         errorMessage = 'there is a problem with an effective date';
     }
-    // to avoid unnecessary future checks to see if certain properties exist, we will add them with default values
-    if (!danielSan.retiredRuleIndices) {
-        danielSan.retiredRuleIndices = [];
+    if (danielSan.config.effectiveDateStart > danielSan.config.effectiveDateEnd) {
+        errorMessage = 'effectiveDateStart cannot be greater than effectiveDateEnd';
     }
+    // to avoid unnecessary future checks to see if certain properties exist, we will add them with default values
     if (!danielSan.events) {
         danielSan.events = [];
     }
@@ -38,25 +29,36 @@ const validateAndConfigureBonsaiTree = ({ danielSan, effectiveDateStartString, e
     if (!danielSan.irrelevantRules) {
         danielSan.irrelevantRules = [];
     }
-    if (!danielSan.balanceBeginning) {
-        danielSan.balanceBeginning = 0;
+    if (!danielSan.retiredRuleIndices) {
+        danielSan.retiredRuleIndices = [];
     }
-    if (isUndefinedOrNull(danielSan.currencyConversion)) {
-        danielSan.currencyConversion = ({ amount }) => {
+    if (!danielSan.config.balanceBeginning) {
+        danielSan.config.balanceBeginning = 0;
+    }
+    if (!danielSan.config) {
+        danielSan.config = {};
+    }
+    if (isUndefinedOrNull(danielSan.config.timeZoneType) || isUndefinedOrNull(danielSan.config.timeZone)) {
+        const initialTimeZoneData = initializeTimeZoneData(danielSan);
+        danielSan.config.timeZoneType = initialTimeZoneData.timeZoneType;
+        danielSan.config.timeZone = initialTimeZoneData.timeZone;
+    }
+    if (isUndefinedOrNull(danielSan.config.currencyConversion)) {
+        danielSan.config.currencyConversion = ({ amount }) => {
             return amount;
         };
     }
-    if (isUndefinedOrNull(danielSan.currencySymbol)) {
-        danielSan.currencySymbol = CURRENCY_DEFAULT;
+    if (isUndefinedOrNull(danielSan.config.currencySymbol)) {
+        danielSan.config.currencySymbol = CURRENCY_DEFAULT;
     } else {
-        danielSan.currencySymbol = danielSan.currencySymbol.toUpperCase();
+        danielSan.config.currencySymbol = danielSan.config.currencySymbol.toUpperCase();
     }
     if (errorMessage) {
-        throw errorDisc({ err: {}, errorMessage, data: { effectiveDateStartString, effectiveDateEndString } });
+        throw errorDisc({ err: {}, errorMessage });
     }
 };
 
-const validateAndConfigureRules = ({ danielSan, date, skipTimeTravel = null }) => {
+const validateRules = ({ danielSan, date, skipTimeTravel = null }) => {
     let ruleTracker; // for errorDisc
     let indexTracker; // for errorDisc
     danielSan.rules.forEach((rule, index) => {
@@ -71,7 +73,7 @@ const validateAndConfigureRules = ({ danielSan, date, skipTimeTravel = null }) =
         // initialize timezone data
         if (isUndefinedOrNull(rule.timeZoneType) || isUndefinedOrNull(rule.timeZone)) {
             const initialTimeZoneData = initializeTimeZoneData(rule);
-            rule.timeZoneType = danielSan.timeZoneType; // assign the danielSan timeZoneType value to each rule
+            rule.timeZoneType = danielSan.config.timeZoneType; // assign the danielSan config timeZoneType value to each rule
             rule.timeZone = initialTimeZoneData.timeZone;
         }
         try {
@@ -128,6 +130,6 @@ const validateAndConfigureRules = ({ danielSan, date, skipTimeTravel = null }) =
 };
 
 module.exports = {
-    validateAndConfigureBonsaiTree,
-    validateAndConfigureRules
+    validateConfig,
+    validateRules
 };

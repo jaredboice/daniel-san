@@ -64,7 +64,7 @@ const deleteIrrelevantRules = ({ danielSan, effectiveDateStartString }) => {
 };
 
 const discardEventsOutsideDateRange = (danielSan) => {
-    const { effectiveDateStart, timeStart, effectiveDateEnd, timeEnd, timeZone, timeZoneType } = danielSan;
+    const { config: { effectiveDateStart, timeStart, effectiveDateEnd, timeEnd, timeZone, timeZoneType } } = danielSan;
     const eventsToDiscard = [];
     const newEventList = [];
     danielSan.events.forEach((event) => {
@@ -128,8 +128,8 @@ const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
                     });
                 } else if (rule.exclusions.context === OBSERVER_SOURCE || rule.exclusions.context === BOTH) {
                     const convertedDate = convertTimeZone({
-                        timeZone: danielSan.timeZone,
-                        timeZoneType: danielSan.timeZoneType,
+                        timeZone: danielSan.config.timeZone,
+                        timeZoneType: danielSan.config.timeZoneType,
                         date
                     });
                     relevantDateSegmentForExclusion = convertedDate.day();
@@ -157,8 +157,8 @@ const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
                     });
                 } else if (rule.exclusions.context === OBSERVER_SOURCE || rule.exclusions.context === BOTH) {
                     const convertedDate = convertTimeZone({
-                        timeZone: danielSan.timeZone,
-                        timeZoneType: danielSan.timeZoneType,
+                        timeZone: danielSan.config.timeZone,
+                        timeZoneType: danielSan.config.timeZoneType,
                         date
                     });
                     relevantDateSegmentForExclusion = getRelevantDateSegmentByFrequency({

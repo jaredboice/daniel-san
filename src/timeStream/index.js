@@ -19,7 +19,6 @@ class TimeStream {
 
     stream1DayForward() {
         this.looperDate = streamForward(this.looperDate);
-        // const looperIsNotOnTheEdge = moment.max([this.looperDate, this.effectiveDateEnd]) !== this.looperDate;
         const looperIsNotBeyondTheEdge = !this.looperDate.isAfter(this.effectiveDateEnd);
         return looperIsNotBeyondTheEdge;
     }
