@@ -36,7 +36,7 @@ const buildStandardEvent = ({ danielSan, rule, date, skipTimeTravel, eventGen = 
                         timeZoneType: rule.timeZoneType
                     }))
             ) {
-                processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
+                processPhase = exclusionsPhase({ danielSan, rule, date, processPhase });
                 processPhase = modulusPhase({ rule, processPhase });
                 if (processPhase === EXECUTING_RULE_INSERTION) {
                     // when we are pre-modulating the cycle during validation, we do not want to generate an event

@@ -38,14 +38,14 @@ const {
     COMPOUND_DATA_DELIMITER
 } = require('../constants');
 
-const buildEvents = ({ danielSan, rules, date, options = {} }) => {
+const buildEvents = ({ danielSan, date, options = {} }) => {
     const { skipTimeTravel } = options;
     let processPhase;
     let convertedDate;
     let ruleTracker; // for errorDisc
     let indexTracker; // for errorDisc
     try {
-        rules.forEach((rule, index) => {
+        danielSan.rules.forEach((rule, index) => {
             ruleTracker = rule;
             indexTracker = index;
             convertedDate = !skipTimeTravel
@@ -86,9 +86,9 @@ const buildEvents = ({ danielSan, rules, date, options = {} }) => {
                         switch (specialAdjustment.type) {
                             case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_WEEKDAYS:
                                 moveThisProcessDateBeforeTheseWeekdays({
+                                    danielSan,
                                     event: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment,
-                                    danielSan,
                                     date: convertedDate,
                                     skipTimeTravel
                                 });
@@ -96,18 +96,18 @@ const buildEvents = ({ danielSan, rules, date, options = {} }) => {
                             case MOVE_THIS_PROCESS_DATE_BEFORE_THESE_DATES:
                             case PRE_PAY:
                                 moveThisProcessDateBeforeTheseDates({
+                                    danielSan,
                                     event: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment,
-                                    danielSan,
                                     date: convertedDate,
                                     skipTimeTravel
                                 });
                                 break;
                             case MOVE_THIS_PROCESS_DATE_AFTER_THESE_WEEKDAYS:
                                 moveThisProcessDateAfterTheseWeekdays({
+                                    danielSan,
                                     event: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment,
-                                    danielSan,
                                     date: convertedDate,
                                     skipTimeTravel
                                 });
@@ -115,9 +115,9 @@ const buildEvents = ({ danielSan, rules, date, options = {} }) => {
                             case MOVE_THIS_PROCESS_DATE_AFTER_THESE_DATES:
                             case POST_PAY:
                                 moveThisProcessDateAfterTheseDates({
+                                    danielSan,
                                     event: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment,
-                                    danielSan,
                                     date: convertedDate,
                                     skipTimeTravel
                                 });
@@ -125,9 +125,9 @@ const buildEvents = ({ danielSan, rules, date, options = {} }) => {
                             case ADJUST_AMOUNT_ON_THESE_DATES:
                             case ADJUST_AMOUNT:
                                 adjustAmountOnTheseDates({
+                                    danielSan,
                                     event: danielSan.events[danielSan.events.length - 1],
                                     specialAdjustment,
-                                    danielSan,
                                     date: convertedDate
                                 });
                                 break;
@@ -144,13 +144,13 @@ const buildEvents = ({ danielSan, rules, date, options = {} }) => {
                 ruleModification({ danielSan, rule, date, convertedDate });
             }
         });
-        retireRules({ danielSan });
+        retireRules(danielSan);
     } catch (err) {
         throw errorDisc({ err, data: { date, processPhase, convertedDate, rule: ruleTracker, indexTracker, options } });
     }
 };
 
-const executeEvents = ({ danielSan }) => {
+const executeEvents = (danielSan) => {
     danielSan.events.forEach((event, index) => {
         try {
             event.balanceBeginning =

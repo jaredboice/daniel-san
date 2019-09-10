@@ -30,7 +30,7 @@ const findBalance = (danielSan = {}, options = {}) => {
     const newDanielSan = deepCopy(danielSan);
     try {
         if (!skipValidateConfig) {
-            validateConfig({ danielSan: newDanielSan });
+            validateConfig(newDanielSan);
         }
         const timeZone = newDanielSan.config.timeZone;
         const timeZoneType = newDanielSan.config.timeZoneType;
@@ -49,14 +49,11 @@ const findBalance = (danielSan = {}, options = {}) => {
             validateRules({ danielSan: newDanielSan, date: timeStream.looperDate, skipTimeTravel });
         }
         if (!skipDeleteIrrelevantRules) {
-            deleteIrrelevantRules({
-                danielSan: newDanielSan
-            }); // this follows validateRules just in case time zones were not yet assigned where they needed to be
+            deleteIrrelevantRules(newDanielSan); // this follows validateRules just in case time zones were not yet assigned where they needed to be
         }
         do {
             buildEvents({
                 danielSan: newDanielSan,
-                rules: newDanielSan.rules,
                 date: timeStream.looperDate,
                 options
             });
@@ -69,7 +66,7 @@ const findBalance = (danielSan = {}, options = {}) => {
         if (!skipDiscardEventsOutsideDateRange) {
             discardEventsOutsideDateRange(newDanielSan);
         }
-        executeEvents({ danielSan: newDanielSan });
+        executeEvents(newDanielSan);
         if (!skipCleanUpEvents) {
             cleanUpEvents(newDanielSan);
         }

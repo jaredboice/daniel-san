@@ -5,7 +5,7 @@ const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const { modulateCycleUpToDate } = require('../modulusCycle/modulateCycleToDate');
 const { EVENT_SOURCE, DAILY, ONCE, CURRENCY_DEFAULT } = require('../constants');
 
-const validateConfig = ({ danielSan }) => {
+const validateConfig = (danielSan) => {
     let errorMessage = null;
     if (isUndefinedOrNull(danielSan) || (!Array.isArray(danielSan.rules) || danielSan.rules.length === 0)) {
         errorMessage = 'expected a danielSan object with an array of rules';

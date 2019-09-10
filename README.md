@@ -729,10 +729,10 @@ const {
 // see the source code for real example use cases of the following exposed functions
 // there are also useful functions in the utility directory
 const criticalSnapshots = findCriticalSnapshots({ events: danielSan.events, criticalThreshold }); // uses the criticalThreshold field
-const sevenHighestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = false });
-const sevenLowestValues = findGreatestValueSnapshots({ collection: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
-const bigSnapshots = findSnapshotsGreaterThanAmount({ collection: danielSan.events, amount: 3000, propertyKey: 'balanceEnding' });
-const smallSnapshots = findSnapshotsLessThanAmount({ collection: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' });
+const sevenHighestValues = findGreatestValueSnapshots({ events: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = false });
+const sevenLowestValues = findGreatestValueSnapshots({ events: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
+const bigSnapshots = findSnapshotsGreaterThanAmount({ events: danielSan.events, amount: 3000, propertyKey: 'balanceEnding' });
+const smallSnapshots = findSnapshotsLessThanAmount({ events: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' });
 const rulesToRetire = findRulesToRetire(danielSan); // finds rules with an effectiveDateEnd lower than the config's effectiveDateStart value, and rules with effectiveDateStart that are higher than the config's effectiveDateEnd.
 // also adds a ruleIndex on each rule so that you can delete them from the original array if required
 // rules are auto retired during the budget projection process, however, so if you want to find rules that you need to retire/

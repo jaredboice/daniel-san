@@ -29,7 +29,7 @@ const flagRuleForRetirement = ({ danielSan, rule, date, index }) => {
 };
 
 // retires rules that were flagged in flagRuleForRetirement()
-const retireRules = ({ danielSan }) => {
+const retireRules = (danielSan) => {
     let looper;
     try {
         // retire obsolete rules
@@ -54,12 +54,12 @@ const seekAndDestroyIrrelevantRules = (danielSan) => {
     return irrelevantRules; // return irrelevantRules if needed
 };
 
-const deleteIrrelevantRules = ({ danielSan, effectiveDateStartString }) => {
+const deleteIrrelevantRules = (danielSan) => {
     try {
         const irrelevantRules = seekAndDestroyIrrelevantRules(danielSan);
         danielSan.irrelevantRules = irrelevantRules;
     } catch (err) {
-        throw errorDisc({ err, data: { effectiveDateStartString } });
+        throw errorDisc({ err });
     }
 };
 
@@ -105,7 +105,7 @@ const discardEventsOutsideDateRange = (danielSan) => {
         dates: ['2019-07-04', '2019-09-17', '2019-10-31']
     }
 */
-const exclusionsPhase = ({ rule, date, processPhase, danielSan }) => {
+const exclusionsPhase = ({ danielSan, rule, date, processPhase }) => {
     let transientProcessPhase;
     try {
         transientProcessPhase = processPhase || '';

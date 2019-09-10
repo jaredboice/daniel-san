@@ -663,7 +663,7 @@ const showCriticalSnapshots = ({ danielSan, terminalOptions }) => {
         events: danielSan.events,
         criticalThreshold: terminalOptions.criticalThreshold
     });
-    if (criticalSnapshots) {
+    if (criticalSnapshots && criticalSnapshots.length > 0) {
         const {
             formattingFunction,
             minIntegerDigits,
@@ -734,7 +734,7 @@ const showRulesToRetire = ({ danielSan, terminalOptions }) => {
 
 const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
     // when executing in this context, there is a chance that the config/rules have not yet been validated (both are validated prior to calling findIrrelevantRules during the normal projection phase)
-    validateConfig({ danielSan, effectiveDateStartString: danielSan.config.effectiveDateStart, effectiveDateEndString: danielSan.config.effectiveDateEnd });
+    validateConfig(danielSan);
     const timeStream = new TimeStream({
         effectiveDateStartString: danielSan.config.effectiveDateStart,
         effectiveDateEndString: danielSan.config.effectiveDateEnd,
@@ -766,7 +766,7 @@ const showIrrelevantRules = ({ danielSan, terminalOptions }) => {
 
 const showSumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
     lineHeading(' begin showSumOfAllPositiveEventAmounts ');
-    const sum = sumAllPositiveEventAmounts(danielSan);
+    const sum = sumAllPositiveEventAmounts(danielSan.events);
     const {
         formattingFunction,
         minIntegerDigits,
@@ -794,7 +794,7 @@ const showSumOfAllPositiveEventAmounts = ({ danielSan, terminalOptions }) => {
 
 const showSumOfAllNegativeEventAmounts = ({ danielSan, terminalOptions }) => {
     lineHeading(' begin showSumOfAllNegativeEventAmounts ');
-    const sum = sumAllNegativeEventAmounts(danielSan);
+    const sum = sumAllNegativeEventAmounts(danielSan.events);
     const {
         formattingFunction,
         minIntegerDigits,
@@ -860,7 +860,7 @@ const displayCriticalSnapshots = ({ danielSan, terminalOptions }) => {
 
 const displayBalanceEndingSnapshotsGreaterThanMaxAmount = ({ danielSan, terminalOptions }) => {
     const collection = findSnapshotsGreaterThanAmount({
-        collection: danielSan.events,
+        events: danielSan.events,
         amount: terminalOptions.maxAmount || 0,
         propertyKey: 'balanceEnding'
     });
@@ -887,7 +887,7 @@ const displayBalanceEndingSnapshotsGreaterThanMaxAmount = ({ danielSan, terminal
 
 const displayBalanceEndingSnapshotsLessThanMinAmount = ({ danielSan, terminalOptions }) => {
     const collection = findSnapshotsLessThanAmount({
-        collection: danielSan.events,
+        events: danielSan.events,
         amount: terminalOptions.minAmount || 0,
         propertyKey: 'balanceEnding'
     });
@@ -914,7 +914,7 @@ const displayBalanceEndingSnapshotsLessThanMinAmount = ({ danielSan, terminalOpt
 
 const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
     const collection = findGreatestValueSnapshots({
-        collection: danielSan.events,
+        events: danielSan.events,
         propertyKey: 'balanceEnding',
         selectionAmount: terminalOptions.selectionAmount || 7,
         reverse: false
@@ -942,7 +942,7 @@ const displayfindGreatestValueSnapshots = ({ danielSan, terminalOptions }) => {
 
 const displayLeastBalanceEndingSnapshots = ({ danielSan, terminalOptions }) => {
     const collection = findGreatestValueSnapshots({
-        collection: danielSan.events,
+        events: danielSan.events,
         propertyKey: 'balanceEnding',
         selectionAmount: terminalOptions.selectionAmount || 7,
         reverse: true

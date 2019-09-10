@@ -166,8 +166,8 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     return null; // this line satisfies another linting error
 };
 
-const findCriticalSnapshots = ({ events, criticalThreshold = 0, propertyKey = 'balanceEnding' }) => {
-    let criticalSnapshots = null;
+const findCriticalSnapshots = ({ events = [], criticalThreshold = 0, propertyKey = 'balanceEnding' }) => {
+    let criticalSnapshots = [];
     if (!isUndefinedOrNull(criticalThreshold)) {
         criticalSnapshots = events.filter((event) => {
             return event[propertyKey] < criticalThreshold;
@@ -176,8 +176,8 @@ const findCriticalSnapshots = ({ events, criticalThreshold = 0, propertyKey = 'b
     return criticalSnapshots;
 };
 
-const findSnapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyKey = 'balanceEnding' }) => {
-    const newCollection = collection.filter((element) => {
+const findSnapshotsGreaterThanAmount = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+    const newCollection = events.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > amount) {
             return element;
         }
@@ -185,8 +185,8 @@ const findSnapshotsGreaterThanAmount = ({ collection = [], amount = 0, propertyK
     return newCollection;
 };
 
-const findSnapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey = 'balanceEnding' }) => {
-    const newCollection = collection.filter((element) => {
+const findSnapshotsLessThanAmount = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+    const newCollection = events.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] < amount) {
             return element;
         }
@@ -195,12 +195,12 @@ const findSnapshotsLessThanAmount = ({ collection = [], amount = 0, propertyKey 
 };
 
 const findGreatestValueSnapshots = ({
-    collection = [],
+    events = [],
     propertyKey = 'balanceEnding',
     selectionAmount = 7,
     reverse = false
 }) => {
-    let sortedCollection = collection.sort((a, b) => {
+    let sortedCollection = events.sort((a, b) => {
         if (a[propertyKey] > b[propertyKey]) {
             return -1;
         } else if (a[propertyKey] < b[propertyKey]) {
@@ -217,9 +217,9 @@ const findGreatestValueSnapshots = ({
     return finalCollection;
 };
 
-const sumAllPositiveEventAmounts = (danielSan) => {
+const sumAllPositiveEventAmounts = (events) => {
     let sum = 0;
-    danielSan.events.forEach((event) => {
+    events.forEach((event) => {
         const { amount, amountConverted } = event;
         if (!isUndefinedOrNull(amount) && amountConverted > 0) {
             // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field
@@ -231,9 +231,9 @@ const sumAllPositiveEventAmounts = (danielSan) => {
     return sum;
 };
 
-const sumAllNegativeEventAmounts = (danielSan) => {
+const sumAllNegativeEventAmounts = (events) => {
     let sum = 0;
-    danielSan.events.forEach((event) => {
+    events.forEach((event) => {
         const { amount, amountConverted } = event;
         if (!isUndefinedOrNull(amount) && amountConverted < 0) {
             // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field

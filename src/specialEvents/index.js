@@ -120,7 +120,7 @@ const nthWeekdaysOfMonth = ({ danielSan, rule, date, skipTimeTravel, eventGen = 
                         nthProcessDay.rank === 0 ||
                         (nthProcessDay.rank < 0 && looperDateIndex === sizeOfObjectKeyArray - 1))
                 ) {
-                    processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
+                    processPhase = exclusionsPhase({ danielSan, rule, date, processPhase });
                     processPhase = modulusPhase({ rule, processPhase });
                     if (processPhase === EXECUTING_RULE_INSERTION) {
                         // when we are pre-modulating the cycle during validation, we do not want to generate an event
@@ -162,7 +162,7 @@ const weekdayOnDate = ({ danielSan, rule, date, skipTimeTravel, eventGen = true 
         if (Array.isArray(rule.frequency)) {
             rule.frequency.some((element) => {
                 if (element.processDate === thisProcessDate && element.weekday === thisWeekday) {
-                    processPhase = exclusionsPhase({ rule, date, processPhase, danielSan });
+                    processPhase = exclusionsPhase({ danielSan, rule, date, processPhase });
                     processPhase = modulusPhase({ rule, processPhase });
                     if (processPhase === EXECUTING_RULE_INSERTION) {
                         // when we are pre-modulating the cycle during validation, we do not want to generate an event

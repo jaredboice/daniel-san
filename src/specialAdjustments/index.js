@@ -16,11 +16,11 @@ const {
 } = require('../constants');
 
 const reusableLogicForDateMovements = ({
-    date,
+    danielSan,
     event,
     specialAdjustment,
-    danielSan,
     streamForwardOrBackWard,
+    date,
     dateArray,
     frequency,
     skipTimeTravel
@@ -129,15 +129,15 @@ const reusableLogicForDateMovements = ({
     ];
 
 */
-const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
+const moveThisProcessDateBeforeTheseWeekdays = ({ danielSan, event, specialAdjustment, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = reusableLogicForDateMovements({
-            date,
+            danielSan,
             event,
             specialAdjustment,
-            danielSan,
             streamForwardOrBackWard: streamBackward,
+            date,
             dateArray: specialAdjustment.weekdays,
             frequency: WEEKLY,
             skipTimeTravel
@@ -157,15 +157,15 @@ const moveThisProcessDateBeforeTheseWeekdays = ({ event, specialAdjustment, dani
     ];
 
 */
-const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
+const moveThisProcessDateAfterTheseWeekdays = ({ danielSan, event, specialAdjustment, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = reusableLogicForDateMovements({
-            date,
+            danielSan,
             event,
             specialAdjustment,
-            danielSan,
             streamForwardOrBackWard: streamForward,
+            date,
             dateArray: specialAdjustment.weekdays,
             frequency: WEEKLY,
             skipTimeTravel
@@ -185,17 +185,17 @@ const moveThisProcessDateAfterTheseWeekdays = ({ event, specialAdjustment, danie
         ]
 
 */
-const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
+const moveThisProcessDateBeforeTheseDates = ({ danielSan, event, specialAdjustment, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
             processPhase = reusableLogicForDateMovements({
-                date,
+                danielSan,
                 event,
                 specialAdjustment,
-                danielSan,
                 streamForwardOrBackWard: streamBackward,
+                date,
                 dateArray: specialAdjustment.dates,
                 frequency: ONCE,
                 skipTimeTravel
@@ -203,14 +203,14 @@ const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielS
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateBeforeTheseWeekdays({
-                date,
+                danielSan,
                 event,
                 specialAdjustment,
-                danielSan,
+                date,
                 skipTimeTravel
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateBeforeTheseDates({ date, event, specialAdjustment, danielSan, skipTimeTravel });
+                processPhase = moveThisProcessDateBeforeTheseDates({ danielSan, event, specialAdjustment, date, skipTimeTravel });
             }
         }
         return processPhase;
@@ -229,17 +229,17 @@ const moveThisProcessDateBeforeTheseDates = ({ event, specialAdjustment, danielS
         ]
 
 */
-const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSan, date, skipTimeTravel }) => {
+const moveThisProcessDateAfterTheseDates = ({ danielSan, event, specialAdjustment, date, skipTimeTravel }) => {
     let processPhase;
     try {
         processPhase = EXECUTING_RULE_ADJUSTMENT;
         if (specialAdjustment.dates) {
             processPhase = reusableLogicForDateMovements({
-                date,
+                danielSan,
                 event,
                 specialAdjustment,
-                danielSan,
                 streamForwardOrBackWard: streamForward,
+                date,
                 dateArray: specialAdjustment.dates,
                 frequency: ONCE,
                 skipTimeTravel
@@ -247,14 +247,14 @@ const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSa
         }
         if (specialAdjustment.weekdays) {
             processPhase = moveThisProcessDateAfterTheseWeekdays({
-                date,
+                danielSan,
                 event,
                 specialAdjustment,
-                danielSan,
+                date,
                 skipTimeTravel
             });
             if (processPhase === MODIFIED) {
-                processPhase = moveThisProcessDateAfterTheseDates({ date, event, specialAdjustment, danielSan, skipTimeTravel });
+                processPhase = moveThisProcessDateAfterTheseDates({ danielSan, event, specialAdjustment, date, skipTimeTravel });
             }
         }
         return processPhase;
@@ -279,7 +279,7 @@ const moveThisProcessDateAfterTheseDates = ({ event, specialAdjustment, danielSa
         }
     ]
 */
-const adjustAmountOnTheseDates = ({ event, specialAdjustment, danielSan }) => {
+const adjustAmountOnTheseDates = ({ danielSan, event, specialAdjustment }) => {
     let processPhase = EXECUTING_RULE_ADJUSTMENT;
     let ruleContextLooperDateTracker;
     let looperDateIndexTracker;
