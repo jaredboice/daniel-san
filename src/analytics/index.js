@@ -2,6 +2,7 @@ const { isUndefinedOrNull } = require('../utility/validation');
 const { initializeTimeZoneData, createTimeZone, convertTimeZone } = require('../timeZone');
 const { DATE_FORMAT_STRING, ONCE } = require('../constants');
 
+// you should probably run the validation functions in core/validation.js prior to using this
 // finds rules with end dates that are less than the beginning date range of the budget projection
 const findRulesToRetire = (danielSan) => {
     const { config: { effectiveDateStart } } = danielSan;
@@ -42,6 +43,7 @@ const findRulesToRetire = (danielSan) => {
     return null; // this line satisfies another linting error
 };
 
+// you should probably run the validation functions in core/validation.js prior to using this
 // finds rules that have no chance of being triggered via the current configuration
 const findIrrelevantRules = (danielSan) => {
     const { rules, config: { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType } } = danielSan;
