@@ -715,7 +715,7 @@ const danielSan = {
 
 **Useful Functions**
 
-You can always use any exported function in the program by simply requiring it. However, a few such useful functions are shown below. The analytic functions, with exception to findRulesToRetire (and findIrrelevantRules which is also available), are executed on events. If using multi-currency conversion, the analysis takes place in the context of the currencySymbol in the config object.  
+You can always use any exported function in the program by simply requiring it. However, a few such useful functions are shown below. If using multi-currency conversion, the analysis takes place in the context of the currencySymbol in the config object.  Most of the analytic functions, with exception to findRulesToRetire and findIrrelevantRules, are executed on events. If you are running a subroutine related to rules, you should typically run the validation functions in core/validation.js first, in order to avoid errors.
 
 
 ```javascript
