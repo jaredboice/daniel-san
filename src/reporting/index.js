@@ -180,8 +180,7 @@ const lineSeparator = (loops = 1, writeStream) => {
     }
 };
 
-const eventCountFooter = ({ events, writeStream }) => {
-    lineSeparator(2, writeStream);
+const eventCountHeading = ({ events, writeStream }) => {
     lineHeading({ heading: ` event count: ${events.length} `, writeStream });
     lineSeparator(2, writeStream);
 };
@@ -265,7 +264,6 @@ const shyOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(reportingConfig);
-    lineSeparator(1, writeStream);
     // eslint-disable-next-line no-console
     if (!isUndefinedOrNull(event.name)) writeStream(`name: ${event.name}`); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
@@ -299,7 +297,7 @@ const shyOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
     writeStream(`dateStart: ${event.dateStart}`); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
     if (event.timeStart) writeStream(`timeStart: ${event.timeStart}`);
-    lineSeparator(1, writeStream);
+    lineSeparator(2, writeStream);
 };
 
 const conciseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
@@ -311,7 +309,6 @@ const conciseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(reportingConfig);
-    lineSeparator(1, writeStream);
     // eslint-disable-next-line no-console
     if (!isUndefinedOrNull(event.name)) writeStream(`name: ${event.name}`);
     // eslint-disable-next-line no-console
@@ -361,7 +358,7 @@ const conciseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
         writeStream(`weekdayEnd: ${weekdayString}`); // eslint-disable-line no-console
     } // eslint-disable-next-line no-console
     if (!isUndefinedOrNull(event.notes)) writeStream(`notes: ${event.notes}`); // eslint-disable-line quotes
-    lineSeparator(1, writeStream);
+    lineSeparator(2, writeStream);
 };
 
 const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
@@ -373,7 +370,6 @@ const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(reportingConfig);
-    lineSeparator(1, writeStream);
     const ttyMessageStack = [];
     const dataBouncer = (message, order) => {
         ttyMessageStack.push({ message, order });
@@ -540,7 +536,7 @@ const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
     ttyMessageStackOrdered.forEach((obj) => {
         writeStream(`${obj.message}`); // eslint-disable-line no-console
     });
-    lineSeparator(1, writeStream);
+    lineSeparator(2, writeStream);
 };
 
 const eventsLogger = ({ events, reportingConfig, currencySymbol, showNothingToDisplaySwitch = true, writeStream }) => {
@@ -564,7 +560,7 @@ const eventsLogger = ({ events, reportingConfig, currencySymbol, showNothingToDi
             default:
                 break;
         }
-        eventCountFooter({ events, writeStream });
+        eventCountHeading({ events, writeStream });
     } else if (showNothingToDisplaySwitch) {
         showNothingToDisplay(writeStream);
     }
@@ -921,10 +917,10 @@ const showCriticalSnapshots = ({ danielSan, reportingConfig, showNothingToDispla
             locale,
             style
         } = getDefaultParamsForDecimalFormatter(reportingConfig);
-        reportingBoundary({ loops: 3, writeStream });
+        reportingBoundary({ loops: 2, writeStream });
         if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
             lineHeading({
-                heading: ` critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
+                heading: ` begin critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
                     minIntegerDigits,
                     minDecimalDigits,
                     maxDecimalDigits,
@@ -945,7 +941,7 @@ const showCriticalSnapshots = ({ danielSan, reportingConfig, showNothingToDispla
         lineSeparator(2, writeStream);
         if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
             lineHeading({
-                heading: ` critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
+                heading: ` end critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
                     minIntegerDigits,
                     minDecimalDigits,
                     maxDecimalDigits,
