@@ -497,7 +497,7 @@ options in the above scenario include:
 
 -all constants are available for import-  
   
-##Aggregate Functions  
+## Aggregate Functions  
   
 Add the following aggregates array to the reportingConfig options object for computing aggregates (add as many as desired):  
 
@@ -524,7 +524,7 @@ const reportingConfig = {
 }
 ```
     
-##Time  
+## Time  
 
 timeStart and timeEnd are optional fields for the config object. Any events that fall outside of those start and end time values will be discarded.
 
