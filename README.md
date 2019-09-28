@@ -585,7 +585,7 @@ options in the above scenario include:
 Terminal output is configured by default. File output is configured, instead, by adding the following attributes to the reportingConfig options object:  
   
 file: {
-    filepath: path.resolve(__dirname), // a pah string; defaults to a reports directory two levels up from fileIo.js
+    filepath: path.resolve(__dirname), // a pah string; defaults to a "reports" directory three levels up from fileIo.js, but make sure that this reports directory exists!
     filename: 'MyReport',
     extension: '.txt', // .txt is actuallyl the default value, to use an extension within the filename attribute directly, assign null to extension
 }
