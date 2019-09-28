@@ -3,8 +3,7 @@ const {
     DATE_FORMAT_STRING,
     MODIFIED,
     DATE_TIME_DELIMITER,
-    TIME_FORMAT_STRING,
-    COMPOUND_DATA_DELIMITER
+    TIME_FORMAT_STRING
 } = require('../constants');
 
 const generateTimeSpan = ({ event, date, weekday }) => {
@@ -79,8 +78,8 @@ const generateEvent = ({ danielSan, rule, date, skipTimeTravel = null }) => {
     newEvent.timeZone = danielSan.config.timeZone;
     newEvent.timeZoneType = danielSan.config.timeZoneType; // this is currently redundant since we are auto-assigning the danielSan value to event???
     // however, if we ever want to change that behavior and add additional options, we'd still want to be sure that this value matches the event output???
-    newEvent.timeZoneEventSource = `${newEvent.timeZone}${COMPOUND_DATA_DELIMITER}${newEvent.timeZoneType}`; // for future convenience
-    newEvent.timeZoneObserverSource = `${danielSan.config.timeZone}${COMPOUND_DATA_DELIMITER}${danielSan.config.timeZoneType}`; // default value and for future convenience
+    newEvent.eventSourceTimeZoneType = newEvent.timeZoneType; // for future convenience
+    newEvent.eventSourceTimeZone = newEvent.timeZone; // default value and for future convenience
     // related code block
     redefineTimeStartAndTimeSpan({ event: newEvent, skipTimeTravel });
     danielSan.events.push({ ...newEvent });

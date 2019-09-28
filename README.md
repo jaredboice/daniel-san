@@ -14,23 +14,8 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit 'Daniel-San-St
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance. The program features multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
-
-## Breaking Change in v10.0.0
-all non-rule configuration for the danielSan object have been moved into the new "config" field.
-
-## Breaking Change in v8.0.0
-
-In keeping with the trend of adding clarity and consistency to variable names, the following properties have been changed accordingly. beginBalance is now balanceBeginning. endBalance is now balanceEnding. And syncDate is now anchorSyncDate.
-
-## Breaking Change in v8.0.0
-
-As of v8.0.0, to make way for a cleaner distinction between event dates and effective dates, dateStart and dateEnd at the top-level of the danielSan master control unit are now effectiveDateStart and effectiveDateEnd, respectively. And the eventDate on the event level has been changed to dateStart as a cleaner approach to applying time spans to events.
-
-## Breaking Change in v3.0.0
-
-In v3.0, the currencyConversion function parameters have changed from currentSymbol and futureSymbol to inputSymbol and outputSymbol, respectively. Because naming things is hard.
-
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance. The program features aggregates, terminal and file-based reporting output, multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.  
+  
 ## Install, Import & Execute
 
 **Install**
@@ -41,7 +26,7 @@ In v3.0, the currencyConversion function parameters have changed from currentSym
 
 ```javascript
 const findBalance = require('daniel-san');
-const terminal = require('daniel-san/terminal');
+const createReport = require('daniel-san/reporting');
 const { STANDARD_EVENT, MONTHLY, WEEKLY, DAILY, FRIDAY, SATURDAY, SUNDAY } = require('daniel-san/constants');
 ```
 
@@ -448,7 +433,7 @@ const danielSan = {
         effectiveDateStart: '2019-03-20',
         effectiveDateEnd: '2019-12-13',
         currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represents the outputSymbol parameter in the currencyConversion function
-        // (when using the terminalOptions, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
+        // (when using the reportingConfig, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
         currencyConversion: ({ amount, inputSymbol, outputSymbol }) => {
             // a global currency conversion function that will return the converted amount.
             // the amount parameter represents the rule amount (as defined below for each provided rule)
@@ -510,9 +495,29 @@ options in the above scenario include:
 -   `context: EVENT_SOURCE` _(default value)_
 -   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the final converted currency value via the currencySymbol in the config object)_
 
--all constants are available for import-
-
-##Time
+-all constants are available for import-  
+  
+##Aggregate Functions  
+  
+Add the following aggregates array to the reportingConfig options object for computing aggregates (add as many as desired):  
+    
+aggregates: [  
+    {  
+        name: 'some name',  
+        type: SUMS_AND_AVERAGES || MINIMUMS_AND_MAXIMUMS || MEDIANS_AND_MODES || GREATEST_VALUES || LEAST_VALUES,  
+        frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,  
+        propertyKey: 'balanceEnding' || 'amount',  // determines the field that this aggregate will execute against
+        flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES  
+        selectionAmount, // this property is only for GREATEST_VALUES || LEAST_VALUES  
+        dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17  
+        modeMax, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
+        weekdayStart, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types  
+        dateStart, // this optional property allows you to change the starting date for the DAY_CYCLES type  
+        fiscalYearStart, // this optional property allows you to change the starting date for the ANNUALLY type  
+    }
+]  
+    
+##Time  
 
 timeStart and timeEnd are optional fields for the config object. Any events that fall outside of those start and end time values will be discarded.
 
@@ -574,42 +579,63 @@ options in the above scenario include:
 -   `context: BOTH` _(applies the adjustment with respect to both of the contexts mentioned above; As an example of usage, BOTH is great when you don't want a weekend or bank holiday to trigger in ANY context)_
 
 -all of the above referenced constants are available for import-
-
-## Terminal
-
+  
+## Reports - File and Terminal Output  
+  
+Terminal output is configured by default. File output is configured, instead, by adding the following attributes to the reportingConfig options object:  
+  
+file: {
+    filepath: path.resolve(__dirname), // a pah string; defaults to a reports directory two levels up from fileIo.js
+    filename: 'MyReport',
+    extension: '.txt', // .txt is actuallyl the default value, to use an extension within the filename attribute directly, assign null to extension
+}
+  
 **Logging Results to the Command-Line**
 
-_note: the terminal options are executed in the context of events (not rules), with exception to DISPLAY_RULES_TO_RETIRE and DISPLAY_IRRELEVANT_RULES_
+_note: the reporting options are executed in the context of events (not rules), with exception to DISPLAY_RULES_TO_RETIRE and DISPLAY_IRRELEVANT_RULES_
 
 ```javascript
-// passing a non-null value for error will log it to the console and bypass all other terminal functionality
-terminal({ danielSan, terminalOptions, error, originalDanielSan });// the originalDanielSan is useful for passing the original unmodified danielSan reference to display irrelevant or retired rules.
+// passing a non-null value for error will log it to the console and bypass all other report functionality
+createReport({ danielSan, reportingConfig, error, originalDanielSan });// the originalDanielSan is useful for passing the original unmodified danielSan reference to display irrelevant or retired rules.
 ```
+  
+**Report Type Options**  
+  
+-   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy, and will also display discarded events if they exist)_  
+-   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the effectiveDateStart and effectiveDateEnd range, they can be displayed with this report type )_  
+-   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical balanceEnding snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_  
+-   `type: 'STANDARD_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_  
+-   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events if they exist)_  
+-   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events if they exist)_  
+-   `type: 'DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass support: 1000 to display all the amount values greater than 1000)_  
+-   `type: 'DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass resistance: 100 to display all the amount values less than 100)_  
+-   `type: 'DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass negativeSupport: 1000 to display all negative absolute-value amounts greater than 1000)_  
+-   `type: 'DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass negativeResistance: 100 to display all negative absolute-value amounts  greater than 1000)_  
+-   `type: 'DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass positiveSupport: 1000 to display all positive amount values greater than 1000)_  
+-   `type: 'DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass positiveResistance: 100 to display all positive amount values greater than 1000)_  
+-   `type: 'DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT'` _(pass balanceEndingSupport: 1000 to display all the balanceEnding values greater than 1000)_  
+-   `type: 'DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_RESISTANCE'` _(pass balanceEndingResistance: 100 to display all the balanceEnding values less than 100)_  
+-   `type: 'DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest balanceEnding values, ordered by value)_  
+-   `type: 'DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest balanceEnding values, ordered by value)_  
+-   `type: 'DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest amount values, ordered by value)_  
+-   `type: 'DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest aamount values, ordered by value)_  
+-   `type: 'DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest absolute-value amounts, ordered by value)_  
+-   `type: 'DISPLAY_LEAST_NEGATIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest absolute-value amounts, ordered by value)_  
+-   `type: 'DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest positive amount values, ordered by value)_  
+-   `type: 'DISPLAY_LEAST_POSITIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest positive amount values, ordered by value)_  
+-   `type: 'DISPLAY_AGGREGATES'` _(see section on Aggregate Functions)_  
+-   `type: 'DISPLAY_EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportingConfig will search against the optional group property)_  
+-   `type: 'DISPLAY_EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_  
+-   `type: 'DISPLAY_EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_  
+-   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_  
+-   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_  
+-   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_  
+-   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_  
+-   `type: 'DISPLAY_IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration - this particular report function works on your original danielSan object. However, when executing events as normal, a field called irrelevantRules is populated for you_  
+-   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing -  
+    since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_  
 
-**Terminal Type Options**
-
--   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy, and will also display discarded events if they exist)_
--   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the effectiveDateStart and effectiveDateEnd range, they can be displayed with this terminal type )_
--   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical balanceEnding snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
--   `type: 'STANDARD_TERMINAL_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_
--   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events if they exist)_
--   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events if they exist)_
--   `type: 'DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest balanceEnding values, ordered by value)_
--   `type: 'DISPLAY_LEAST_END_BALANCE_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest balanceEnding values, ordered by value)_
--   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT'` _(pass maxAmount: 1000 to display all the balanceEnding values greater than 1000)_
--   `type: 'DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT'` _(pass minAmount: 100 to display all the balanceEnding values less than 1000)_
--   `type: 'DISPLAY_EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into terminalOptions will search against the optional group property)_
--   `type: 'DISPLAY_EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
--   `type: 'DISPLAY_EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
--   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
--   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
--   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
--   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
--   `type: 'DISPLAY_IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration - this particular terminal function works on your original danielSan object. However, when executing events as normal, a field called irrelevantRules is populated for you_
--   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing -
-    since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_
-
-**Terminal Mode Options**
+**Report Mode Options**
 
 -   `mode: 'SHY'` _(minimal output)_
 -   `mode: 'CONCISE'` _(standard output)_
@@ -617,21 +643,22 @@ terminal({ danielSan, terminalOptions, error, originalDanielSan });// the origin
 
 **Critical Snapshots**
 
-Passing a criticalThreshold property will log snapshots to the command-line when the balanceEnding is less than the criticalThreshold, for STANDARD_TERMINAL_OUTPUT and DISPLAY_CRITICAL_SNAPSHOTS.
+Passing a criticalThreshold property will log snapshots to the command-line when the balanceEnding is less than the criticalThreshold, for STANDARD_OUTPUT and DISPLAY_CRITICAL_SNAPSHOTS.
 
 **Search Values**
 
-searchValues: [string1, string2, string3] is used for the DISPLAY*EVENTS_BY*\* terminal types. Case-Sensitive!
+searchValues: [string1, string2, string3] is used for the DISPLAY*EVENTS_BY*\* report types. Case-Sensitive!
 
 **Formatting**
 
-See the terminal option configuration example below. If passing a custom formatting function, it must take the form shown below.
+See the report option configuration example below. If passing a custom formatting function, it must take the form shown below.
 The default formattingFunction utilizes javascript's built-in toLocaleString() function - via the Intl api
 
 ```javascript
 const decimalFormatterCustom = (number, { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }) => { /* return number formatted */ };
-const terminalOptions = {
-    type: STANDARD_TERMINAL_OUTPUT,
+const reportingConfig = {
+    name: 'some name',
+    type: STANDARD_OUTPUT,
     mode: CONCISE,
     criticalThreshold: 577.00,
     // the formatting object is optional as the following values are defaulted for you
@@ -648,11 +675,11 @@ const terminalOptions = {
 }
 ```
 
-**Terminal Option Configuration Example**
+**Report Option Configuration Example**
 
 ```javascript
-const terminalOptions = {
-    type: STANDARD_TERMINAL_OUTPUT,
+const reportingConfig = {
+    type: STANDARD_OUTPUT,
     mode: CONCISE,
     criticalThreshold: 577.0,
     // the formatting object is optional as the following values are defaulted for you
@@ -668,21 +695,32 @@ const terminalOptions = {
 };
 ```
 
-**An Example Assuming Rules and Terminal Options are Defined**
+**An Example Assuming Rules and Report Options are Defined**
 
 ```javascript
 const waxOn = require('./rules'); // so we can use the word waxOn
 const findBalance = require('daniel-san');
-const terminal = require('daniel-san/terminal');
+const createReport = require('daniel-san/reporting');
 
 const eventResults = findBalance(waxOn.danielSan);
-terminal({ danielSan: eventResults.danielSan, terminalOptions: terminalOptions, error: eventResults.err }); // on err, the terminal's error logger will be executed instead of the event logger
+createReport({ danielSan: eventResults.danielSan, reportingConfig: reportingConfig, error: eventResults.err }); // on err, the report's error logger will be executed instead of the event logger
 ```
 
+**Filter Events prior to report generation**
+  
+Add the following attributes to the root of the reportingConfig object for filter control. filterKeys and filterValues are parallel arrays.  
+  
+filterKeys: ['name', 'group'],
+filterValues: ['rent', ANY ], // the constant for ANY, INTERSECTION and UNION are available for import
+filterType: UNION || INTERSECTION // event inclusion is governed by Any attributes that match || All attributes must match  
+  
+With a filterType of UNION, the above configuration will include events that have a name with the value "rent" or a group attribute with any value, including null.
+With a filterType of INTERSECTION, the above configuration will include events that have both a name with the value "rent" And a group attribute with any value.  
+  
 ## More Useful Features
-
-**Additional Attributes**
-
+  
+**Additional Attributes**  
+  
 ```javascript
 const danielSan = {
     config: {
@@ -713,41 +751,25 @@ const danielSan = {
 };
 ```
 
-**Useful Functions**
+**Useful Functions and Notes**  
+  
+You can always use any exported function in the program by simply requiring it. However, the most useful functions can be found in the analytics and utility directories. Review the code in the reporting folder for examples of usage.  When using multi-currency conversion, the analysis takes place in the context of the currencySymbol within the config object.  Most of the analytic functions, with exception to findRulesToRetire and findIrrelevantRules, are executed on events. If you are running a subroutine related to rules, you should typically run the validation functions in core/validation.js first, in order to avoid errors.
 
-You can always use any exported function in the program by simply requiring it. However, a few such useful functions are shown below. If using multi-currency conversion, the analysis takes place in the context of the currencySymbol in the config object.  Most of the analytic functions, with exception to findRulesToRetire and findIrrelevantRules, are executed on events. If you are running a subroutine related to rules, you should typically run the validation functions in core/validation.js first, in order to avoid errors.
-
-
-```javascript
-const {
-    findCriticalSnapshots,
-    findRulesToRetire,
-    findEventsWithProperty,
-    findEventsByPropertyKeyAndValues,
-    findEventsWithPropertyKeyContainingSubstring } = require('daniel-san/analytics');
-
-// see the source code for real example use cases of the following exposed functions
-// there are also useful functions in the utility directory
-const criticalSnapshots = findCriticalSnapshots({ events: danielSan.events, criticalThreshold }); // uses the criticalThreshold field
-const sevenHighestValues = findGreatestValueSnapshots({ events: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = false });
-const sevenLowestValues = findGreatestValueSnapshots({ events: danielSan.events, propertyKey: 'balanceEnding', selectionAmount: 7, reverse = true }); // reverse sort gets the lowest values
-const bigSnapshots = findSnapshotsGreaterThanAmount({ events: danielSan.events, amount: 3000, propertyKey: 'balanceEnding' });
-const smallSnapshots = findSnapshotsLessThanAmount({ events: danielSan.rules, amount: 0, propertyKey: 'convertedAmount' });
-const rulesToRetire = findRulesToRetire(danielSan); // finds rules with an effectiveDateEnd lower than the config's effectiveDateStart value, and rules with effectiveDateStart that are higher than the config's effectiveDateEnd.
-// also adds a ruleIndex on each rule so that you can delete them from the original array if required
-// rules are auto retired during the budget projection process, however, so if you want to find rules that you need to retire/
-// then make sure you perform it on the original danielSan and not the resulting danielSan object that is returned from findBalance()
-const eventsWithProperty = findEventsWithProperty({ events: danielSan.events, propertyKey: 'youCouldEvenAddACustomProperty' }); // eg. propertyKey: 'timeStart'
-const eventsWithValues = findEventsByPropertyKeyAndValues({ events: danielSan.events, propertyKey: 'name', searchValues: ['groceries', 'movie tickets', 'concert tickets'] }); // eg. propertyKey: 'group', searchValues: ['Group 1', 'Group 2']
-const eventsContainingSubstringInField = findEventsWithPropertyKeyContainingSubstring({ events: danielSan.events, propertyKey: 'name', substring: 'tickets' }); // eg. propertyKey: 'type', substring: 'ROUTINE'
-```
-
-## Constants
-
+## Constants  
+  
 **Constants Available For Import**
-
+  
+Importing the following constants, to be discoverable by your code editor's auto-complete functionality, makes working with daniel-san more convenient.  
+  
 ```javascript
 const {
+ APP_NAME: 'daniel-san',
+    DEFAULT_ERROR_MESSAGE,
+    DATE_DELIMITER,
+    TIME_DELIMITER,
+    DATE_TIME_DELIMITER,
+    DATE_FORMAT_STRING,
+    TIME_FORMAT_STRING,
     UTC,
     LOCAL,
     AM,
@@ -755,6 +777,11 @@ const {
     EVENT_SOURCE,
     OBSERVER_SOURCE,
     BOTH,
+    ANY,
+    UNION,
+    INTERSECTION,
+    POSITIVE,
+    NEGATIVE,
     STANDARD_EVENT,
     STANDARD_EVENT_ROUTINE,
     STANDARD_EVENT_REMINDER,
@@ -784,22 +811,17 @@ const {
     THURSDAY,
     FRIDAY,
     SATURDAY,
-    WEEKENDS, // an array containing [SATURDAY, SUNDAY]
+    WEEKENDS,
+    STANDARD_OUTPUT,
     VERBOSE,
     CONCISE,
     SHY,
-    STANDARD_TERMINAL_OUTPUT,
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
-    DISPLAY_END_BALANCE_SNAPSHOTS_GREATER_THAN_MAX_AMOUNT,
-    DISPLAY_END_BALANCE_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
-    DISPLAY_GREATEST_END_BALANCE_SNAPSHOTS,
-    DISPLAY_LEAST_END_BALANCE_SNAPSHOTS,
     DISPLAY_EVENTS_BY_GROUP,
+    DISPLAY_EVENTS_BY_GROUPS,
     DISPLAY_EVENTS_BY_NAME,
+    DISPLAY_EVENTS_BY_NAMES,
     DISPLAY_EVENTS_BY_TYPE,
+    DISPLAY_EVENTS_BY_TYPES,
     DISPLAY_EVENTS,
     DISPLAY_CRITICAL_SNAPSHOTS,
     DISPLAY_DISCARDED_EVENTS,
@@ -808,6 +830,90 @@ const {
     DISPLAY_ROUTINE_EVENTS,
     DISPLAY_REMINDER_EVENTS,
     DISPLAY_RULES_TO_RETIRE,
-    DISPLAY_IRRELEVANT_RULES_
+    DISPLAY_IRRELEVANT_RULES,
+    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
+    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
+    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
+    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
+    DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT,
+    DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS,
+    DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS,
+    DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS,
+    DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS,
+    DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
+    DISPLAY_LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
+    DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    DISPLAY_LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    DISPLAY_AGGREGATES,
+    DAY_CYCLES,
+    DATE_SETS,
+    SUMS_AND_AVERAGES,
+    MEDIANS_AND_MODES,
+    MINIMUMS_AND_MAXIMUMS,
+    GREATEST_VALUES,
+    LEAST_VALUES,
+    FORMATTING_FUNCTION_DEFAULT,
+    MIN_INT_DIGITS_DEFAULT,
+    MIN_DECIMAL_DIGITS_DEFAULT,
+    MAX_DECIMAL_DIGITS_DEFAULT,
+    LOCALE_DEFAULT,
+    STYLE_DEFAULT,
+    CURRENCY_DEFAULT
 } = require('daniel-san/constants');
+
+## Breaking Changes in v11.0.0  
+  
+Significant changes were made in Version 11 which included many breaking changes. Some of the most significant changes are documented below:  
+  
+changed all of the following constants accordingly:  
+  
+MAX_AMOUNT with SUPPORT  
+MIN_AMOUNT with RESISTANCE  
+GREATER_THAN_AMOUNT with GREATER_THAN_SUPPORT  
+LESS_THAN_AMOUNT with LESS_THAN_RESISTANCE  
+END_BALANCE with BALANCE_ENDING  
+STANDARD_TERMINAL_OUTPUT to STANDARD_OUTPUT  
+TERMINAL_BOUNDARY_LIMIT to BOUNDARY_LIMIT  
+  
+changed all of the following variable names accordingly:  
+  
+LessThanMinAmount with LessThanResistance  
+GreaterThanMaxAmount with GreaterThanSupport  
+GreaterThanAmount with GreaterThanSupport  
+LessThanAmount with LessThanResistance  
+maxAmount with balanceEndingSupport  
+minAmount with balanceEndingResistance  
+endBalance with balanceEnding  
+terminalType to reportingType  
+terminalOptions to reportingConfig  
+standardTerminalOutput to standardOutput  
+terminalTypes to reportingTypes  
+terminalBoundary to reportingBoundary  
+standardTerminalHeader to standardHeader  
+standardTerminalSubheader to standardSubheader  
+changed the terminal function to createReport  
+changed terminal to report  
+changed report path to /reporting  
+  
+## Breaking Change in v10.0.0
+all non-rule configuration for the danielSan object have been moved into the new "config" field.
+
+## Breaking Change in v8.0.0
+
+In keeping with the trend of adding clarity and consistency to variable names, the following properties have been changed accordingly. beginBalance is now balanceBeginning. balanceEnding is now balanceEnding. And syncDate is now anchorSyncDate.
+
+## Breaking Change in v8.0.0
+
+As of v8.0.0, to make way for a cleaner distinction between event dates and effective dates, dateStart and dateEnd at the top-level of the danielSan master control unit are now effectiveDateStart and effectiveDateEnd, respectively. And the eventDate on the event level has been changed to dateStart as a cleaner approach to applying time spans to events.
+
+## Breaking Change in v3.0.0
+
+In v3.0, the currencyConversion function parameters have changed from currentSymbol and futureSymbol to inputSymbol and outputSymbol, respectively. Because naming things is hard.
 ```

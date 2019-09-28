@@ -287,7 +287,7 @@ const adjustAmountOnTheseDates = ({ danielSan, event, specialAdjustment }) => {
         specialAdjustment.dates.forEach((ruleContextLooperDate, looperDateIndex) => {
             ruleContextLooperDateTracker = ruleContextLooperDate;
             looperDateIndexTracker = looperDateIndex;
-            if (ruleContextLooperDate === event.dateStart && event.amount) {
+            if (ruleContextLooperDate === event.dateStart) {
                 if (
                     isUndefinedOrNull(specialAdjustment.context) ||
                     specialAdjustment.context === EVENT_SOURCE
@@ -300,8 +300,8 @@ const adjustAmountOnTheseDates = ({ danielSan, event, specialAdjustment }) => {
                         danielSan.config.currencySymbol !== event.currencySymbol
                             ? danielSan.config.currencyConversion({
                                 amount: specialAdjustment.amounts[looperDateIndex],
-                                inputSymbol: event.currencySymbol,
-                                outputSymbol: danielSan.config.currencySymbol
+                                inputSymbol: danielSan.config.currencySymbol,
+                                outputSymbol: event.currencySymbol
                             })
                             : specialAdjustment.amounts[looperDateIndex];
                     event.amount += adjustmentConverted;

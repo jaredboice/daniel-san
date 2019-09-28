@@ -1,11 +1,102 @@
+const moment = require('moment');
+const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
+const { deepCopy } = require('../utility/dataStructures');
 const { initializeTimeZoneData, createTimeZone, convertTimeZone } = require('../timeZone');
-const { DATE_FORMAT_STRING, ONCE } = require('../constants');
+const { TimeStream } = require('../timeStream');
+const {
+    DATE_FORMAT_STRING,
+    ANNUALLY,
+    MONTHLY,
+    WEEKLY,
+    ONCE,
+    SUNDAY,
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    POSITIVE,
+    NEGATIVE,
+    BOTH,
+    ANY,
+    UNION,
+    INTERSECTION,
+    DATE_DELIMITER
+} = require('../constants');
+
+const getWeekdayNumFromString = (weekdayString) => {
+    let weekdayNum;
+    switch (weekdayString) {
+        case 'sunday':
+            weekdayNum = SUNDAY;
+            break;
+        case 'monday':
+            weekdayNum = MONDAY;
+            break;
+        case 'tuesday':
+            weekdayNum = TUESDAY;
+            break;
+        case 'wednesday':
+            weekdayNum = WEDNESDAY;
+            break;
+        case 'thursday':
+            weekdayNum = THURSDAY;
+            break;
+        case 'friday':
+            weekdayNum = FRIDAY;
+            break;
+        case 'saturday':
+            weekdayNum = SATURDAY;
+            break;
+        default:
+            weekdayNum = MONDAY;
+            break;
+    }
+    return weekdayNum;
+};
+
+const filterEventsByKeysAndValues = ({ events, filterKeys = [], filterValues = [], filterType = UNION }) => {
+    let transientEvent; // for errorDisc
+    try {
+        let newEvents = events;
+        if (filterKeys && filterKeys.length > 0 && filterValues && filterValues.length === filterKeys.length) {
+            const duplicateEvents = deepCopy(events);
+            newEvents = duplicateEvents.filter((event) => {
+                transientEvent = event;
+                let includeEvent = false;
+                for (let looper = 0; looper < filterKeys.length; looper++) {
+                    if (
+                        !isUndefinedOrNull(event[filterKeys[looper]]) &&
+                        (filterValues[looper] === ANY || event[filterKeys[looper]] === filterValues[looper])
+                    ) {
+                        includeEvent = true;
+                        if (isUndefinedOrNull(filterType) || filterType === UNION) {
+                            break;
+                        }
+                    } else {
+                        includeEvent = false;
+                        if (filterType === INTERSECTION) {
+                            break;
+                        }
+                    }
+                }
+                return includeEvent;
+            });
+        }
+        return newEvents;
+    } catch (err) {
+        throw errorDisc({ err, data: { event: transientEvent, filterKeys, filterValues, filterType } });
+    }
+};
 
 // you should probably run the validation functions in core/validation.js prior to using this
 // finds rules with end dates that are less than the beginning date range of the budget projection
 const findRulesToRetire = (danielSan) => {
-    const { config: { effectiveDateStart } } = danielSan;
+    const {
+        config: { effectiveDateStart }
+    } = danielSan;
     // eslint-disable-next-line array-callback-return
     const rulesToRetire = danielSan.rules.filter((rule, index) => {
         const dateToStartConfig = initializeTimeZoneData(danielSan);
@@ -26,8 +117,8 @@ const findRulesToRetire = (danielSan) => {
             return rule;
         } else if (
             rule.frequency === ONCE &&
-            typeof rule.processDate === 'string' &&
-            rule.processDate < convertedDateStartString
+            typeof rule.EventProcessDate === 'string' &&
+            rule.EventProcessDate < convertedDateStartString
         ) {
             rule.ruleIndex = index;
             return rule;
@@ -46,7 +137,10 @@ const findRulesToRetire = (danielSan) => {
 // you should probably run the validation functions in core/validation.js prior to using this
 // finds rules that have no chance of being triggered via the current configuration
 const findIrrelevantRules = (danielSan) => {
-    const { rules, config: { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType } } = danielSan;
+    const {
+        rules,
+        config: { effectiveDateStart, effectiveDateEnd, timeZone, timeZoneType }
+    } = danielSan;
     const relevantRules = [];
     const irrelevantRules = [];
     rules.forEach((rule, index) => {
@@ -73,7 +167,7 @@ const findIrrelevantRules = (danielSan) => {
         }).date;
         const convertedDateToEndString = convertedDateToEnd.format(DATE_FORMAT_STRING);
         let allowToLive = true;
-        
+
         if (
             (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateToStartString) ||
             (!isUndefinedOrNull(rule.effectiveDateStart) && rule.effectiveDateStart > convertedDateToEndString)
@@ -81,7 +175,11 @@ const findIrrelevantRules = (danielSan) => {
             // exclude
             allowToLive = false;
             // eslint-disable-next-line no-else-return
-        } else if (rule.frequency === ONCE && typeof rule.processDate === 'string' && rule.processDate < convertedDateToStartString) {
+        } else if (
+            rule.frequency === ONCE &&
+            typeof rule.EventProcessDate === 'string' &&
+            rule.EventProcessDate < convertedDateToStartString
+        ) {
             // exclude:
             allowToLive = false;
         } else if (isUndefinedOrNull(rule.effectiveDateEnd)) {
@@ -106,8 +204,11 @@ const findEventsWithProperty = ({ events, propertyKey }) => {
     // eslint-disable-next-line array-callback-return
     const eventsFound = events.filter((event) => {
         // eslint-disable-line consistent-return
-        if (event[propertyKey]) {
+        if (!isUndefinedOrNull(event[propertyKey])) {
             return event;
+            // eslint-disable-next-line no-else-return
+        } else {
+            return false;
         }
     });
     if (eventsFound.length > 0) {
@@ -126,12 +227,12 @@ const findEventsByPropertyKeyAndValues = ({ events, propertyKey, searchValues })
         events.forEach((event) => {
             searchValues.forEach((searchCriteriaValue) => {
                 let eventProperty = event[propertyKey];
-                if (eventProperty && typeof eventProperty === 'string') {
+                if (!isUndefinedOrNull(eventProperty) && typeof eventProperty === 'string') {
                     eventProperty = eventProperty.toLowerCase();
                 }
                 const newSearchCriteriaValue =
                     typeof searchCriteriaValue === 'string' ? searchCriteriaValue.toLowerCase() : searchCriteriaValue;
-                if (eventProperty && eventProperty === newSearchCriteriaValue) {
+                if (!isUndefinedOrNull(eventProperty) && eventProperty === newSearchCriteriaValue) {
                     eventsFound.push(event);
                 }
             });
@@ -152,7 +253,7 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     // eslint-disable-next-line array-callback-return
     const eventsFound = events.filter((event) => {
         // eslint-disable-line consistent-return
-        if (event[propertyKey] && event[propertyKey].includes(substring)) {
+        if (!isUndefinedOrNull(event[propertyKey]) && event[propertyKey].includes(substring)) {
             return event;
         }
     });
@@ -170,40 +271,156 @@ const findCriticalSnapshots = ({ events = [], criticalThreshold = 0, propertyKey
     let criticalSnapshots = [];
     if (!isUndefinedOrNull(criticalThreshold)) {
         criticalSnapshots = events.filter((event) => {
-            return event[propertyKey] < criticalThreshold;
+            if (!isUndefinedOrNull(event[propertyKey])) {
+                return event[propertyKey] < criticalThreshold;
+                // eslint-disable-next-line no-else-return
+            } else {
+                return false;
+            }
         });
     }
     return criticalSnapshots;
 };
 
-const findSnapshotsGreaterThanAmount = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+const findSnapshotsGreaterThanSupport = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
     const newCollection = events.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > amount) {
-            return element;
+            return element; // eslint-disable-next-line no-else-return
+        } else {
+            return false;
         }
     });
     return newCollection;
 };
 
-const findSnapshotsLessThanAmount = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+const findSnapshotsLessThanResistance = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
     const newCollection = events.filter((element) => {
         if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] < amount) {
-            return element;
+            return element; // eslint-disable-next-line no-else-return
+        } else {
+            return false;
         }
     });
     return newCollection;
 };
 
+const findPositiveSnapshotsGreaterThanSupport = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+    const newCollection = events.filter((element) => {
+        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > 0 && element[propertyKey] > amount) {
+            return element; // eslint-disable-next-line no-else-return
+        } else {
+            return false;
+        }
+    });
+    return newCollection;
+};
+
+const findPositiveSnapshotsLessThanResistance = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+    const newCollection = events.filter((element) => {
+        if (!isUndefinedOrNull(element[propertyKey]) && element[propertyKey] > 0 && element[propertyKey] < amount) {
+            return element; // eslint-disable-next-line no-else-return
+        } else {
+            return false;
+        }
+    });
+    return newCollection;
+};
+
+const findNegativeSnapshotsGreaterThanSupport = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+    const newCollection = events.filter((element) => {
+        if (
+            !isUndefinedOrNull(element[propertyKey]) &&
+            element[propertyKey] < 0 &&
+            Math.abs(element[propertyKey]) > Math.abs(amount)
+        ) {
+            return element; // eslint-disable-next-line no-else-return
+        } else {
+            return false;
+        }
+    });
+    return newCollection;
+};
+
+const findNegativeSnapshotsLessThanResistance = ({ events = [], amount = 0, propertyKey = 'balanceEnding' }) => {
+    const newCollection = events.filter((element) => {
+        if (
+            !isUndefinedOrNull(element[propertyKey]) &&
+            element[propertyKey] < 0 &&
+            Math.abs(element[propertyKey]) < Math.abs(amount)
+        ) {
+            return element; // eslint-disable-next-line no-else-return
+        } else {
+            return false;
+        }
+    });
+    return newCollection;
+};
+
+const isVal1GreaterThanVal2 = (val1, val2) => {
+    return val1 > val2;
+};
+
+const isAbsVal1GreaterThanAbsVal2 = (val1, val2) => {
+    return Math.abs(val1) > Math.abs(val2);
+};
+
+const isVal1LessThanVal2 = (val1, val2) => {
+    return val1 < val2;
+};
+
+const isAbsVal1LessThanAbsVal2 = (val1, val2) => {
+    return Math.abs(val1) < Math.abs(val2);
+};
+
+// TODO: performance could be increased by making a separete function for findLeastValueSnapshots
+// TODO cont: instead of passing reverse as a parameter and reverse the sort
 const findGreatestValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
     selectionAmount = 7,
+    flowDirection = BOTH,
     reverse = false
 }) => {
-    let sortedCollection = events.sort((a, b) => {
-        if (a[propertyKey] > b[propertyKey]) {
+    let newEvents = [];
+    let sortedCollection = [];
+    let greaterThanComparator;
+    let lessThanComparator;
+    switch (flowDirection) {
+    case POSITIVE:
+        newEvents = deepCopy(events).filter((event) => {
+            return event[propertyKey] > 0;
+        });
+        greaterThanComparator = isVal1GreaterThanVal2;
+        lessThanComparator = isVal1LessThanVal2;
+        break;
+    case NEGATIVE:
+        newEvents = deepCopy(events).filter((event) => {
+            return event[propertyKey] < 0;
+        });
+        greaterThanComparator = isAbsVal1GreaterThanAbsVal2;
+        lessThanComparator = isAbsVal1LessThanAbsVal2;
+        break;
+    case BOTH:
+        newEvents = deepCopy(events);
+        greaterThanComparator = isVal1GreaterThanVal2;
+        lessThanComparator = isVal1LessThanVal2;
+        break;
+    default:
+        newEvents = deepCopy(events);
+        greaterThanComparator = isVal1GreaterThanVal2;
+        lessThanComparator = isVal1LessThanVal2;
+        break;
+    }
+    sortedCollection = newEvents.sort((a, b) => {
+        if (isUndefinedOrNull(a) && !isUndefinedOrNull(b)) {
             return -1;
-        } else if (a[propertyKey] < b[propertyKey]) {
+        } else if (!isUndefinedOrNull(a) && isUndefinedOrNull(b)) {
+            return 1;
+        } else if (isUndefinedOrNull(a) && isUndefinedOrNull(b)) {
+            return 0;
+        } else if (greaterThanComparator(a[propertyKey], b[propertyKey])) {
+            return -1;
+        } else if (lessThanComparator(a[propertyKey], b[propertyKey])) {
             return 1;
             // eslint-disable-next-line no-else-return
         } else {
@@ -213,19 +430,96 @@ const findGreatestValueSnapshots = ({
     if (reverse) {
         sortedCollection = sortedCollection.reverse();
     }
-    const finalCollection = sortedCollection.slice(0, selectionAmount);
+    const finalCollection = sortedCollection.slice(
+        0,
+        selectionAmount <= sortedCollection.length ? selectionAmount : sortedCollection.length
+    );
+    return finalCollection;
+};
+
+const findGreatestPositiveValueSnapshots = ({
+    events = [],
+    propertyKey = 'balanceEnding',
+    selectionAmount = 7,
+    reverse = false
+}) => {
+    const newEvents = deepCopy(events);
+    let sortedCollection = newEvents
+        .filter((e) => {
+            return e[propertyKey] > 0;
+        })
+        .sort((a, b) => {
+            if (isUndefinedOrNull(a) && !isUndefinedOrNull(b)) {
+                return -1;
+            } else if (!isUndefinedOrNull(a) && isUndefinedOrNull(b)) {
+                return 1;
+            } else if (isUndefinedOrNull(a) && isUndefinedOrNull(b)) {
+                return 0;
+            } else if (a[propertyKey] > b[propertyKey]) {
+                return -1;
+            } else if (a[propertyKey] < b[propertyKey]) {
+                return 1;
+                // eslint-disable-next-line no-else-return
+            } else {
+                return 0;
+            }
+        });
+    if (reverse) {
+        sortedCollection = sortedCollection.reverse();
+    }
+    const finalCollection = sortedCollection.slice(
+        0,
+        selectionAmount <= sortedCollection.length ? selectionAmount : sortedCollection.length
+    );
+    return finalCollection;
+};
+
+const findGreatestNegativeValueSnapshots = ({
+    events = [],
+    propertyKey = 'balanceEnding',
+    selectionAmount = 7,
+    reverse = false
+}) => {
+    const newEvents = deepCopy(events);
+    let sortedCollection = newEvents
+        .filter((e) => {
+            return e[propertyKey] < 0;
+        })
+        .sort((a, b) => {
+            if (isUndefinedOrNull(a) && !isUndefinedOrNull(b)) {
+                return -1;
+            } else if (!isUndefinedOrNull(a) && isUndefinedOrNull(b)) {
+                return 1;
+            } else if (isUndefinedOrNull(a) && isUndefinedOrNull(b)) {
+                return 0;
+            } else if (Math.abs(a[propertyKey]) > Math.abs(b[propertyKey])) {
+                return -1;
+            } else if (Math.abs(a[propertyKey]) < Math.abs(b[propertyKey])) {
+                return 1;
+                // eslint-disable-next-line no-else-return
+            } else {
+                return 0;
+            }
+        });
+    if (reverse) {
+        sortedCollection = sortedCollection.reverse();
+    }
+    const finalCollection = sortedCollection.slice(
+        0,
+        selectionAmount <= sortedCollection.length ? selectionAmount : sortedCollection.length
+    );
     return finalCollection;
 };
 
 const sumAllPositiveEventAmounts = (events) => {
     let sum = 0;
     events.forEach((event) => {
-        const { amount, amountConverted } = event;
-        if (!isUndefinedOrNull(amount) && amountConverted > 0) {
+        const { amount } = event;
+        if (!isUndefinedOrNull(amount) && amount > 0) {
             // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field
             // we first check to make sure it had an amount field so that it satisfies our required context
             // however, we are actually only interested in the multi-currency converted amount
-            sum += amountConverted;
+            sum += amount;
         }
     });
     return sum;
@@ -234,27 +528,34 @@ const sumAllPositiveEventAmounts = (events) => {
 const sumAllNegativeEventAmounts = (events) => {
     let sum = 0;
     events.forEach((event) => {
-        const { amount, amountConverted } = event;
-        if (!isUndefinedOrNull(amount) && amountConverted < 0) {
+        const { amount } = event;
+        if (!isUndefinedOrNull(amount) && amount < 0) {
             // routine/reminder types like STANDARD_EVENT_ROUTINE do not require an amount field
             // we first check to make sure it had an amount field so that it satisfies our required context
             // however, we are actually only interested in the multi-currency converted amount
-            sum += amountConverted;
+            sum += amount;
         }
     });
     return sum;
 };
 
 module.exports = {
-    findSnapshotsGreaterThanAmount,
-    findSnapshotsLessThanAmount,
+    filterEventsByKeysAndValues,
+    findSnapshotsGreaterThanSupport,
+    findSnapshotsLessThanResistance,
+    findPositiveSnapshotsGreaterThanSupport,
+    findPositiveSnapshotsLessThanResistance,
+    findNegativeSnapshotsGreaterThanSupport,
+    findNegativeSnapshotsLessThanResistance,
+    findGreatestValueSnapshots,
+    findGreatestPositiveValueSnapshots,
+    findGreatestNegativeValueSnapshots,
     findCriticalSnapshots,
     findRulesToRetire,
     findIrrelevantRules,
     findEventsWithProperty,
     findEventsByPropertyKeyAndValues,
     findEventsWithPropertyKeyContainingSubstring,
-    findGreatestValueSnapshots,
     sumAllPositiveEventAmounts,
     sumAllNegativeEventAmounts
 };

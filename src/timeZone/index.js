@@ -3,7 +3,6 @@ const { errorDisc } = require('../utility/errorHandling');
 const { generateTimeSpan } = require('../core/eventGeneration');
 const {
     UTC,
-    COMPOUND_DATA_DELIMITER,
     DATE_TIME_DELIMITER,
     DATE_FORMAT_STRING,
     TIME_FORMAT_STRING,
@@ -83,8 +82,9 @@ const timeTravel = (danielSan) => {
                 date: event.dateTimeStartEventSource,
                 timeString: event.timeStart
             });
-            event.context = OBSERVER_SOURCE;
-            event.timeZoneObserverSource = `${timeZone}${COMPOUND_DATA_DELIMITER}${timeZoneType}`; // for future convenience
+            event.context = OBSERVER_SOURCE; // simply so the user understands the context
+            event.eventSourceTimeZoneType = timeZoneType; // for future convenience
+            event.eventSourceTimeZone = timeZone; // for future convenience
             event.dateTimeStartObserverSource = targetTimeStartObj.date; // for future convenience, store the full converted moment-timezone date for the event
             if (event.effectiveDateStart) {
                 const transientDateObj = createTimeZone({

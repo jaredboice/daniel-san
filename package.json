@@ -1,8 +1,8 @@
 {
     "name": "daniel-san",
     "author": "jared boice",
-    "description": "a node-based budget-projection engine that helps your routines and finances find balance.  Featuring multi-currency, multi-frequency triggers, time zones, prepay, postpay and dynamic rule modification.",
-    "version": "10.1.0",
+    "description": "a node-based budget-projection engine that helps your routines and finances find balance. The program features aggregates, terminal and file-based reporting output, multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.",
+    "version": "11.0.0",
     "license": "MIT",
     "repository": {
         "type": "git",

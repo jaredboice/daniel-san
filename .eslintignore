@@ -5,6 +5,9 @@ logs
 build/
 dist/
 
+# reports
+*.txt
+
 # Coverage directory used by tools like jest
 coverage/
 
