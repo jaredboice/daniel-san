@@ -499,7 +499,8 @@ options in the above scenario include:
   
 ## Aggregate Functions  
   
-Add the following aggregates array to the reportingConfig options object for computing aggregates (add as many as desired):  
+Add the following aggregates array to the reportingConfig options object for computing aggregates:  
+(add as many as desired)  
 
 ```javascript
 const reportingConfig = {
