@@ -780,9 +780,9 @@ const standardHeader = ({ reportingConfig, writeStream }) => {
         heading: ' daniel-san: astral-projecting your budget with a crane-kick to the face ',
         writeStream
     });
-    if (reportingConfig.name) lineHeading({ heading: ` report: ${reportingConfig.name} `, writeStream });
+    lineHeading({ heading: ' must find balance ', writeStream });
     reportingBoundary({ loops: 2, writeStream });
-    lineHeading({ heading: ' must find balance, daniel-san ', writeStream });
+    if (!isUndefinedOrNull(reportingConfig.name)) lineHeading({ heading: ` report: ${reportingConfig.name} `, writeStream });
     lineHeading({ heading: ` reporting mode: ${reportingConfig.mode} `, writeStream });
     reportingBoundary({ loops: 3, writeStream });
     lineSeparator(2, writeStream);
