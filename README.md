@@ -499,13 +499,15 @@ options in the above scenario include:
   
 ## Aggregate Functions  
   
+Requires the reporting type, DISPLAY_AGGREGATES
+  
 Add the following aggregates array to the reportingConfig options object for computing aggregates:  
 (add as many as desired)  
 
 ```javascript
 const reportingConfig = {
     name: 'some name',
-    type: STANDARD_OUTPUT,
+    type: [STANDARD_OUTPUT, DISPLAY_AGGREGATES],
     mode: CONCISE,
     aggregates: [  
         {  
@@ -595,7 +597,7 @@ Terminal output is configured by default. File output is configured, instead, by
 ```javascript
 const reportingConfig = {
     name: 'some name',
-    type: STANDARD_OUTPUT,
+    type: STANDARD_OUTPUT, // can be provided as an array of types as well!!
     mode: CONCISE,
     file: {
         path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
@@ -673,7 +675,7 @@ The default formattingFunction utilizes javascript's built-in toLocaleString() f
 const decimalFormatterCustom = (number, { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }) => { /* return number formatted */ };
 const reportingConfig = {
     name: 'some name',
-    type: STANDARD_OUTPUT,
+    type: [STANDARD_OUTPUT, DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS], // example of providing the reporting type as an array
     mode: CONCISE,
     criticalThreshold: 577.00,
     // the formatting object is optional as the following values are defaulted for you
