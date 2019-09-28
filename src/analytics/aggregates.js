@@ -332,7 +332,18 @@ const findAnnualAggregates = ({
                 .format(DATE_FORMAT_STRING);
         } else {
             const dateStartSplit = events[0].dateStart.split(DATE_DELIMITER);
-            effectiveDateStartString = `${dateStartSplit[0]}${DATE_DELIMITER}${fiscalYearStart}`;
+            let potentialDateStartString = `${dateStartSplit[0]}${DATE_DELIMITER}${fiscalYearStart}`;
+            if (potentialDateStartString > events[0].dateStart) {
+                // we have to make sure that the effectiveDateStartString is less than the dateStart of the first event
+                let oldYearString = potentialDateStartString.split(DATE_DELIMITER)[0];
+                let oldYearNumber = parseInt(oldYearString, 10);
+                oldYearNumber -= 1;
+                const unpaddedNewYearString = oldYearNumber.toString();
+                const paddedNewYearString = unpaddedNewYearString.padStart(4, '0');
+                effectiveDateStartString = paddedNewYearString;
+            } else {
+                effectiveDateStartString = potentialDateStartString;
+            }
         }
         const timeStream = new TimeStream({
             effectiveDateStartString,
@@ -391,6 +402,16 @@ const findAnnualAggregates = ({
                 });
                 // end logic unique to this specific function
                 eventLooper++;
+            }
+            // if we hit the termDate with a zero event count then reset the termDate and the aggregate dateStart
+            if (currentDateInFocus === termDateString && aggregate.eventCount === 0) {
+                aggregate.dateStart = currentDateInFocus;
+                aggregate.dateEnd = currentDateInFocus; // default value
+                termDateString = timeStream.looperDate
+                    .clone()
+                    .add(1, 'years')
+                    .add(-1, 'days')
+                    .format(DATE_FORMAT_STRING);
             }
             if (
                 aggregate.eventCount > 0 &&
@@ -653,6 +674,15 @@ const findMonthlyAggregates = ({
                 // end logic unique to this specific function
                 eventLooper++;
             }
+            // if we hit the termDate with a zero event count then reset the termDate and the aggregate dateStart
+            if (currentDateInFocus === termDateString && aggregate.eventCount === 0) {
+                aggregate.dateStart = currentDateInFocus;
+                aggregate.dateEnd = currentDateInFocus; // default value
+                termDateString = timeStream.looperDate
+                    .clone()
+                    .endOf('month')
+                    .format(DATE_FORMAT_STRING);
+            }
             if (
                 aggregate.eventCount > 0 &&
                 (timeStream.looperDate.format(DATE_FORMAT_STRING) >= termDateString || eventLooper === events.length)
@@ -829,7 +859,7 @@ const findWeeklyAggregates = ({
     flowDirection = BOTH,
     weekdayStart = MONDAY,
     dayCycles = 7, // this variable is adjustable in findDayCycleAggregates
-    dayCycleStart = null, // for findDayCycleAggregates
+    cycleDateStart = null, // for findDayCycleAggregates
     selectionAmount = 7,
     reverse = false,
     modeMax,
@@ -839,11 +869,10 @@ const findWeeklyAggregates = ({
     transientData = {}
 }) => {
     try {
-        let dayCycleFunctionality = false;
         const aggregateDateStart = createTimeZone({
             timeZone: events[0].timeZone,
             timeZoneType: events[0].timeZoneType,
-            dateString: events[0].dateStart
+            dateString: cycleDateStart || events[0].dateStart
         });
         const aggregateDateEnd = createTimeZone({
             timeZone: events[events.length - 1].timeZone,
@@ -863,11 +892,19 @@ const findWeeklyAggregates = ({
             }
         } else {
             // scenario for findDayCycleAggregates
-            dayCycleFunctionality = true;
+            // eslint-disable-next-line no-lonely-if
+            if (aggregateDateStart.format(DATE_FORMAT_STRING) <= events[0].dateStart) {
+                effectiveDateStart = aggregateDateStart;
+            } else {
+                let newDate = aggregateDateStart.clone().add(-dayCycles, 'days');
+                while (newDate.format(DATE_FORMAT_STRING) > events[0].dateStart) {
+                    newDate = newDate.clone().add(-dayCycles, 'days');
+                }
+                effectiveDateStart = newDate;
+            }
         }
         const timeStream = new TimeStream({
-            effectiveDateStartString:
-                dayCycleFunctionality && dayCycleStart ? dayCycleStart : effectiveDateStart.format(DATE_FORMAT_STRING),
+            effectiveDateStartString: effectiveDateStart.format(DATE_FORMAT_STRING),
             effectiveDateEndString: aggregateDateEnd.format(DATE_FORMAT_STRING),
             timeStartString: null,
             timeEndString: null,
@@ -924,6 +961,15 @@ const findWeeklyAggregates = ({
                 // end logic unique to this specific function
                 eventLooper++;
             }
+            // if we hit the termDate with a zero event count then reset the termDate and the aggregate dateStart
+            if (currentDateInFocus === termDateString && aggregate.eventCount === 0) {
+                aggregate.dateStart = currentDateInFocus;
+                aggregate.dateEnd = currentDateInFocus; // default value
+                termDateString = timeStream.looperDate
+                    .clone()
+                    .add(dayCycles - 1, 'days') // if timeStream.looperDate starts the cycle on MONDAY, we only want to calculate our EventProcess through SUNDAY of the same week, inclusively
+                    .format(DATE_FORMAT_STRING);
+            }
             if (
                 aggregate.eventCount > 0 &&
                 (timeStream.looperDate.format(DATE_FORMAT_STRING) >= termDateString || eventLooper === events.length)
@@ -935,7 +981,7 @@ const findWeeklyAggregates = ({
                     flowDirection,
                     weekdayStart,
                     dayCycles,
-                    dayCycleStart,
+                    cycleDateStart,
                     selectionAmount,
                     reverse,
                     modeMax,
@@ -1111,7 +1157,7 @@ const findDayCycleAggregates = ({
     flowDirection = BOTH,
     weekdayStart = null,
     dayCycles = 30,
-    dayCycleStart = null,
+    cycleDateStart = null,
     selectionAmount = 7,
     reverse = false,
     modeMax,
@@ -1130,7 +1176,7 @@ const findDayCycleAggregates = ({
             flowDirection,
             weekdayStart,
             dayCycles,
-            dayCycleStart,
+            cycleDateStart,
             selectionAmount,
             reverse,
             modeMax,
@@ -1153,7 +1199,7 @@ const findDayCycleMediansAndModes = ({
     flowDirection = BOTH,
     weekdayStart = null,
     dayCycles = 30,
-    dayCycleStart = null,
+    cycleDateStart = null,
     modeMax = 5,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
@@ -1169,7 +1215,7 @@ const findDayCycleMediansAndModes = ({
         flowDirection,
         weekdayStart,
         dayCycles,
-        dayCycleStart,
+        cycleDateStart,
         modeMax,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
@@ -1188,7 +1234,7 @@ const findDayCycleSumsAndAvgs = ({
     flowDirection = BOTH,
     weekdayStart = null,
     dayCycles = 30,
-    dayCycleStart = null,
+    cycleDateStart = null,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1203,7 +1249,7 @@ const findDayCycleSumsAndAvgs = ({
         flowDirection,
         weekdayStart,
         dayCycles,
-        dayCycleStart,
+        cycleDateStart,
         aggregateInit: aggregateSumsAndAvgsInit,
         aggregateEventProcess: aggregateSumsAndAvgsEventProcess,
         aggregateListProcess: aggregateSumsAndAvgsListProcess,
@@ -1221,7 +1267,7 @@ const findDayCycleMinimumsAndMaximums = ({
     flowDirection = BOTH,
     weekdayStart = null,
     dayCycles = 30,
-    dayCycleStart = null,
+    cycleDateStart = null,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     transientData = {}
@@ -1235,7 +1281,7 @@ const findDayCycleMinimumsAndMaximums = ({
         flowDirection,
         weekdayStart,
         dayCycles,
-        dayCycleStart,
+        cycleDateStart,
         aggregateInit: aggregateMinimumsAndMaximumsInit,
         aggregateEventProcess: aggregateMinimumsAndMaximumsEventProcess,
         transientData
@@ -1252,7 +1298,7 @@ const findDayCycleGreatestValues = ({
     flowDirection = BOTH,
     weekdayStart = MONDAY,
     dayCycles = 30,
-    dayCycleStart = null,
+    cycleDateStart = null,
     selectionAmount = 7,
     reverse = false,
     aggregateInit = () => {},
@@ -1269,7 +1315,7 @@ const findDayCycleGreatestValues = ({
         flowDirection,
         weekdayStart,
         dayCycles,
-        dayCycleStart,
+        cycleDateStart,
         selectionAmount,
         reverse,
         aggregateInit: aggregateGreatestValuesInit,

@@ -520,7 +520,7 @@ const reportingConfig = {
             dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17  
             modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
             weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types  
-            dayCycleStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type  
+            cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type  
             fiscalYearStart: '12-25', // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
         }
     ]

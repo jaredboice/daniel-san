@@ -568,7 +568,7 @@ const eventsLogger = ({ events, reportingConfig, currencySymbol, showNothingToDi
 
 const aggregateHeader = ({ aggregate, writeStream }) => {
     reportingBoundary({ loops: 1, char: '%', writeStream });
-    lineHeading({ heading: `  begin aggreate function: `, char: '%', writeStream });
+    lineHeading({ heading: `  begin aggregate function: `, char: '%', writeStream });
     if (!isUndefinedOrNull(aggregate.name)) {
         lineHeading({ heading: `  name: ${aggregate.name}  `, char: '%', writeStream });
     }
