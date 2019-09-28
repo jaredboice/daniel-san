@@ -598,7 +598,7 @@ const reportingConfig = {
     type: STANDARD_OUTPUT,
     mode: CONCISE,
     file: {
-        path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory three levels up from fileIo.js, but make sure that this reports directory exists!
+        path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
         name: 'MyReport',
         extension: '.txt', // .txt is actuallyl the default value, to use an extension within the file name attribute directly, assign null to extension
     }

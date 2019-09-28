@@ -6,7 +6,7 @@ const createStream = ({ filepath = null, filename = null, extension = 'txt', dir
         filename = 'daniel-san-report';
     }
     if (!filepath) {
-        filepath = path.resolve(`${dirname}/../../../reports`);
+        filepath = path.resolve(`${dirname}/../../../../reports`);
     }
     const fullFilename = extension ? `${filename}.${extension}` : `${filename}`;
     const absolutePath = path.resolve(filepath, fullFilename);
