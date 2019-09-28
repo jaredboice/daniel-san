@@ -930,15 +930,14 @@ const showCriticalSnapshots = ({ danielSan, reportingConfig, showNothingToDispla
                 })} `,
                 writeStream
             });
+            lineSeparator(2, writeStream);
         }
-        lineSeparator(2, writeStream);
         eventsLogger({
             events: criticalSnapshots,
             reportingConfig,
             currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
             writeStream
         });
-        lineSeparator(2, writeStream);
         if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
             lineHeading({
                 heading: ` end critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
@@ -951,8 +950,8 @@ const showCriticalSnapshots = ({ danielSan, reportingConfig, showNothingToDispla
                 })} `,
                 writeStream
             });
+            lineSeparator(2, writeStream);
         }
-        lineSeparator(2, writeStream);
     } else if (showNothingToDisplaySwitch) {
         showNothingToDisplay(writeStream);
     }
