@@ -325,13 +325,14 @@ const findAnnualAggregates = ({
             dateString: events[events.length - 1].dateStart // an event's dateEnd is definitely not relevant since there is no need to loop over extra days when there are no more new events
         });
         let effectiveDateStartString;
-        if (!fiscalYearStart || fiscalYearStart > events[0].dateStart) {
+        const dateStartSplit = events[0].dateStart.split(DATE_DELIMITER);
+        if (!fiscalYearStart || `${dateStartSplit[0]}${DATE_DELIMITER}${fiscalYearStart}` > events[0].dateStart) {
             effectiveDateStartString = aggregateDateStart
                 .clone()
                 .startOf('year')
                 .format(DATE_FORMAT_STRING);
         } else {
-            effectiveDateStartString = fiscalYearStart;
+            effectiveDateStartString = `${dateStartSplit[0]}${DATE_DELIMITER}${fiscalYearStart}`;
         }
         const timeStream = new TimeStream({
             effectiveDateStartString,

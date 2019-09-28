@@ -500,22 +500,29 @@ options in the above scenario include:
 ##Aggregate Functions  
   
 Add the following aggregates array to the reportingConfig options object for computing aggregates (add as many as desired):  
-    
-aggregates: [  
-    {  
-        name: 'some name',  
-        type: SUMS_AND_AVERAGES || MINIMUMS_AND_MAXIMUMS || MEDIANS_AND_MODES || GREATEST_VALUES || LEAST_VALUES,  
-        frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,  
-        propertyKey: 'balanceEnding' || 'amount',  // determines the field that this aggregate will execute against
-        flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES  
-        selectionAmount, // this property is only for GREATEST_VALUES || LEAST_VALUES  
-        dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17  
-        modeMax, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
-        weekdayStart, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types  
-        dateStart, // this optional property allows you to change the starting date for the DAY_CYCLES type  
-        fiscalYearStart, // this optional property allows you to change the starting date for the ANNUALLY type  
-    }
-]  
+
+```javascript
+const reportingConfig = {
+    name: 'some name',
+    type: STANDARD_OUTPUT,
+    mode: CONCISE,
+    aggregates: [  
+        {  
+            name: 'some name',  
+            type: SUMS_AND_AVERAGES || MINIMUMS_AND_MAXIMUMS || MEDIANS_AND_MODES || GREATEST_VALUES || LEAST_VALUES,  
+            frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,  
+            propertyKey: 'balanceEnding' || 'amount',  // determines the field that this aggregate will execute against
+            flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES  
+            selectionAmount: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES  
+            dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17  
+            modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
+            weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types  
+            dateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type  
+            fiscalYearStart: '12-25', // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
+        }
+    ]
+}
+```
     
 ##Time  
 
@@ -583,12 +590,19 @@ options in the above scenario include:
 ## Reports - File and Terminal Output  
   
 Terminal output is configured by default. File output is configured, instead, by adding the following attributes to the reportingConfig options object:  
-  
-file: {
-    path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory three levels up from fileIo.js, but make sure that this reports directory exists!
-    name: 'MyReport',
-    extension: '.txt', // .txt is actuallyl the default value, to use an extension within the file name attribute directly, assign null to extension
+
+```javascript
+const reportingConfig = {
+    name: 'some name',
+    type: STANDARD_OUTPUT,
+    mode: CONCISE,
+    file: {
+        path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory three levels up from fileIo.js, but make sure that this reports directory exists!
+        name: 'MyReport',
+        extension: '.txt', // .txt is actuallyl the default value, to use an extension within the file name attribute directly, assign null to extension
+    }
 }
+```
   
 **Logging Results to the Command-Line**
 
@@ -709,10 +723,17 @@ createReport({ danielSan: eventResults.danielSan, reportingConfig: reportingConf
 **Filter Events prior to report generation**
   
 Add the following attributes to the root of the reportingConfig object for filter control. filterKeys and filterValues are parallel arrays.  
-  
-filterKeys: ['name', 'group'],
-filterValues: ['rent', ANY ], // the constant for ANY, INTERSECTION and UNION are available for import
-filterType: UNION || INTERSECTION // event inclusion is governed by Any attributes that match || All attributes must match  
+
+```javascript
+const reportingConfig = {
+    name: 'some name',
+    type: STANDARD_OUTPUT,
+    mode: CONCISE,
+    filterKeys: ['name', 'group'],
+    filterValues: ['rent', ANY ], // the constant for ANY, INTERSECTION and UNION are available for import
+    filterType: UNION || INTERSECTION // event inclusion is governed by Any attributes that match || All attributes must match  
+}
+```
   
 With a filterType of UNION, the above configuration will include events that have a name with the value "rent" or a group attribute with any value, including null.
 With a filterType of INTERSECTION, the above configuration will include events that have both a name with the value "rent" And a group attribute with any value.  
@@ -867,6 +888,7 @@ const {
     STYLE_DEFAULT,
     CURRENCY_DEFAULT
 } = require('daniel-san/constants');
+```
 
 ## Breaking Changes in v11.0.0  
   
@@ -916,4 +938,3 @@ As of v8.0.0, to make way for a cleaner distinction between event dates and effe
 ## Breaking Change in v3.0.0
 
 In v3.0, the currencyConversion function parameters have changed from currentSymbol and futureSymbol to inputSymbol and outputSymbol, respectively. Because naming things is hard.
-```
