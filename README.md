@@ -787,7 +787,7 @@ Importing the following constants, to be discoverable by your code editor's auto
   
 ```javascript
 const {
- APP_NAME: 'daniel-san',
+    APP_NAME,
     DEFAULT_ERROR_MESSAGE,
     DATE_DELIMITER,
     TIME_DELIMITER,
