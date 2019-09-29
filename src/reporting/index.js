@@ -541,6 +541,7 @@ const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
 
 const eventsLogger = ({ events, reportingConfig, currencySymbol, showNothingToDisplaySwitch = true, writeStream }) => {
     if (events && events.length > 0) {
+        lineSeparator(2, writeStream);
         switch (reportingConfig.mode) {
             case VERBOSE:
                 events.forEach((event) => {
