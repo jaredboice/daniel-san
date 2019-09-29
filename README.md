@@ -305,7 +305,7 @@ const danielSan = {
 
 **Custom BIWEEKLY / BIMONTHLY Event Types**
 
-Note: when using the Modulus/Cycle feature, you should ALWAYS set an effectiveDateStart.
+Note: when using the Modulus/Cycle feature, you should ALWAYS set an effectiveDateStart and it should fall on an expected trigger date.
 
 In the code block below, the 'monthly bitcoin' account/rule has a modulus of 3 and a cycle of 1. In this context, the event will occur
 every third trigger of the frequency (in this case every third occurrence of the 30th - or every three months on the 30th). The cycle represents
