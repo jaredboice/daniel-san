@@ -56,12 +56,21 @@ const writeJsonToFile = ({
     const { fileStream } = createStream({ filepath, filename, defineEventHandlers: false });
     if (onFinish) {
         fileStream.on('finish', onFinish);
+    } else {
+        fileStream.on('finish', () => {
+            console.log(`wrote all contents to file ${absolutePath}`); // eslint-disable-line no-console
+        });
     }
     if (onError) {
         fileStream.on('error', onError);
+    } else {
+        fileStream.on('error', (err) => {
+            console.error(`there was an error writing the file ${absolutePath} => ${err}`); // eslint-disable-line no-console
+        });
     }
-    fileStream.write(JSON.stringify(json, null, jsonSpacing));
-    fileStream.end();
+    fileStream.write(JSON.stringify(json, null, jsonSpacing), () => {
+        fileStream.end();
+    });
 };
 
 module.exports = {

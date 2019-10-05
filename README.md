@@ -611,7 +611,7 @@ const reportingConfig = {
         path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
         name: 'MyReport.txt',
         onFinish: () => {}, // optional
-        onError: () => {}, // optional
+        onError: (err) => {}, // optional
         jsonSpacing: 4, // OPTIONAL! This is the default setting when using the rawJson attribute
     }
 };
