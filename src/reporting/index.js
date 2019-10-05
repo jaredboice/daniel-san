@@ -830,29 +830,30 @@ const showDiscardedEvents = ({
             if (leadingLineSeparator) {
                 lineSeparator({ loops: 2, reportCharWidth, writeStream });
             }
+            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
             lineHeading({
                 heading: ' these events were excluded for residing beyond the provided date range ',
                 reportCharWidth,
                 writeStream
             });
             reportingBoundary({ loops: 2, reportCharWidth, writeStream });
-        }
-        eventsLogger({
-            events: discardedEvents,
-            reportingConfig,
-            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-            showNothingToDisplaySwitch,
-            reportCharWidth,
-            writeStream
-        });
-        if (trailingFooter) {
-            lineHeading({
-                heading: ' end discarded events ',
-                char: '-',
+            eventsLogger({
+                events: discardedEvents,
+                reportingConfig,
+                currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+                showNothingToDisplaySwitch,
                 reportCharWidth,
                 writeStream
             });
-            lineSeparator({ loops: 2, reportCharWidth, writeStream });
+            if (trailingFooter) {
+                lineHeading({
+                    heading: ' end discarded events ',
+                    char: '-',
+                    reportCharWidth,
+                    writeStream
+                });
+                lineSeparator({ loops: 2, reportCharWidth, writeStream });
+            }
         }
     } else {
         return discardedEvents || [];
@@ -957,16 +958,15 @@ const showSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCh
         });
         lineSeparator({ loops: 2, reportCharWidth, writeStream });
         if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
+            showDiscardedEvents({
+                danielSan,
+                reportingConfig,
+                showNothingToDisplaySwitch: false,
+                reportCharWidth,
+                leadingLineSeparator: false,
+                writeStream
+            });
         }
-        showDiscardedEvents({
-            danielSan,
-            reportingConfig,
-            showNothingToDisplaySwitch: false,
-            reportCharWidth,
-            leadingLineSeparator: false,
-            writeStream
-        });
     } else {
         return sum;
     }
@@ -998,16 +998,15 @@ const showSumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, reportCh
         });
         lineSeparator({ loops: 2, reportCharWidth, writeStream });
         if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
+            showDiscardedEvents({
+                danielSan,
+                reportingConfig,
+                showNothingToDisplaySwitch: false,
+                leadingLineSeparator: false,
+                reportCharWidth,
+                writeStream
+            });
         }
-        showDiscardedEvents({
-            danielSan,
-            reportingConfig,
-            showNothingToDisplaySwitch: false,
-            leadingLineSeparator: false,
-            reportCharWidth,
-            writeStream
-        });
     } else {
         return sum;
     }
@@ -1175,16 +1174,15 @@ const standardOutput = ({ danielSan, reportingConfig, reportCharWidth, writeStre
             });
         }
         if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
+            showDiscardedEvents({
+                danielSan,
+                reportingConfig,
+                showNothingToDisplaySwitch: false,
+                reportCharWidth,
+                leadingLineSeparator: false,
+                writeStream
+            });
         }
-        showDiscardedEvents({
-            danielSan,
-            reportingConfig,
-            showNothingToDisplaySwitch: false,
-            reportCharWidth,
-            leadingLineSeparator: false,
-            writeStream
-        });
     } else {
         return relevantEvents || [];
     }
@@ -1284,7 +1282,9 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
         if (reportingConfig.file.onError) {
             fileStream.on('error', reportingConfig.file.onError);
         }
-        jsonSpacingSelected = reportingConfig.file.jsonSpacing ? reportingConfig.file.jsonSpacing : DEFAULT_JSON_SPACING;
+        jsonSpacingSelected = reportingConfig.file.jsonSpacing
+            ? reportingConfig.file.jsonSpacing
+            : DEFAULT_JSON_SPACING;
     } else {
         // default setting
         fileStream = null;
