@@ -53,7 +53,9 @@ const writeJsonToFile = ({
     if (!filepath) {
         filepath = path.resolve(`${defaultPath}/data`);
     }
-    const { fileStream } = createStream({ filepath, filename, defineEventHandlers: false });
+    const fullFilename = `${filename}`;
+    const absolutePath = path.resolve(filepath, fullFilename);
+    const fileStream = fs.createWriteStream(absolutePath);
     if (onFinish) {
         fileStream.on('finish', onFinish);
     } else {
