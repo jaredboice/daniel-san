@@ -8,9 +8,13 @@ const createStream = ({
     filepath = null,
     filename = 'danielSanReport.txt',
     dirname = __dirname,
-    defineEventHandlers = true
+    defineEventHandlers = true,
+    json = false
 }) => {
     const defaultPath = path.resolve(`${dirname}${defaultDirLevels}`);
+    if (!filename) {
+        filename = json ? 'danielSanReport.json' : 'danielSanReport.txt';
+    }
     if (!filepath) {
         filepath = path.resolve(`${defaultPath}/reports`);
     }
@@ -42,7 +46,7 @@ const closeStream = (fileStream) => {
     fileStream.end();
 };
 
-const writeJsonToFile = ({ 
+const writeJsonToFile = ({
     filepath = null,
     filename = 'danielSanData.json',
     dirname = __dirname,

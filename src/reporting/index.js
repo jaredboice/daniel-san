@@ -1272,7 +1272,8 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
             filepath: reportingConfig.file.path,
             filename: reportingConfig.file.name,
             dirname: __dirname,
-            defineEventHandlers
+            defineEventHandlers,
+            json: reportingConfig.rawJson
         });
         const { writeStream: transientWriteStream, fileStream: transientFileStream } = fileStruct;
         writeStream = transientWriteStream;

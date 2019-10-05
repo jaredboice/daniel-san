@@ -14,7 +14,7 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit 'Daniel-San-St
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance. The program features aggregates, terminal and file-based reporting output, multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance. The program features text, json, terminal and file-based reporting output, aggregates, multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
 
 ## Install, Import & Execute
 
@@ -610,9 +610,9 @@ const reportingConfig = {
     file: {
         path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
         name: 'MyReport.txt',
-        jsonSpacing: 4, // OPTIONAL! This is the default setting when using the rawJson attribute
         onFinish: () => {}, // optional
-        onError: () => {} // optional
+        onError: () => {}, // optional
+        jsonSpacing: 4, // OPTIONAL! This is the default setting when using the rawJson attribute
     }
 };
 ```
@@ -799,10 +799,10 @@ const reportingConfig = {
     mode: CONCISE,
     // note: you can use outputRelay or the file options but you cannot use both
     outputRelay: (content, error) => { if (content) process.stdout.write(content) }, // if you do not want to use the terminal or the default file writing functionality, you can push each chunk to a readstream that pipes into a write stream, or do as you like;
-    // null content indicates end of output
+    // null content indicates end of output "stream"
     // note: the 2nd paramter indicates whether or not the content is provided in the context of an error
     // note: when not using rawJson, each line of output is already formatted with a newline
-    rawJson: false, // OPTIONAL! When set to true, each chunk is either sent to outputRelay as content, or, if using the default file writing functionality, is output to a json file
+    rawJson: false, // OPTIONAL! When set to true, each json chunk is either sent to outputRelay as content, or, if using the default file writing functionality, is output to a json file
     reportCharWidth: 89, // changes width of the print screen when not using the rawJson option
 };
 ```
