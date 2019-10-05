@@ -4,13 +4,7 @@ const { DEFAULT_JSON_SPACING } = require('../constants');
 
 const defaultDirLevels = '/../../../../';
 
-const createStream = ({
-    filepath = null,
-    filename = 'danielSanReport.txt',
-    dirname = __dirname,
-    defineEventHandlers = true,
-    json = false
-}) => {
+const createStream = ({ filepath = null, filename, dirname = __dirname, defineEventHandlers = true, json = false }) => {
     const defaultPath = path.resolve(`${dirname}${defaultDirLevels}`);
     if (!filename) {
         filename = json ? 'danielSanReport.json' : 'danielSanReport.txt';
