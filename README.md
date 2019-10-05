@@ -797,9 +797,10 @@ const reportingConfig = {
     name: 'some name',
     type: [STANDARD_OUTPUT, DISPLAY, SUM_OF_ALL_NEGATIVE_EVENT_FLOWS],
     mode: CONCISE,
+    // note: you can use outputRelay or the file options but you cannot use both
     outputRelay: (content, error) => { if (content) process.stdout.write(content) }, // if you do not want to use the terminal or the default file writing functionality, you can push each chunk to a readstream that pipes into a write stream, or do as you like;
     // null content indicates end of output
-        // note: the 2nd paramter indicates whether or not the content is provided in the context of an error
+    // note: the 2nd paramter indicates whether or not the content is provided in the context of an error
     // note: when not using rawJson, each line of output is already formatted with a newline
     rawJson: false, // OPTIONAL! When set to true, each chunk is either sent to outputRelay as content, or, if using the default file writing functionality, is output to a json file
     reportCharWidth: 89, // changes width of the print screen when not using the rawJson option
