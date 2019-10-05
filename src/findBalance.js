@@ -1,11 +1,10 @@
 const { TimeStream } = require('./timeStream');
-const { initializeTimeZoneData, timeTravel } = require('./timeZone');
+const { timeTravel } = require('./timeZone');
 const { buildEvents, executeEvents, cleanUpEvents } = require('./core/index');
 const { discardEventsOutsideDateRange, deleteIrrelevantRules } = require('./core/obliterate');
 const { validateConfig, validateRules } = require('./core/validation');
 const { sortEvents } = require('./core/sorting');
 const { errorDisc } = require('./utility/errorHandling');
-const { isUndefinedOrNull } = require('./utility/validation');
 const { deepCopy } = require('./utility/dataStructures');
 
 const findBalance = (danielSan = {}, options = {}) => {

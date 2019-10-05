@@ -1,8 +1,21 @@
-const { decimalFormatterStandard } = require('./utility/formatting');
-
 const DATE_DELIMITER = '-';
 const TIME_DELIMITER = ':';
 const DATE_TIME_DELIMITER = 'T';
+
+const MIN_INT_DIGITS_DEFAULT = 1;
+const MIN_DECIMAL_DIGITS_DEFAULT = 2;
+const MAX_DECIMAL_DIGITS_DEFAULT = 2;
+const LOCALE_DEFAULT = 'en-US';
+const STYLE_DEFAULT = 'currency';
+const CURRENCY_DEFAULT = 'USD';
+
+const SUNDAY = 0;
+const MONDAY = 1;
+const TUESDAY = 2;
+const WEDNESDAY = 3;
+const THURSDAY = 4;
+const FRIDAY = 5;
+const SATURDAY = 6;
 
 const appConstants = {
     APP_NAME: 'daniel-san',
@@ -46,13 +59,13 @@ const appConstants = {
     WEEKLY: 'WEEKLY',
     DAILY: 'DAILY',
     ONCE: 'ONCE',
-    SUNDAY: 0,
-    MONDAY: 1,
-    TUESDAY: 2,
-    WEDNESDAY: 3,
-    THURSDAY: 4,
-    FRIDAY: 5,
-    SATURDAY: 6,
+    SUNDAY,
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
     WEEKENDS: [6, 0],
     DISCOVERING_EVENT_TYPE: 'DISCOVERING_EVENT_TYPE',
     EVALUATING_RULE_INSERTION: 'EVALUATING_RULE_INSERTION',
@@ -65,42 +78,43 @@ const appConstants = {
     VERBOSE: 'VERBOSE',
     CONCISE: 'CONCISE',
     SHY: 'SHY',
-    DISPLAY_EVENTS_BY_GROUP: 'DISPLAY_EVENTS_BY_GROUP',
-    DISPLAY_EVENTS_BY_GROUPS: 'DISPLAY_EVENTS_BY_GROUPS',
-    DISPLAY_EVENTS_BY_NAME: 'DISPLAY_EVENTS_BY_NAME',
-    DISPLAY_EVENTS_BY_NAMES: 'DISPLAY_EVENTS_BY_NAMES',
-    DISPLAY_EVENTS_BY_TYPE: 'DISPLAY_EVENTS_BY_TYPE',
-    DISPLAY_EVENTS_BY_TYPES: 'DISPLAY_EVENTS_BY_TYPES',
-    DISPLAY_EVENTS: 'DISPLAY_EVENTS',
-    DISPLAY_CRITICAL_SNAPSHOTS: 'DISPLAY_CRITICAL_SNAPSHOTS',
-    DISPLAY_DISCARDED_EVENTS: 'DISPLAY_DISCARDED_EVENTS',
-    DISPLAY_IMPORTANT_EVENTS: 'DISPLAY_IMPORTANT_EVENTS',
-    DISPLAY_TIME_EVENTS: 'DISPLAY_TIME_EVENTS',
-    DISPLAY_ROUTINE_EVENTS: 'DISPLAY_ROUTINE_EVENTS',
-    DISPLAY_REMINDER_EVENTS: 'DISPLAY_REMINDER_EVENTS',
-    DISPLAY_RULES_TO_RETIRE: 'DISPLAY_RULES_TO_RETIRE',
-    DISPLAY_IRRELEVANT_RULES: 'DISPLAY_IRRELEVANT_RULES',
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS',
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS',
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS',
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS',
-    DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT: 'DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT',
-    DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE: 'DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE',
-    DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT: 'DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT',
-    DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE: 'DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE',
-    DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT: 'DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT',
-    DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE: 'DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE',
-    DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT: 'DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT',
-    DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT: 'DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT',
-    DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS: 'DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS',
-    DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS: 'DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS',
-    DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS: 'DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS',
-    DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS: 'DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS',
-    DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS: 'DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS',
-    DISPLAY_LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS: 'DISPLAY_LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS',
-    DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS: 'DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS',
-    DISPLAY_LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS: 'DISPLAY_LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS',
-    DISPLAY_AGGREGATES: 'DISPLAY_AGGREGATES',
+    EVENTS_BY_GROUP: 'EVENTS_BY_GROUP',
+    EVENTS_BY_GROUPS: 'EVENTS_BY_GROUPS',
+    EVENTS_BY_NAME: 'EVENTS_BY_NAME',
+    EVENTS_BY_NAMES: 'EVENTS_BY_NAMES',
+    EVENTS_BY_TYPE: 'EVENTS_BY_TYPE',
+    EVENTS_BY_TYPES: 'EVENTS_BY_TYPES',
+    EVENTS: 'EVENTS',
+    CRITICAL_SNAPSHOTS: 'CRITICAL_SNAPSHOTS',
+    DISCARDED_EVENTS: 'DISCARDED_EVENTS',
+    IMPORTANT_EVENTS: 'IMPORTANT_EVENTS',
+    TIME_EVENTS: 'TIME_EVENTS',
+    ROUTINE_EVENTS: 'ROUTINE_EVENTS',
+    REMINDER_EVENTS: 'REMINDER_EVENTS',
+    ROUTINE_AND_REMINDER_EVENTS: 'ROUTINE_AND_REMINDER_EVENTS',
+    RULES_TO_RETIRE: 'RULES_TO_RETIRE',
+    IRRELEVANT_RULES: 'IRRELEVANT_RULES',
+    SUM_OF_ALL_POSITIVE_EVENT_FLOWS: 'SUM_OF_ALL_POSITIVE_EVENT_FLOWS',
+    SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS: 'SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS',
+    SUM_OF_ALL_NEGATIVE_EVENT_FLOWS: 'SUM_OF_ALL_NEGATIVE_EVENT_FLOWS',
+    SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS: 'SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS',
+    EVENT_FLOWS_GREATER_THAN_SUPPORT: 'EVENT_FLOWS_GREATER_THAN_SUPPORT',
+    EVENT_FLOWS_LESS_THAN_RESISTANCE: 'EVENT_FLOWS_LESS_THAN_RESISTANCE',
+    NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT: 'NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT',
+    NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE: 'NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE',
+    POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT: 'POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT',
+    POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE: 'POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE',
+    BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT: 'BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT',
+    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT: 'BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT',
+    GREATEST_BALANCE_ENDING_SNAPSHOTS: 'GREATEST_BALANCE_ENDING_SNAPSHOTS',
+    LEAST_BALANCE_ENDING_SNAPSHOTS: 'LEAST_BALANCE_ENDING_SNAPSHOTS',
+    GREATEST_EVENT_FLOW_SNAPSHOTS: 'GREATEST_EVENT_FLOW_SNAPSHOTS',
+    LEAST_EVENT_FLOW_SNAPSHOTS: 'LEAST_EVENT_FLOW_SNAPSHOTS',
+    GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS: 'GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS',
+    LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS: 'LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS',
+    GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS: 'GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS',
+    LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS: 'LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS',
+    AGGREGATES: 'AGGREGATES',
     DAY_CYCLES: 'DAY_CYCLES',
     DATE_SETS: 'DATE_SETS',
     SUMS_AND_AVERAGES: 'SUMS_AND_AVERAGES',
@@ -108,13 +122,119 @@ const appConstants = {
     MINIMUMS_AND_MAXIMUMS: 'MINIMUMS_AND_MAXIMUMS',
     GREATEST_VALUES: 'GREATEST_VALUES',
     LEAST_VALUES: 'LEAST_VALUES',
-    FORMATTING_FUNCTION_DEFAULT: decimalFormatterStandard,
-    MIN_INT_DIGITS_DEFAULT: 1,
-    MIN_DECIMAL_DIGITS_DEFAULT: 2,
-    MAX_DECIMAL_DIGITS_DEFAULT: 2,
-    LOCALE_DEFAULT: 'en-US',
-    STYLE_DEFAULT: 'currency',
-    CURRENCY_DEFAULT: 'USD'
+    MIN_INT_DIGITS_DEFAULT,
+    MIN_DECIMAL_DIGITS_DEFAULT,
+    MAX_DECIMAL_DIGITS_DEFAULT,
+    LOCALE_DEFAULT,
+    STYLE_DEFAULT,
+    CURRENCY_DEFAULT,
+    RULE: 'RULE',
+    EVENT: 'EVENT',
+    REPORT: 'REPORT',
+    AGGREGATE: 'AGGREGATE',
+    DEFAULT_JSON_SPACING: 4
 };
 
-module.exports = appConstants;
+const decimalFormatterStandard = (
+    number,
+    {
+        minIntegerDigits = MIN_INT_DIGITS_DEFAULT,
+        minDecimalDigits = MIN_DECIMAL_DIGITS_DEFAULT,
+        maxDecimalDigits = MAX_DECIMAL_DIGITS_DEFAULT,
+        locale = LOCALE_DEFAULT,
+        style = STYLE_DEFAULT,
+        currency = CURRENCY_DEFAULT
+    }
+) => {
+    let value = null;
+    if (currency) {
+        value = number.toLocaleString(locale, {
+            minimumIntegerDigits: minIntegerDigits,
+            minimumFractionDigits: minDecimalDigits,
+            maximumFractionDigits: maxDecimalDigits,
+            style,
+            currency
+        });
+    } else {
+        value = number.toLocaleString(locale, {
+            minimumIntegerDigits: minIntegerDigits,
+            minimumFractionDigits: minDecimalDigits,
+            maximumFractionDigits: maxDecimalDigits,
+            style
+        });
+    }
+    return value;
+};
+
+const formattingFunctionDefault = decimalFormatterStandard;
+
+const getDefaultParamsForDecimalFormatter = (formatting) => {
+    const formattingOptions = formatting || {};
+    const formattingFunction =
+        formattingOptions && formattingOptions.formattingFunction
+            ? formattingOptions.formattingFunction
+            : formattingFunctionDefault;
+    const minIntegerDigits =
+        formattingOptions && formattingOptions.minIntegerDigits
+            ? formattingOptions.minIntegerDigits
+            : MIN_INT_DIGITS_DEFAULT;
+    const minDecimalDigits =
+        formattingOptions && formattingOptions.minDecimalDigits
+            ? formattingOptions.minDecimalDigits
+            : MIN_DECIMAL_DIGITS_DEFAULT;
+    const maxDecimalDigits =
+        formattingOptions && formattingOptions.maxDecimalDigits
+            ? formattingOptions.maxDecimalDigits
+            : MAX_DECIMAL_DIGITS_DEFAULT;
+    const locale = formattingOptions && formattingOptions.locale ? formattingOptions.locale : LOCALE_DEFAULT;
+    const style = formattingOptions && formattingOptions.style ? formattingOptions.style : STYLE_DEFAULT;
+    const currency = formattingOptions && formattingOptions.currency ? formattingOptions.currency : CURRENCY_DEFAULT;
+    return {
+        formattingFunction,
+        minIntegerDigits,
+        minDecimalDigits,
+        maxDecimalDigits,
+        locale,
+        style,
+        currency
+    };
+};
+
+const getWeekdayString = (weekdayNum) => {
+    let weekdayString;
+    switch (weekdayNum) {
+        case MONDAY:
+            weekdayString = 'monday';
+            break;
+        case TUESDAY:
+            weekdayString = 'tuesday';
+            break;
+        case WEDNESDAY:
+            weekdayString = 'wednesday';
+            break;
+        case THURSDAY:
+            weekdayString = 'thursday';
+            break;
+        case FRIDAY:
+            weekdayString = 'friday';
+            break;
+        case SATURDAY:
+            weekdayString = 'saturday';
+            break;
+        case SUNDAY:
+            weekdayString = 'sunday';
+            break;
+        default:
+            weekdayString = 'some day';
+            break;
+    }
+    return weekdayString;
+};
+
+module.exports = {
+    ...appConstants,
+    decimalFormatterStandard,
+    formattingFunctionDefault,
+    getDefaultParamsForDecimalFormatter,
+    getWeekdayString
+};

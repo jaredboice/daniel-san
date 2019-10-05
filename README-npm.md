@@ -47,7 +47,8 @@ const danielSan = {
         timeEnd: null // optional: '05:00pm'
     },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             name: 'monthly bitcoin investment',
             amount: -79.83, // negative amount subtracts, positive amount adds
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js / see list of importable constants at the bottom of this readme
@@ -58,9 +59,10 @@ const danielSan = {
             modulus: 1, // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
             cycle: 1 // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
         },
-        { // rule 2
+        {
+            // rule 2
             name: 'shenanigans',
-            amount: -97.00,
+            amount: -97.0,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
             processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
@@ -69,19 +71,22 @@ const danielSan = {
             modulus: 2, // See "Modulus/Cycle" to review this advanced feature
             cycle: 1 // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
         },
-        { // rule 3
+        {
+            // rule 3
             type: STANDARD_EVENT,
             frequency: DAILY,
             name: 'cafeteria breakfast',
-            amount: -5.00,
+            amount: -5.0,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
-            exclusions: { // exclusion matches will still modulate the cycle when using the modulus/cycle feature
+            exclusions: {
+                // exclusion matches will still modulate the cycle when using the modulus/cycle feature
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays (you could have also just imported the WEEKENDS constant and spreaded it within the array here)
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates (always in this exact string format: YYYY-MM-DD)
             }
         },
-        { // rule 4
+        {
+            // rule 4
             name: 'fitness routine',
             type: STANDARD_EVENT_ROUTINE, // no amount field needed
             frequency: WEEKLY,
@@ -90,7 +95,8 @@ const danielSan = {
             effectiveDateEnd: null,
             note: '20 minutes of jogging, 20 minutes of cycling, free weights'
         },
-        { // rule 5
+        {
+            // rule 5
             name: 'new years party arrangements',
             type: STANDARD_EVENT_REMINDER, // no amount field needed
             frequency: DAILY, // no processDate needed for DAILY events

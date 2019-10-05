@@ -1,5 +1,7 @@
 const { isUndefinedOrNull } = require('../utility/validation');
 const { deepCopy } = require('../utility/dataStructures');
+const { danielSanAsciiArt } = require('./asciiArt');
+const { getRandomMiyagiQuote } = require('./quoteGenerator');
 const { createStream, closeStream } = require('../utility/fileIo');
 const { TimeStream } = require('../timeStream');
 const { validateConfig, validateRules } = require('../core/validation');
@@ -20,13 +22,6 @@ const {
 } = require('../analytics');
 
 const {
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
-    SUNDAY,
     STANDARD_OUTPUT,
     VERBOSE,
     CONCISE,
@@ -34,119 +29,56 @@ const {
     POSITIVE,
     NEGATIVE,
     BOTH,
-    DISPLAY_EVENTS_BY_GROUP,
-    DISPLAY_EVENTS_BY_GROUPS,
-    DISPLAY_EVENTS_BY_NAME,
-    DISPLAY_EVENTS_BY_NAMES,
-    DISPLAY_EVENTS_BY_TYPE,
-    DISPLAY_EVENTS_BY_TYPES,
-    DISPLAY_EVENTS,
-    DISPLAY_CRITICAL_SNAPSHOTS,
-    DISPLAY_DISCARDED_EVENTS,
-    DISPLAY_IMPORTANT_EVENTS,
-    DISPLAY_TIME_EVENTS,
-    DISPLAY_ROUTINE_EVENTS,
-    DISPLAY_REMINDER_EVENTS,
-    DISPLAY_RULES_TO_RETIRE,
-    DISPLAY_IRRELEVANT_RULES,
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
-    DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT,
-    DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
-    DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS,
-    DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS,
-    DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_AGGREGATES,
-    MIN_INT_DIGITS_DEFAULT,
-    MIN_DECIMAL_DIGITS_DEFAULT,
-    MAX_DECIMAL_DIGITS_DEFAULT,
-    LOCALE_DEFAULT,
-    STYLE_DEFAULT,
+    EVENTS_BY_GROUP,
+    EVENTS_BY_GROUPS,
+    EVENTS_BY_NAME,
+    EVENTS_BY_NAMES,
+    EVENTS_BY_TYPE,
+    EVENTS_BY_TYPES,
+    EVENTS,
+    CRITICAL_SNAPSHOTS,
+    DISCARDED_EVENTS,
+    IMPORTANT_EVENTS,
+    TIME_EVENTS,
+    ROUTINE_EVENTS,
+    REMINDER_EVENTS,
+    ROUTINE_AND_REMINDER_EVENTS,
+    RULES_TO_RETIRE,
+    IRRELEVANT_RULES,
+    SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
+    SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
+    SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
+    SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
+    EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT,
+    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    GREATEST_BALANCE_ENDING_SNAPSHOTS,
+    LEAST_BALANCE_ENDING_SNAPSHOTS,
+    GREATEST_EVENT_FLOW_SNAPSHOTS,
+    LEAST_EVENT_FLOW_SNAPSHOTS,
+    GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
+    LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
+    GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    AGGREGATES,
+    REPORT,
     CURRENCY_DEFAULT,
-    FORMATTING_FUNCTION_DEFAULT
+    getDefaultParamsForDecimalFormatter,
+    getWeekdayString,
+    DEFAULT_JSON_SPACING
 } = require('../constants');
 
 const BOUNDARY_LIMIT = 144;
 
-const getRandomMiyagiQuote = () => {
-    const quotes = [
-        "'First learn balance. Balance good, karate good, everything good.\nBalance bad, might as well pack up, go home.'",
-        "'To make honey, young bee need young flower, not old prune.'",
-        "'Look eye! Always look eye!'",
-        "'Daniel-san, you much humor!'",
-        "'First learn stand, then learn fly. Nature rule, Daniel-san, not mine.'",
-        "'You remember lesson about balance? Lesson not just karate only.\nLesson for whole life. Whole life have a balance. Everything be better.'",
-        "'Banzai, Daniel-san!'",
-        "'In Okinawa, all Miyagi know two things: fish and karate.'",
-        "'Show me, sand the floor'",
-        "'Show me, wax on, wax off'",
-        "'Show me, paint the fence'",
-        "'Called crane technique. If do right, no can defence.'",
-        "'License never replace eye, ear and brain.'",
-        "'Learn balance Daniel san... Wax-on... Wax-off.'",
-        "'It’s ok to lose to opponent. It’s never okay to lose to fear'",
-        "'Better learn balance. Balance is key. Balance good, karate good.\nEverything good. Balance bad, better pack up, go home. Understand?'",
-        "'Never put passion in front of principle, even if you win, you’ll lose'",
-        "'Either you karate do 'yes' or karate do 'no'\nYou karate do 'guess so,' (get squished) just like grape.'",
-        "'Never trust spiritual leader who cannot dance.'",
-        "'If come from inside you, always right one.'",
-        "'Walk on road, hm? Walk left side, safe. Walk right side, safe.\nWalk middle, sooner or later...get squish just like grape'",
-        "'Daniel-San, lie become truth only if person wanna believe it.'",
-        "'Wax on, wax off. Wax on, wax off.'",
-        "'Man who catch fly with chopstick, accomplish anything.'",
-        "'If karate used defend honor, defend life, karate mean something.\nIf karate used defend plastic metal trophy, karate no mean nothing.'",
-        "'Wax-on, wax-off.'",
-        "'You trust the quality of what you know, not quantity.'",
-        "'For person with no forgiveness in heart, living even worse punishment than death.'",
-        "'In Okinawa, belt mean no need rope to hold up pants.'",
-        "'Miyagi have hope for you.'",
-        "'First, wash all car. Then wax. Wax on...'",
-        "'Wax on, right hand. Wax off, left hand. Wax on, wax off. \nBreathe in through nose, out the mouth. Wax on, wax off.\nDon't forget to breathe, very important.'",
-        "'Karate come from China, sixteenth century, called te, 'hand.'\nHundred year later, Miyagi ancestor bring to Okinawa,\ncall *kara*-te, 'empty hand.''",
-        "'No such thing as bad student, only bad teacher. Teacher say, student do.'",
-        "'Now use head for something other than target.'",
-        "'Make block. Left, right. Up, down. Side, side.\nBreathe in, breathe out. And no scare fish.'",
-        "'Ah, not everything is as seems...'",
-        "'What'sa matter, you some kind of girl or something?'",
-        "'Punch! Drive a punch! Not just arm, whole body! \nHip, leg, drive a punch! Make 'kiai.' Kiai! Kiai!\nGive you power. Now, try punch.'",
-        "'I tell you what Miyagi think! I think you *dance around* too much!\nI think you *talk* too much! I think you not concentrate enough!\nLots of work to be done! Tournament just around the corner!\nCome. Stand up! Now, ready. Concentrate. Focus power.'",
-        "'We make sacred pact. I promise teach karate to you, you promise learn.\nI say, you do, no questions.'",
-        "'Choose.'"
-    ];
-    const elementIndex = Math.floor(Math.random() * quotes.length);
-    return `${quotes[elementIndex]} -Miyagi-`;
-};
-
-const danielSanAsciiArt = (writeStream) => {
-    const lineArt = [
-        '________                .__       .__              _________              ',
-        '\\______ \\ _____    ____ |__| ____ |  |            /   _____/____    ____  ',
-        ' |    |  \\\\__  \\  /    \\|  |/ __ \\|  |    ______  \\_____  \\\\__  \\  /    \\ ',
-        ' |    `   \\/ __ \\|   |  \\  \\  ___/|  |__ /_____/  /        \\/ __ \\|   |  \\ ',
-        '/_______  (____  /___|  /__|___  >____/         /_______  (____  /___|  /',
-        '        \\/     \\/     \\/        \\/                       \\/     \\/     \\/'
-    ];
-    lineArt.forEach((line) => {
-        writeStream(`${line}`);
-    });
-};
-
-const rightPadToBoundary = ({ leftSideOfHeading, character }) => {
+const rightPadToBoundary = ({ leftSideOfHeading, reportCharWidth, character }) => {
     let rightSideOfHeading = '';
-    const length = BOUNDARY_LIMIT - leftSideOfHeading.length < 0 ? 0 : BOUNDARY_LIMIT - leftSideOfHeading.length;
+    const boundaryLimit = reportCharWidth || BOUNDARY_LIMIT;
+    const length = boundaryLimit - leftSideOfHeading.length < 0 ? 0 : boundaryLimit - leftSideOfHeading.length;
     for (let looper = 0; looper < length; looper++) {
         rightSideOfHeading = `${rightSideOfHeading}${character}`;
     }
@@ -154,108 +86,45 @@ const rightPadToBoundary = ({ leftSideOfHeading, character }) => {
     return fullLineHeading;
 };
 
-const reportingBoundary = ({ loops = 1, char = '*', writeStream }) => {
+const reportingBoundary = ({ loops = 1, char = '*', reportCharWidth, writeStream }) => {
     for (let looper = 0; looper < loops; looper++) {
         const leftSideOfHeading = '';
-        const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: char });
+        const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: char, reportCharWidth });
         // eslint-disable-next-line no-console
-        writeStream(`${fullHeading}`);
+        writeStream(`${fullHeading}\n`);
     }
 };
 
-const lineHeading = ({ heading, char = '*', writeStream }) => {
+const lineHeading = ({ heading, char = '*', reportCharWidth, writeStream }) => {
     const leadingChars = `${char}${char}${char}${char}${char}${char}${char}${char}`;
     const leftSideOfHeading = `${leadingChars}${heading}`;
-    const fullLineHeading = rightPadToBoundary({ leftSideOfHeading, character: char });
+    const fullLineHeading = rightPadToBoundary({ leftSideOfHeading, character: char, reportCharWidth });
     // eslint-disable-next-line no-console
-    writeStream(`${fullLineHeading}`);
+    writeStream(`${fullLineHeading}\n`);
 };
 
-const lineSeparator = (loops = 1, writeStream) => {
+const lineSeparator = ({ loops = 1, reportCharWidth, writeStream }) => {
     for (let looper = 0; looper < loops; looper++) {
         const leftSideOfHeading = '';
-        const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: '-' });
+        const fullHeading = rightPadToBoundary({ leftSideOfHeading, character: '-', reportCharWidth });
         // eslint-disable-next-line no-console
-        writeStream(`${fullHeading}`);
+        writeStream(`${fullHeading}\n`);
     }
 };
 
-const eventCountHeading = ({ events, writeStream }) => {
-    lineHeading({ heading: ` event count: ${events.length} `, writeStream });
-    lineSeparator(2, writeStream);
+const eventCountHeading = ({ events, reportCharWidth, writeStream }) => {
+    lineHeading({ heading: ` event count: ${events.length} `, reportCharWidth, writeStream });
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const showNothingToDisplay = (writeStream) => {
-    lineSeparator(2, writeStream);
+const showNothingToDisplay = ({ reportCharWidth, writeStream }) => {
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
     // eslint-disable-next-line quotes
-    lineHeading({ heading: ` nothing to display `, char: '-', writeStream });
-    lineSeparator(2, writeStream);
+    lineHeading({ heading: ` nothing to display `, char: '-', reportCharWidth, writeStream });
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const getDefaultParamsForDecimalFormatter = (reportingConfig) => {
-    const formattingOptions = reportingConfig.formatting || {};
-    const formattingFunction =
-        formattingOptions && formattingOptions.formattingFunction
-            ? formattingOptions.formattingFunction
-            : FORMATTING_FUNCTION_DEFAULT;
-    const minIntegerDigits =
-        formattingOptions && formattingOptions.minIntegerDigits
-            ? formattingOptions.minIntegerDigits
-            : MIN_INT_DIGITS_DEFAULT;
-    const minDecimalDigits =
-        formattingOptions && formattingOptions.minDecimalDigits
-            ? formattingOptions.minDecimalDigits
-            : MIN_DECIMAL_DIGITS_DEFAULT;
-    const maxDecimalDigits =
-        formattingOptions && formattingOptions.maxDecimalDigits
-            ? formattingOptions.maxDecimalDigits
-            : MAX_DECIMAL_DIGITS_DEFAULT;
-    const locale = formattingOptions && formattingOptions.locale ? formattingOptions.locale : LOCALE_DEFAULT;
-    const style = formattingOptions && formattingOptions.style ? formattingOptions.style : STYLE_DEFAULT;
-    const currency = formattingOptions && formattingOptions.currency ? formattingOptions.currency : CURRENCY_DEFAULT;
-    return {
-        formattingFunction,
-        minIntegerDigits,
-        minDecimalDigits,
-        maxDecimalDigits,
-        locale,
-        style,
-        currency
-    };
-};
-
-const getWeekdayString = (weekday) => {
-    let weekdayString;
-    switch (weekday) {
-        case MONDAY:
-            weekdayString = 'monday';
-            break;
-        case TUESDAY:
-            weekdayString = 'tuesday';
-            break;
-        case WEDNESDAY:
-            weekdayString = 'wednesday';
-            break;
-        case THURSDAY:
-            weekdayString = 'thursday';
-            break;
-        case FRIDAY:
-            weekdayString = 'friday';
-            break;
-        case SATURDAY:
-            weekdayString = 'saturday';
-            break;
-        case SUNDAY:
-            weekdayString = 'sunday';
-            break;
-        default:
-            weekdayString = 'some day';
-            break;
-    }
-    return weekdayString;
-};
-
-const shyOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
+const shyOutput = ({ event, reportingConfig, currencySymbol, reportCharWidth, writeStream }) => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -263,9 +132,9 @@ const shyOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
         maxDecimalDigits,
         locale,
         style
-    } = getDefaultParamsForDecimalFormatter(reportingConfig);
+    } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
     // eslint-disable-next-line no-console
-    if (!isUndefinedOrNull(event.name)) writeStream(`name: ${event.name}`); // eslint-disable-line quotes
+    if (!isUndefinedOrNull(event.name)) writeStream(`name: ${event.name}\n`); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
     if (!isUndefinedOrNull(event.amount)) {
         // eslint-disable-next-line no-console
@@ -277,7 +146,7 @@ const shyOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
                 locale,
                 style,
                 currency: event.currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
     if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.balanceEnding)) {
@@ -290,17 +159,17 @@ const shyOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
                 locale,
                 style,
                 currency: currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
     // eslint-disable-next-line no-console
-    writeStream(`dateStart: ${event.dateStart}`); // eslint-disable-line quotes
+    if (event.dateStart) writeStream(`dateStart: ${event.dateStart}\n`); // eslint-disable-line quotes
     // eslint-disable-next-line no-console
-    if (event.timeStart) writeStream(`timeStart: ${event.timeStart}`);
-    lineSeparator(2, writeStream);
+    if (event.timeStart) writeStream(`timeStart: ${event.timeStart}\n`);
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const conciseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
+const conciseOutput = ({ event, reportingConfig, currencySymbol, reportCharWidth, writeStream }) => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -308,11 +177,11 @@ const conciseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
         maxDecimalDigits,
         locale,
         style
-    } = getDefaultParamsForDecimalFormatter(reportingConfig);
+    } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
     // eslint-disable-next-line no-console
-    if (!isUndefinedOrNull(event.name)) writeStream(`name: ${event.name}`);
+    if (!isUndefinedOrNull(event.name)) writeStream(`name: ${event.name}\n`);
     // eslint-disable-next-line no-console
-    if (!isUndefinedOrNull(event.group)) writeStream(`group: ${event.group}`);
+    if (!isUndefinedOrNull(event.group)) writeStream(`group: ${event.group}\n`);
     if (!isUndefinedOrNull(event.amount)) {
         // eslint-disable-next-line no-console
         writeStream(
@@ -323,7 +192,7 @@ const conciseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
                 locale,
                 style,
                 currency: event.currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
     if (!isUndefinedOrNull(event.amount) && !isUndefinedOrNull(event.balanceEnding)) {
@@ -336,32 +205,32 @@ const conciseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
                 locale,
                 style,
                 currency: currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
 
     // eslint-disable-next-line no-console
-    writeStream(`dateStart: ${event.dateStart}`);
+    if (event.dateStart) writeStream(`dateStart: ${event.dateStart}\n`);
     // eslint-disable-next-line no-console
-    if (event.dateEnd) writeStream(`dateEnd: ${event.dateEnd}`);
+    if (event.dateEnd) writeStream(`dateEnd: ${event.dateEnd}\n`);
     // eslint-disable-next-line no-console
-    if (event.timeStart) writeStream(`timeStart: ${event.timeStart}`);
+    if (event.timeStart) writeStream(`timeStart: ${event.timeStart}\n`);
     // eslint-disable-next-line no-console
-    if (event.timeEnd) writeStream(`timeEnd: ${event.timeEnd}`);
+    if (event.timeEnd) writeStream(`timeEnd: ${event.timeEnd}\n`);
     // eslint-disable-next-line no-console
     if (!isUndefinedOrNull(event.weekdayStart)) {
         const weekdayString = getWeekdayString(event.weekdayStart);
-        writeStream(`weekdayStart: ${weekdayString}`); // eslint-disable-line no-console
+        writeStream(`weekdayStart: ${weekdayString}\n`); // eslint-disable-line no-console
     }
     if (!isUndefinedOrNull(event.weekdayEnd)) {
         const weekdayString = getWeekdayString(event.weekdayEnd);
-        writeStream(`weekdayEnd: ${weekdayString}`); // eslint-disable-line no-console
+        writeStream(`weekdayEnd: ${weekdayString}\n`); // eslint-disable-line no-console
     } // eslint-disable-next-line no-console
-    if (!isUndefinedOrNull(event.notes)) writeStream(`notes: ${event.notes}`); // eslint-disable-line quotes
-    lineSeparator(2, writeStream);
+    if (!isUndefinedOrNull(event.notes)) writeStream(`notes: ${event.notes}\n`); // eslint-disable-line quotes
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) => {
+const verboseOutput = ({ event, reportingConfig, currencySymbol, reportCharWidth, writeStream }) => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -369,7 +238,7 @@ const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
         maxDecimalDigits,
         locale,
         style
-    } = getDefaultParamsForDecimalFormatter(reportingConfig);
+    } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
     const ttyMessageStack = [];
     const dataBouncer = (message, order) => {
         ttyMessageStack.push({ message, order });
@@ -385,6 +254,8 @@ const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
         ) {
             if (key === 'name' && event.name != null) {
                 dataBouncer(`name: ${event.name}`, 10); // eslint-disable-line quotes
+            } else if (key === 'entityType') {
+                dataBouncer(`entityType: ${event.entityType}`, 15);
             } else if (key === 'type') {
                 dataBouncer(`type: ${event.type}`, 20);
             } else if (key === 'frequency' && typeof event.frequency === 'string') {
@@ -487,6 +358,7 @@ const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
                 dataBouncer(`dateTimeObserverSource: ${event.dateTimeObserverSource}`, 290);
             } else if (
                 key !== 'name' &&
+                key !== 'entityType' &&
                 key !== 'type' &&
                 key !== 'frequency' &&
                 key !== 'context' &&
@@ -534,81 +406,101 @@ const verboseOutput = ({ event, reportingConfig, currencySymbol, writeStream }) 
         }
     });
     ttyMessageStackOrdered.forEach((obj) => {
-        writeStream(`${obj.message}`); // eslint-disable-line no-console
+        writeStream(`${obj.message}\n`); // eslint-disable-line no-console
     });
-    lineSeparator(2, writeStream);
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const eventsLogger = ({ events, reportingConfig, currencySymbol, showNothingToDisplaySwitch = true, writeStream }) => {
+const eventsLogger = ({
+    events,
+    reportingConfig,
+    currencySymbol,
+    showNothingToDisplaySwitch = true,
+    reportCharWidth,
+    leadingLineSeparator = true,
+    writeStream
+}) => {
     if (events && events.length > 0) {
-        lineSeparator(2, writeStream);
+        if (leadingLineSeparator) {
+            lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        }
         switch (reportingConfig.mode) {
             case VERBOSE:
                 events.forEach((event) => {
-                    verboseOutput({ event, reportingConfig, currencySymbol, writeStream });
+                    verboseOutput({ event, reportingConfig, currencySymbol, reportCharWidth, writeStream });
                 });
                 break;
             case CONCISE:
                 events.forEach((event) => {
-                    conciseOutput({ event, reportingConfig, currencySymbol, writeStream });
+                    conciseOutput({ event, reportingConfig, currencySymbol, reportCharWidth, writeStream });
                 });
                 break;
             case SHY:
                 events.forEach((event) => {
-                    shyOutput({ event, reportingConfig, currencySymbol, writeStream });
+                    shyOutput({ event, reportingConfig, currencySymbol, reportCharWidth, writeStream });
                 });
                 break;
             default:
                 break;
         }
-        eventCountHeading({ events, writeStream });
+        eventCountHeading({ events, reportCharWidth, writeStream });
     } else if (showNothingToDisplaySwitch) {
-        showNothingToDisplay(writeStream);
+        showNothingToDisplay({ reportCharWidth, writeStream });
     }
 };
 
-const aggregateHeader = ({ aggregate, writeStream }) => {
-    reportingBoundary({ loops: 1, char: '%', writeStream });
-    lineHeading({ heading: `  begin aggregate function: `, char: '%', writeStream });
+const aggregateHeader = ({ aggregate, reportCharWidth, writeStream }) => {
+    reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
+    lineHeading({ heading: `  begin aggregate function: `, char: '%', reportCharWidth, writeStream });
     if (!isUndefinedOrNull(aggregate.name)) {
-        lineHeading({ heading: `  name: ${aggregate.name}  `, char: '%', writeStream });
+        lineHeading({ heading: `  name: ${aggregate.name}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.type)) {
-        lineHeading({ heading: `  type: ${aggregate.type}  `, char: '%', writeStream });
+        lineHeading({ heading: `  type: ${aggregate.type}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.frequency)) {
-        lineHeading({ heading: `  frequency: ${aggregate.frequency}  `, char: '%', writeStream });
+        lineHeading({ heading: `  frequency: ${aggregate.frequency}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.propertyKey)) {
-        lineHeading({ heading: `  propertyKey: ${aggregate.propertyKey}  `, char: '%', writeStream });
+        lineHeading({ heading: `  propertyKey: ${aggregate.propertyKey}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.flowDirection)) {
-        lineHeading({ heading: `  flowDirection: ${aggregate.flowDirection}  `, char: '%', writeStream });
+        lineHeading({
+            heading: `  flowDirection: ${aggregate.flowDirection}  `,
+            char: '%',
+            reportCharWidth,
+            writeStream
+        });
     }
     if (!isUndefinedOrNull(aggregate.selectionAmount)) {
-        lineHeading({ heading: `  selectionAmount: ${aggregate.selectionAmount}  `, char: '%', writeStream });
+        lineHeading({
+            heading: `  selectionAmount: ${aggregate.selectionAmount}  `,
+            char: '%',
+            reportCharWidth,
+            writeStream
+        });
     }
     if (!isUndefinedOrNull(aggregate.modeMax)) {
-        lineHeading({ heading: `  modeMax: ${aggregate.modeMax}  `, char: '%', writeStream });
+        lineHeading({ heading: `  modeMax: ${aggregate.modeMax}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.dayCycles)) {
-        lineHeading({ heading: `  dayCycles: ${aggregate.dayCycles}  `, char: '%', writeStream });
+        lineHeading({ heading: `  dayCycles: ${aggregate.dayCycles}  `, char: '%', reportCharWidth, writeStream });
     }
-    reportingBoundary({ loops: 1, char: '%', writeStream });
-    lineSeparator(2, writeStream);
+    reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const aggregateFooter = ({ aggregate, writeStream }) => {
-    reportingBoundary({ loops: 1, char: '%', writeStream });
-    lineHeading({ heading: `  end aggregate function: `, char: '%', writeStream });
+const aggregateFooter = ({ aggregate, reportCharWidth, writeStream }) => {
+    reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
+    lineHeading({ heading: `  end aggregate function: `, char: '%', reportCharWidth, writeStream });
     if (!isUndefinedOrNull(aggregate.name)) {
-        lineHeading({ heading: `  name: ${aggregate.name}  `, char: '%', writeStream });
+        lineHeading({ heading: `  name: ${aggregate.name}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.type)) {
-        lineHeading({ heading: `  type: ${aggregate.type}  `, char: '%', writeStream });
+        lineHeading({ heading: `  type: ${aggregate.type}  `, char: '%', reportCharWidth, writeStream });
     }
-    reportingBoundary({ loops: 1, char: '%', writeStream });
-    lineSeparator(2, writeStream);
+    reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
 const getStringOfValues = ({
@@ -650,7 +542,7 @@ const getStringOfValues = ({
     return stringOfValues;
 };
 
-const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStream }) => {
+const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, reportCharWidth, writeStream }) => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -658,10 +550,17 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
         maxDecimalDigits,
         locale,
         style
-    } = getDefaultParamsForDecimalFormatter(reportingConfig);
-    writeStream(`dateStart: ${aggregate.dateStart}`); // eslint-disable-line quotes
-    writeStream(`dateEnd: ${aggregate.dateEnd}`); // eslint-disable-line quotes
-    writeStream(`eventCount: ${aggregate.eventCount}`); // eslint-disable-line quotes
+    } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
+    writeStream(`name: ${aggregate.name}\n`);
+    if (reportingConfig.mode === CONCISE) {
+        writeStream(`type: ${aggregate.type}\n`);
+    } else if (reportingConfig.mode === VERBOSE) {
+        writeStream(`entityType: ${aggregate.entityType}\n`);
+        writeStream(`type: ${aggregate.type}\n`);
+    }
+    writeStream(`dateStart: ${aggregate.dateStart}\n`); // eslint-disable-line quotes
+    writeStream(`dateEnd: ${aggregate.dateEnd}\n`); // eslint-disable-line quotes
+    writeStream(`eventCount: ${aggregate.eventCount}\n`); // eslint-disable-line quotes
 
     if (!isUndefinedOrNull(aggregate.sum)) {
         // eslint-disable-next-line no-console
@@ -673,7 +572,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
                 locale,
                 style,
                 currency: currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
 
@@ -687,7 +586,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
                 locale,
                 style,
                 currency: currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
 
@@ -700,7 +599,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
                 locale,
                 style,
                 currency: currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
 
@@ -713,7 +612,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
                 locale,
                 style,
                 currency: currencySymbol || CURRENCY_DEFAULT
-            })}`
+            })}\n`
         );
     }
 
@@ -728,7 +627,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
             style,
             currencySymbol
         });
-        writeStream(`medians: ${stringOfValues}`); // eslint-disable-line quotes
+        writeStream(`medians: ${stringOfValues}\n`); // eslint-disable-line quotes
     }
 
     if (!isUndefinedOrNull(aggregate.modes)) {
@@ -742,7 +641,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
             style,
             currencySymbol
         });
-        writeStream(`modes: ${stringOfValues}`); // eslint-disable-line quotes
+        writeStream(`modes: ${stringOfValues}\n`); // eslint-disable-line quotes
     }
 
     if (!isUndefinedOrNull(aggregate.greatestValues)) {
@@ -756,7 +655,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
             style,
             currencySymbol
         });
-        writeStream(`greatestValues: ${stringOfValues}`); // eslint-disable-line quotes
+        writeStream(`greatestValues: ${stringOfValues}\n`); // eslint-disable-line quotes
     }
 
     if (!isUndefinedOrNull(aggregate.leastValues)) {
@@ -770,29 +669,32 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, writeStre
             style,
             currencySymbol
         });
-        writeStream(`leastValues: ${stringOfValues}`); // eslint-disable-line quotes
+        writeStream(`leastValues: ${stringOfValues}\n`); // eslint-disable-line quotes
     }
-    lineSeparator(2, writeStream);
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const standardHeader = ({ reportingConfig, writeStream }) => {
-    reportingBoundary({ loops: 3, writeStream });
+const standardHeader = ({ reportingConfig, reportCharWidth, writeStream }) => {
+    reportingBoundary({ loops: 3, reportCharWidth, writeStream });
     lineHeading({
         heading: ' daniel-san: astral-projecting your budget with a crane-kick to the face ',
+        reportCharWidth,
         writeStream
     });
-    lineHeading({ heading: ' must find balance ', writeStream });
-    reportingBoundary({ loops: 2, writeStream });
-    if (!isUndefinedOrNull(reportingConfig.name)) lineHeading({ heading: ` report: ${reportingConfig.name} `, writeStream });
-    lineHeading({ heading: ` reporting mode: ${reportingConfig.mode} `, writeStream });
-    reportingBoundary({ loops: 3, writeStream });
-    lineSeparator(2, writeStream);
+    lineHeading({ heading: ' must find balance ', reportCharWidth, writeStream });
+    reportingBoundary({ loops: 2, reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(reportingConfig.name)) {
+        lineHeading({ heading: ` report: ${reportingConfig.name} `, reportCharWidth, writeStream });
+    }
+    lineHeading({ heading: ` reporting mode: ${reportingConfig.mode} `, reportCharWidth, writeStream });
+    reportingBoundary({ loops: 3, reportCharWidth, writeStream });
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
     // eslint-disable-next-line no-console
-    writeStream(`${getRandomMiyagiQuote()}`);
-    lineSeparator(2, writeStream);
+    writeStream(`${getRandomMiyagiQuote()}\n`);
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const standardSubheader = ({ danielSan, reportingConfig, writeStream }) => {
+const standardSubheader = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
     const {
         formattingFunction,
         minIntegerDigits,
@@ -800,10 +702,10 @@ const standardSubheader = ({ danielSan, reportingConfig, writeStream }) => {
         maxDecimalDigits,
         locale,
         style
-    } = getDefaultParamsForDecimalFormatter(reportingConfig);
-    lineHeading({ heading: ` config `, writeStream });
+    } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
+    lineHeading({ heading: ` config `, reportCharWidth, writeStream });
     if (!isUndefinedOrNull(danielSan['balanceBeginning'])) {
-        lineHeading({ heading: ` currencySymbol: ${danielSan.config.currencySymbol} `, writeStream });
+        lineHeading({ heading: ` currencySymbol: ${danielSan.config.currencySymbol} `, reportCharWidth, writeStream });
         lineHeading({
             heading: ` balanceBeginning: ${formattingFunction(danielSan['balanceBeginning'], {
                 minIntegerDigits,
@@ -813,6 +715,7 @@ const standardSubheader = ({ danielSan, reportingConfig, writeStream }) => {
                 style,
                 currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
             })} `,
+            reportCharWidth,
             writeStream
         });
     }
@@ -826,37 +729,57 @@ const standardSubheader = ({ danielSan, reportingConfig, writeStream }) => {
                 style,
                 currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
             })} `,
+            reportCharWidth,
             writeStream
         });
     }
     if (!isUndefinedOrNull(danielSan.config.timeZoneType)) {
-        lineHeading({ heading: ` timeZoneType: ${danielSan.config.timeZoneType} `, writeStream });
+        lineHeading({ heading: ` timeZoneType: ${danielSan.config.timeZoneType} `, reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(danielSan.config.timeZone)) {
-        lineHeading({ heading: ` timeZone: ${danielSan.config.timeZone} `, writeStream });
+        lineHeading({ heading: ` timeZone: ${danielSan.config.timeZone} `, reportCharWidth, writeStream });
     }
-    lineHeading({ heading: ` effectiveDateStart: ${danielSan.config.effectiveDateStart} `, writeStream });
-    if (danielSan.config.timeStart) lineHeading({ heading: ` timeStart: ${danielSan.config.timeStart} `, writeStream });
-    lineHeading({ heading: ` effectiveDateEnd:   ${danielSan.config.effectiveDateEnd} `, writeStream });
-    if (danielSan.config.timeEnd) lineHeading({ heading: ` timeEnd: ${danielSan.config.timeEnd} `, writeStream });
-    lineSeparator(2, writeStream);
-};
-
-const showRulesToRetire = ({ danielSan, reportingConfig, writeStream }) => {
-    const rulesToRetire = findRulesToRetire(danielSan);
-    if (rulesToRetire && rulesToRetire.length > 0) {
-        lineHeading({ heading: ' the following rules have obsolete effectiveDateEnd values ', writeStream });
-        lineSeparator(2, writeStream);
-    }
-    eventsLogger({
-        events: rulesToRetire,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+    lineHeading({
+        heading: ` effectiveDateStart: ${danielSan.config.effectiveDateStart} `,
+        reportCharWidth,
         writeStream
     });
+    if (danielSan.config.timeStart)
+        lineHeading({ heading: ` timeStart: ${danielSan.config.timeStart} `, reportCharWidth, writeStream });
+    lineHeading({
+        heading: ` effectiveDateEnd:   ${danielSan.config.effectiveDateEnd} `,
+        reportCharWidth,
+        writeStream
+    });
+    if (danielSan.config.timeEnd)
+        lineHeading({ heading: ` timeEnd: ${danielSan.config.timeEnd} `, reportCharWidth, writeStream });
+    lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const showIrrelevantRules = ({ danielSan, reportingConfig, writeStream }) => {
+const showRulesToRetire = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    const rulesToRetire = findRulesToRetire(danielSan);
+    if (!reportingConfig.rawJson) {
+        if (rulesToRetire && rulesToRetire.length > 0) {
+            lineHeading({
+                heading: ' the following rules have obsolete effectiveDateEnd values ',
+                reportCharWidth,
+                writeStream
+            });
+            lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        }
+        eventsLogger({
+            events: rulesToRetire,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return rulesToRetire || [];
+    }
+};
+
+const showIrrelevantRules = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
     // when executing in this context, there is a chance that the config/rules have not yet been validated (both are validated prior to calling findIrrelevantRules during the normal projection phase)
     validateConfig(danielSan);
     const timeStream = new TimeStream({
@@ -871,45 +794,146 @@ const showIrrelevantRules = ({ danielSan, reportingConfig, writeStream }) => {
     // the performance overhead is minor in this case
     validateRules({ danielSan, date: timeStream.effectiveDateStart, skipTimeTravel: false });
     const { irrelevantRules } = findIrrelevantRules(danielSan);
-    if (irrelevantRules && irrelevantRules.length > 0) {
-        lineHeading({
-            heading: ' the following rules would not be triggered via the current configuration ',
+    if (!reportingConfig.rawJson) {
+        if (irrelevantRules && irrelevantRules.length > 0) {
+            lineHeading({
+                heading: ' the following rules would not be triggered via the current configuration ',
+                reportCharWidth,
+                writeStream
+            });
+            lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        }
+        eventsLogger({
+            events: irrelevantRules,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
             writeStream
         });
-        lineSeparator(2, writeStream);
+    } else {
+        return irrelevantRules || [];
     }
-    eventsLogger({
-        events: irrelevantRules,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
 };
 
-const showDiscardedEvents = ({ danielSan, reportingConfig, showNothingToDisplaySwitch = true, writeStream }) => {
+const showDiscardedEvents = ({
+    danielSan,
+    reportingConfig,
+    showNothingToDisplaySwitch = true,
+    reportCharWidth,
+    leadingLineSeparator = true,
+    trailingFooter = true,
+    writeStream
+}) => {
     const discardedEvents = danielSan.discardedEvents;
-    if (discardedEvents && discardedEvents.length > 0) {
-        lineHeading({
-            heading: ' these events were excluded for residing beyond the provided date range ',
+    if (!reportingConfig.rawJson) {
+        if (discardedEvents && discardedEvents.length > 0) {
+            if (leadingLineSeparator) {
+                lineSeparator({ loops: 2, reportCharWidth, writeStream });
+            }
+            lineHeading({
+                heading: ' these events were excluded for residing beyond the provided date range ',
+                reportCharWidth,
+                writeStream
+            });
+            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
+        }
+        eventsLogger({
+            events: discardedEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            showNothingToDisplaySwitch,
+            reportCharWidth,
             writeStream
         });
-        lineSeparator(2, writeStream);
+        if (trailingFooter) {
+            lineHeading({
+                heading: ' end discarded events ',
+                char: '-',
+                reportCharWidth,
+                writeStream
+            });
+            lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        }
+    } else {
+        return discardedEvents || [];
     }
-    eventsLogger({
-        events: discardedEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        showNothingToDisplaySwitch,
-        writeStream
-    });
 };
 
-const showCriticalSnapshots = ({ danielSan, reportingConfig, showNothingToDisplaySwitch = true, writeStream }) => {
+const showCriticalSnapshots = ({
+    danielSan,
+    reportingConfig,
+    showNothingToDisplaySwitch = true,
+    reportCharWidth,
+    leadingLineSeparator = true,
+    writeStream
+}) => {
     const criticalSnapshots = findCriticalSnapshots({
         events: danielSan.events,
         criticalThreshold: reportingConfig.criticalThreshold
     });
-    if (criticalSnapshots && criticalSnapshots.length > 0) {
+    if (!reportingConfig.rawJson) {
+        if (criticalSnapshots && criticalSnapshots.length > 0) {
+            const {
+                formattingFunction,
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style
+            } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
+            if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
+                if (leadingLineSeparator) {
+                    lineSeparator({ loops: 2, reportCharWidth, writeStream });
+                }
+                lineHeading({
+                    heading: ` begin critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
+                    })} `,
+                    char: '-',
+                    reportCharWidth,
+                    writeStream
+                });
+            }
+            eventsLogger({
+                events: criticalSnapshots,
+                reportingConfig,
+                currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+                reportCharWidth,
+                leadingLineSeparator: true,
+                writeStream
+            });
+            if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
+                lineHeading({
+                    heading: ` end critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
+                        minIntegerDigits,
+                        minDecimalDigits,
+                        maxDecimalDigits,
+                        locale,
+                        style,
+                        currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
+                    })} `,
+                    char: '-',
+                    reportCharWidth,
+                    writeStream
+                });
+                lineSeparator({ loops: 2, reportCharWidth, writeStream });
+            }
+        } else if (showNothingToDisplaySwitch) {
+            showNothingToDisplay({ reportCharWidth, writeStream });
+        }
+    } else {
+        return criticalSnapshots || [];
+    }
+};
+
+const showSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    const sum = sumAllPositiveEventAmounts(danielSan.events);
+    if (!reportingConfig.rawJson) {
         const {
             formattingFunction,
             minIntegerDigits,
@@ -917,135 +941,109 @@ const showCriticalSnapshots = ({ danielSan, reportingConfig, showNothingToDispla
             maxDecimalDigits,
             locale,
             style
-        } = getDefaultParamsForDecimalFormatter(reportingConfig);
-        reportingBoundary({ loops: 2, writeStream });
-        if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
-            lineHeading({
-                heading: ` begin critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
-                    minIntegerDigits,
-                    minDecimalDigits,
-                    maxDecimalDigits,
-                    locale,
-                    style,
-                    currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
-                })} `,
-                writeStream
-            });
-            lineSeparator(2, writeStream);
-        }
-        eventsLogger({
-            events: criticalSnapshots,
-            reportingConfig,
-            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+        } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
+        lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        lineHeading({
+            heading: ` total sum: ${formattingFunction(sum || 0, {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
+            })} -`,
+            reportCharWidth,
             writeStream
         });
-        if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
-            lineHeading({
-                heading: ` end critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
-                    minIntegerDigits,
-                    minDecimalDigits,
-                    maxDecimalDigits,
-                    locale,
-                    style,
-                    currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
-                })} `,
-                writeStream
-            });
-            lineSeparator(2, writeStream);
+        lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
+            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
         }
-    } else if (showNothingToDisplaySwitch) {
-        showNothingToDisplay(writeStream);
+        showDiscardedEvents({
+            danielSan,
+            reportingConfig,
+            showNothingToDisplaySwitch: false,
+            reportCharWidth,
+            leadingLineSeparator: false,
+            writeStream
+        });
+    } else {
+        return sum;
     }
 };
 
-const showSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, writeStream }) => {
-    const sum = sumAllPositiveEventAmounts(danielSan.events);
-    const {
-        formattingFunction,
-        minIntegerDigits,
-        minDecimalDigits,
-        maxDecimalDigits,
-        locale,
-        style
-    } = getDefaultParamsForDecimalFormatter(reportingConfig);
-    lineSeparator(2, writeStream);
-    lineHeading({
-        heading: ` total sum: ${formattingFunction(sum || 0, {
-            minIntegerDigits,
-            minDecimalDigits,
-            maxDecimalDigits,
-            locale,
-            style,
-            currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
-        })} -`,
-        writeStream
-    });
-    lineSeparator(2, writeStream);
-    if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-        reportingBoundary({ loops: 2, writeStream });
-    }
-    showDiscardedEvents({ danielSan, reportingConfig, showNothingToDisplaySwitch: false, writeStream });
-};
-
-const showSumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, writeStream }) => {
+const showSumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
     const sum = sumAllNegativeEventAmounts(danielSan.events);
-    const {
-        formattingFunction,
-        minIntegerDigits,
-        minDecimalDigits,
-        maxDecimalDigits,
-        locale,
-        style
-    } = getDefaultParamsForDecimalFormatter(reportingConfig);
-    lineSeparator(2, writeStream);
-    lineHeading({
-        heading: ` total sum: ${formattingFunction(sum || 0, {
+    if (!reportingConfig.rawJson) {
+        const {
+            formattingFunction,
             minIntegerDigits,
             minDecimalDigits,
             maxDecimalDigits,
             locale,
-            style,
-            currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
-        })} -`,
-        writeStream
-    });
-    lineSeparator(2, writeStream);
-    if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-        reportingBoundary({ loops: 2, writeStream });
+            style
+        } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
+        lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        lineHeading({
+            heading: ` total sum: ${formattingFunction(sum || 0, {
+                minIntegerDigits,
+                minDecimalDigits,
+                maxDecimalDigits,
+                locale,
+                style,
+                currency: danielSan.config.currencySymbol || CURRENCY_DEFAULT
+            })} -`,
+            reportCharWidth,
+            writeStream
+        });
+        lineSeparator({ loops: 2, reportCharWidth, writeStream });
+        if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
+            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
+        }
+        showDiscardedEvents({
+            danielSan,
+            reportingConfig,
+            showNothingToDisplaySwitch: false,
+            leadingLineSeparator: false,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return sum;
     }
-    showDiscardedEvents({ danielSan, reportingConfig, showNothingToDisplaySwitch: false, writeStream });
 };
 
-const displayRulesToRetire = ({ danielSan, reportingConfig, writeStream }) => {
-    showRulesToRetire({ danielSan, reportingConfig, writeStream });
+const getRulesToRetire = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    return showRulesToRetire({ danielSan, reportingConfig, reportCharWidth, writeStream });
 };
 
-const displayIrrelevantRules = ({ danielSan, reportingConfig, writeStream }) => {
-    showIrrelevantRules({ danielSan, reportingConfig, writeStream });
+const getIrrelevantRules = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    return showIrrelevantRules({ danielSan, reportingConfig, reportCharWidth, writeStream });
 };
 
-const displayDiscardedEvents = ({ danielSan, reportingConfig, writeStream }) => {
-    showDiscardedEvents({ danielSan, reportingConfig, writeStream });
+const getDiscardedEvents = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    return showDiscardedEvents({ danielSan, reportingConfig, reportCharWidth, trailingFooter: false, writeStream });
 };
 
-const displayCriticalSnapshots = ({ danielSan, reportingConfig, writeStream }) => {
-    showCriticalSnapshots({ danielSan, reportingConfig, writeStream });
+const getCriticalSnapshots = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    return showCriticalSnapshots({ danielSan, reportingConfig, reportCharWidth, writeStream });
 };
 
-const displaySumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, writeStream }) => {
-    showSumOfAllPositiveEventAmounts({ danielSan, reportingConfig, writeStream });
+const getSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    return showSumOfAllPositiveEventAmounts({ danielSan, reportingConfig, reportCharWidth, writeStream });
 };
 
-const displaySumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, writeStream }) => {
-    showSumOfAllNegativeEventAmounts({ danielSan, reportingConfig, writeStream });
+const getSumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+    return showSumOfAllNegativeEventAmounts({ danielSan, reportingConfig, reportCharWidth, writeStream });
 };
 
-const displaySnapshotsGreaterThanSupport = ({
+const getSnapshotsGreaterThanSupport = ({
     danielSan,
     events,
     reportingConfig,
     propertyKey,
     boundaryField,
+    reportCharWidth,
     writeStream
 }) => {
     const collection = findSnapshotsGreaterThanSupport({
@@ -1054,20 +1052,26 @@ const displaySnapshotsGreaterThanSupport = ({
         propertyKey
     });
     const relevantEvents = collection;
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
 };
 
-const displaySnapshotsLessThanResistance = ({
+const getSnapshotsLessThanResistance = ({
     danielSan,
     events,
     reportingConfig,
     propertyKey,
     boundaryField,
+    reportCharWidth,
     writeStream
 }) => {
     const collection = findSnapshotsLessThanResistance({
@@ -1076,20 +1080,26 @@ const displaySnapshotsLessThanResistance = ({
         propertyKey
     });
     const relevantEvents = collection;
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
 };
 
-const displayGreatestValueSnapshots = ({
+const getGreatestValueSnapshots = ({
     danielSan,
     events,
     reportingConfig,
     propertyKey,
     flowDirection,
+    reportCharWidth,
     writeStream
 }) => {
     const collection = findGreatestValueSnapshots({
@@ -1100,20 +1110,26 @@ const displayGreatestValueSnapshots = ({
         reverse: false
     });
     const relevantEvents = collection;
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
 };
 
-const displayLeastValueSnapshots = ({
+const getLeastValueSnapshots = ({
     danielSan,
     events,
     reportingConfig,
     propertyKey,
     flowDirection,
+    reportCharWidth,
     writeStream
 }) => {
     const collection = findGreatestValueSnapshots({
@@ -1124,105 +1140,178 @@ const displayLeastValueSnapshots = ({
         reverse: true // used to reverse the results of findGreatestValueSnapshots
     });
     const relevantEvents = collection;
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
 };
 
-const standardOutput = ({ danielSan, reportingConfig, writeStream }) => {
+const standardOutput = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
     const relevantEvents = danielSan.events;
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
-    if (reportingConfig.type !== DISPLAY_EVENTS) {
-        showCriticalSnapshots({ danielSan, reportingConfig, showNothingToDisplaySwitch: false, writeStream });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            leadingLineSeparator: true,
+            writeStream
+        });
+        if (reportingConfig.type !== EVENTS) {
+            showCriticalSnapshots({
+                danielSan,
+                reportingConfig,
+                showNothingToDisplaySwitch: false,
+                reportCharWidth,
+                leadingLineSeparator: false,
+                writeStream
+            });
+        }
+        if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
+            reportingBoundary({ loops: 2, reportCharWidth, writeStream });
+        }
+        showDiscardedEvents({
+            danielSan,
+            reportingConfig,
+            showNothingToDisplaySwitch: false,
+            reportCharWidth,
+            leadingLineSeparator: false,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
     }
-    if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-        reportingBoundary({ loops: 2, writeStream });
-    }
-    showDiscardedEvents({ danielSan, reportingConfig, showNothingToDisplaySwitch: false, writeStream });
 };
 
-const displayEventsWithProperty = ({
+const getEventsWithProperty = ({
     danielSan,
     reportingConfig,
     propertyKey,
     findFunction = findEventsWithProperty,
+    reportCharWidth,
     writeStream
 }) => {
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey });
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
 };
 
-const displayEventsByPropertyKeyAndValues = ({
+const getEventsByPropertyKeyAndValues = ({
     danielSan,
     reportingConfig,
     propertyKey,
     findFunction = findEventsByPropertyKeyAndValues,
+    reportCharWidth,
     writeStream
 }) => {
     const { searchValues } = reportingConfig;
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, searchValues });
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
 };
 
-const displayEventsWithPropertyKeyContainingSubstring = ({
+const getEventsWithPropertyKeyContainingSubstring = ({
     danielSan,
     reportingConfig,
     propertyKey,
     substring,
     findFunction = findEventsWithPropertyKeyContainingSubstring,
+    reportCharWidth,
     writeStream
 }) => {
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, substring });
-    eventsLogger({
-        events: relevantEvents,
-        reportingConfig,
-        currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
-        writeStream
-    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
 };
 
 const createReport = ({ danielSan, reportingConfig = {}, error = null, originalDanielSan = null }) => {
-    const fileStruct = !reportingConfig.file
-        ? {
-              fileStream: null,
-              writeStream: (content) => {
-                  process.stdout.write(`${content}\n`);
-              }
-          }
-        : createStream({
-              filepath: reportingConfig.file.path,
-              filename: reportingConfig.file.name,
-              extension: reportingConfig.file.extension,
-              dirname: __dirname
-          });
-    const { writeStream, fileStream } = fileStruct;
-    danielSanAsciiArt(writeStream);
+    let jsonSpacingSelected = DEFAULT_JSON_SPACING;
+    let reportResults = null;
+    let fileStream = null;
+    let writeStream = null;
+    let newDanielSan = null;
+    if (reportingConfig.outputRelay) {
+        writeStream = reportingConfig.outputRelay;
+    } else if (reportingConfig.file) {
+        const defineEventHandlers = reportingConfig.file.onFinish ? false : true; // eslint-disable-line no-unneeded-ternary
+        const fileStruct = createStream({
+            filepath: reportingConfig.file.path,
+            filename: reportingConfig.file.name,
+            dirname: __dirname,
+            defineEventHandlers
+        });
+        const { writeStream: transientWriteStream, fileStream: transientFileStream } = fileStruct;
+        writeStream = transientWriteStream;
+        fileStream = transientFileStream;
+        if (reportingConfig.file.onFinish) {
+            fileStream.on('finish', reportingConfig.file.onFinish);
+        }
+        if (reportingConfig.file.onError) {
+            fileStream.on('error', reportingConfig.file.onError);
+        }
+        jsonSpacingSelected = reportingConfig.file.jsonSpacing ? reportingConfig.file.jsonSpacing : DEFAULT_JSON_SPACING;
+    } else {
+        // default setting
+        fileStream = null;
+        writeStream = (content) => {
+            process.stdout.write(`${content}`);
+        };
+    }
+    const reportCharWidth = reportingConfig.reportCharWidth || BOUNDARY_LIMIT;
+    if (!reportingConfig.rawJson) {
+        danielSanAsciiArt(writeStream);
+    }
     if (error) {
-        // eslint-disable-next-line no-console
-        lineHeading({ heading: ' something bad happened and a lot of robots died ', writeStream });
-        // eslint-disable-next-line no-console
-        writeStream(`${error}`);
-        lineHeading({ heading: ' !@#$%^& ', writeStream });
+        if (!reportingConfig.rawJson) {
+            lineHeading({ heading: ' something bad happened and a lot of robots died ', reportCharWidth, writeStream });
+            // eslint-disable-next-line no-console
+            writeStream(`${error}\n`, true);
+            lineHeading({ heading: ' !@#$%^& ', reportCharWidth, writeStream });
+        } else {
+            writeStream(error, true);
+        }
+        if (reportingConfig.outputRelay) {
+            reportingConfig.outputRelay(null);
+        }
+        if (reportingConfig.file) {
+            closeStream(fileStream);
+        }
     } else if (danielSan) {
-        const newDanielSan = deepCopy(danielSan);
+        newDanielSan = deepCopy(danielSan);
         try {
             // begin validating reportingConfig
             if (!reportingConfig) reportingConfig = { type: STANDARD_OUTPUT, mode: CONCISE };
@@ -1237,8 +1326,10 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                 filterValues: reportingConfig.filterValues,
                 filterType: reportingConfig.filterType
             });
-            standardHeader({ reportingConfig, writeStream });
-            standardSubheader({ danielSan: newDanielSan, reportingConfig, writeStream });
+            if (!reportingConfig.rawJson) {
+                standardHeader({ reportingConfig, reportCharWidth, writeStream });
+                standardSubheader({ danielSan: newDanielSan, reportingConfig, reportCharWidth, writeStream });
+            }
             let reportingTypes = [];
             if (Array.isArray(reportingConfig.type)) {
                 reportingTypes = reportingConfig.type;
@@ -1246,330 +1337,464 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                 reportingTypes.push(reportingConfig.type);
             }
             let transientEvents = [];
-            reportingTypes.forEach((reportingType) => {
-                reportingBoundary({ loops: 2, char: '#', writeStream });
-                lineHeading({ heading: `  begin reporting type: ${reportingType}  `, char: '#', writeStream });
-                reportingBoundary({ loops: 2, char: '#', writeStream });
-                switch (reportingType) {
-                case DISPLAY_EVENTS:
-                case STANDARD_OUTPUT:
-                    standardOutput({ danielSan: newDanielSan, reportingConfig, writeStream });
-                    break;
-                case DISPLAY_EVENTS_BY_GROUP:
-                case DISPLAY_EVENTS_BY_GROUPS:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'group',
+            if (reportingConfig.rawJson && reportingConfig.file) {
+                fileStream.write('{');
+                fileStream.write(' "reports": [');
+            }
+            reportingTypes.forEach((reportingType, reportIndex) => {
+                if (!reportingConfig.rawJson) {
+                    reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
+                    lineHeading({
+                        heading: `  begin reporting type: ${reportingType}  `,
+                        char: '#',
+                        reportCharWidth,
                         writeStream
                     });
-                    break;
-                case DISPLAY_EVENTS_BY_NAME:
-                case DISPLAY_EVENTS_BY_NAMES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'name',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_EVENTS_BY_TYPE:
-                case DISPLAY_EVENTS_BY_TYPES:
-                    displayEventsByPropertyKeyAndValues({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'type',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_CRITICAL_SNAPSHOTS:
-                    displayCriticalSnapshots({ danielSan: newDanielSan, reportingConfig, writeStream });
-                    break;
-                case DISPLAY_DISCARDED_EVENTS:
-                    displayDiscardedEvents({ danielSan: newDanielSan, reportingConfig, writeStream });
-                    break;
-                case DISPLAY_IMPORTANT_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'important',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_TIME_EVENTS:
-                    displayEventsWithProperty({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'timeStart',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_ROUTINE_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'type',
-                        substring: 'ROUTINE',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_REMINDER_EVENTS:
-                    displayEventsWithPropertyKeyContainingSubstring({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'type',
-                        substring: 'REMINDER',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_RULES_TO_RETIRE:
-                    displayRulesToRetire({
-                        danielSan: originalDanielSan || newDanielSan,
-                        reportingConfig,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_IRRELEVANT_RULES:
-                    displayIrrelevantRules({
-                        danielSan: originalDanielSan || newDanielSan,
-                        reportingConfig,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
-                case DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
-                    displaySumOfAllPositiveEventAmounts({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
-                case DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
-                    displaySumOfAllNegativeEventAmounts({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT:
-                    displaySnapshotsGreaterThanSupport({
-                        danielSan: newDanielSan,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        boundaryField: 'support',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE:
-                    displaySnapshotsLessThanResistance({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        boundaryField: 'resistance',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT:
-                    transientEvents = newDanielSan.events.filter((element) => {
-                        return element.amount < 0;
-                    });
-                    displaySnapshotsGreaterThanSupport({
-                        danielSan: newDanielSan,
-                        events: transientEvents,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        boundaryField: 'negativeSupport',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE:
-                    transientEvents = newDanielSan.events.filter((element) => {
-                        return element.amount < 0;
-                    });
-                    displaySnapshotsLessThanResistance({
-                        danielSan: newDanielSan,
-                        events: transientEvents,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        boundaryField: 'negativeResistance',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT:
-                    transientEvents = newDanielSan.events.filter((element) => {
-                        return element.amount > 0;
-                    });
-                    displaySnapshotsGreaterThanSupport({
-                        danielSan: newDanielSan,
-                        events: transientEvents,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        boundaryField: 'positiveSupport',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE:
-                    transientEvents = newDanielSan.events.filter((element) => {
-                        return element.amount > 0;
-                    });
-                    displaySnapshotsLessThanResistance({
-                        danielSan: newDanielSan,
-                        events: transientEvents,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        boundaryField: 'positiveResistance',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT:
-                    displaySnapshotsGreaterThanSupport({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'balanceEnding',
-                        boundaryField: 'balanceEndingSupport',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
-                    displaySnapshotsLessThanResistance({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'balanceEnding',
-                        boundaryField: 'balanceEndingResistance',
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS:
-                    displayGreatestValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'balanceEnding',
-                        flowDirection: BOTH,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS:
-                    displayLeastValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'balanceEnding',
-                        flowDirection: BOTH,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS:
-                    displayGreatestValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        flowDirection: BOTH,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS:
-                    displayLeastValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        flowDirection: BOTH,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS:
-                    displayGreatestValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        flowDirection: POSITIVE,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS:
-                    displayLeastValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        flowDirection: POSITIVE,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS:
-                    displayGreatestValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        flowDirection: NEGATIVE,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS:
-                    displayLeastValueSnapshots({
-                        danielSan: newDanielSan,
-                        events: newDanielSan.events,
-                        reportingConfig,
-                        propertyKey: 'amount',
-                        flowDirection: NEGATIVE,
-                        writeStream
-                    });
-                    break;
-                case DISPLAY_AGGREGATES:
-                    reportingConfig.aggregates.forEach((aggregateConfig) => {
-                        const aggregateFunction = selectAggregateFunction(aggregateConfig);
-                        const aggregateResults = aggregateFunction({
-                            ...aggregateConfig,
-                            type: aggregateConfig.type,
-                            events: newDanielSan.events
-                        });
-                        if (aggregateResults && aggregateResults.length > 0) {
-                            const firstElement = aggregateResults[0];
-                            aggregateHeader({ aggregate: { ...firstElement }, writeStream });
-                            aggregateResults.forEach((aggregateResult) => {
-                                aggregateLogger({
-                                    aggregate: aggregateResult,
-                                    reportingConfig,
-                                    currencySymbol: newDanielSan.currencySymbol,
-                                    writeStream
-                                });
-                            });
-                            aggregateFooter({ aggregate: { ...firstElement }, writeStream });
-                        } else {
-                            showNothingToDisplay(writeStream);
-                        }
-                    });
-                    break;
-                default:
-                    break;
+                    reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
                 }
-                reportingBoundary({ loops: 2, char: '$', writeStream });
-                lineHeading({ heading: `  end reporting type: ${reportingType}  `, char: '$', writeStream });
-                reportingBoundary({ loops: 2, char: '$', writeStream });
-                lineSeparator(2, writeStream);
+                switch (reportingType) {
+                    case EVENTS:
+                    case STANDARD_OUTPUT:
+                        reportResults = standardOutput({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case EVENTS_BY_GROUP:
+                    case EVENTS_BY_GROUPS:
+                        reportResults = getEventsByPropertyKeyAndValues({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'group',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case EVENTS_BY_NAME:
+                    case EVENTS_BY_NAMES:
+                        reportResults = getEventsByPropertyKeyAndValues({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'name',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case EVENTS_BY_TYPE:
+                    case EVENTS_BY_TYPES:
+                        reportResults = getEventsByPropertyKeyAndValues({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'type',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case CRITICAL_SNAPSHOTS:
+                        reportResults = getCriticalSnapshots({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case DISCARDED_EVENTS:
+                        reportResults = getDiscardedEvents({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case IMPORTANT_EVENTS:
+                        reportResults = getEventsWithProperty({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'important',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case TIME_EVENTS:
+                        reportResults = getEventsWithProperty({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'timeStart',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case ROUTINE_EVENTS:
+                        reportResults = getEventsWithPropertyKeyContainingSubstring({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'type',
+                            substring: 'ROUTINE',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case REMINDER_EVENTS:
+                        reportResults = getEventsWithPropertyKeyContainingSubstring({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'type',
+                            substring: 'REMINDER',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case ROUTINE_AND_REMINDER_EVENTS:
+                        reportResults = getEventsWithPropertyKeyContainingSubstring({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'type',
+                            substring: ['ROUTINE', 'REMINDER'],
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case RULES_TO_RETIRE:
+                        reportResults = getRulesToRetire({
+                            danielSan: originalDanielSan || newDanielSan,
+                            reportingConfig,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case IRRELEVANT_RULES:
+                        reportResults = getIrrelevantRules({
+                            danielSan: originalDanielSan || newDanielSan,
+                            reportingConfig,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS:
+                    case SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
+                        reportResults = getSumOfAllPositiveEventAmounts({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS:
+                    case SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
+                        reportResults = getSumOfAllNegativeEventAmounts({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case EVENT_FLOWS_GREATER_THAN_SUPPORT:
+                        reportResults = getSnapshotsGreaterThanSupport({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            boundaryField: 'support',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case EVENT_FLOWS_LESS_THAN_RESISTANCE:
+                        reportResults = getSnapshotsLessThanResistance({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            boundaryField: 'resistance',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT:
+                        transientEvents = newDanielSan.events.filter((element) => {
+                            return element.amount < 0;
+                        });
+                        reportResults = getSnapshotsGreaterThanSupport({
+                            danielSan: newDanielSan,
+                            events: transientEvents,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            boundaryField: 'negativeSupport',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE:
+                        transientEvents = newDanielSan.events.filter((element) => {
+                            return element.amount < 0;
+                        });
+                        reportResults = getSnapshotsLessThanResistance({
+                            danielSan: newDanielSan,
+                            events: transientEvents,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            boundaryField: 'negativeResistance',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT:
+                        transientEvents = newDanielSan.events.filter((element) => {
+                            return element.amount > 0;
+                        });
+                        reportResults = getSnapshotsGreaterThanSupport({
+                            danielSan: newDanielSan,
+                            events: transientEvents,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            boundaryField: 'positiveSupport',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE:
+                        transientEvents = newDanielSan.events.filter((element) => {
+                            return element.amount > 0;
+                        });
+                        reportResults = getSnapshotsLessThanResistance({
+                            danielSan: newDanielSan,
+                            events: transientEvents,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            boundaryField: 'positiveResistance',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT:
+                        reportResults = getSnapshotsGreaterThanSupport({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'balanceEnding',
+                            boundaryField: 'balanceEndingSupport',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                        reportResults = getSnapshotsLessThanResistance({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'balanceEnding',
+                            boundaryField: 'balanceEndingResistance',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case GREATEST_BALANCE_ENDING_SNAPSHOTS:
+                        reportResults = getGreatestValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'balanceEnding',
+                            flowDirection: BOTH,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case LEAST_BALANCE_ENDING_SNAPSHOTS:
+                        reportResults = getLeastValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'balanceEnding',
+                            flowDirection: BOTH,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case GREATEST_EVENT_FLOW_SNAPSHOTS:
+                        reportResults = getGreatestValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            flowDirection: BOTH,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case LEAST_EVENT_FLOW_SNAPSHOTS:
+                        reportResults = getLeastValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            flowDirection: BOTH,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS:
+                        reportResults = getGreatestValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            flowDirection: POSITIVE,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS:
+                        reportResults = getLeastValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            flowDirection: POSITIVE,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS:
+                        reportResults = getGreatestValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            flowDirection: NEGATIVE,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS:
+                        reportResults = getLeastValueSnapshots({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            flowDirection: NEGATIVE,
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case AGGREGATES:
+                        if (!reportingConfig.aggregates) {
+                            reportingConfig.aggregates = [];
+                        }
+                        reportingConfig.aggregates.forEach((aggregateConfig) => {
+                            const aggregateFunction = selectAggregateFunction(aggregateConfig);
+                            const aggregateResults = aggregateFunction({
+                                ...aggregateConfig,
+                                type: aggregateConfig.type,
+                                events: newDanielSan.events
+                            });
+                            reportResults = aggregateResults;
+                            if (!reportingConfig.rawJson) {
+                                if (aggregateResults && aggregateResults.length > 0) {
+                                    const firstElement = aggregateResults[0];
+                                    aggregateHeader({ aggregate: { ...firstElement }, reportCharWidth, writeStream });
+                                    aggregateResults.forEach((aggregateResult) => {
+                                        aggregateLogger({
+                                            aggregate: aggregateResult,
+                                            reportingConfig,
+                                            currencySymbol: newDanielSan.currencySymbol,
+                                            reportCharWidth,
+                                            writeStream
+                                        });
+                                    });
+                                    aggregateFooter({ aggregate: { ...firstElement }, reportCharWidth, writeStream });
+                                } else {
+                                    showNothingToDisplay({ reportCharWidth, writeStream });
+                                }
+                            }
+                        });
+                        break;
+                    default:
+                        break;
+                }
+                if (!reportingConfig.rawJson) {
+                    reportingBoundary({ loops: 2, char: '$', reportCharWidth, writeStream });
+                    lineHeading({
+                        heading: `  end reporting type: ${reportingType}  `,
+                        char: '$',
+                        reportCharWidth,
+                        writeStream
+                    });
+                    reportingBoundary({ loops: 2, char: '$', reportCharWidth, writeStream });
+                    lineSeparator({ loops: 2, reportCharWidth, writeStream });
+                } else {
+                    const returnObject = {
+                        entityType: REPORT,
+                        reportType: reportingType,
+                        reportResults
+                    };
+                    // eslint-disable-next-line no-lonely-if
+                    if (reportingConfig.file) {
+                        if (reportIndex !== reportingTypes.length - 1) {
+                            fileStream.write(`${JSON.stringify(returnObject, null, jsonSpacingSelected)},`);
+                        } else {
+                            fileStream.write(`${JSON.stringify(returnObject, null, jsonSpacingSelected)}`);
+                        }
+                    } else {
+                        writeStream(returnObject);
+                    }
+                }
             });
-            standardSubheader({ danielSan: newDanielSan, reportingConfig, writeStream });
-            standardHeader({ reportingConfig, writeStream });
-            danielSanAsciiArt(writeStream);
+            if (!reportingConfig.rawJson) {
+                standardSubheader({ danielSan: newDanielSan, reportingConfig, reportCharWidth, writeStream });
+                standardHeader({ reportingConfig, reportCharWidth, writeStream });
+                danielSanAsciiArt(writeStream);
+            } else {
+                // eslint-disable-next-line no-lonely-if
+                if (reportingConfig.file) {
+                    fileStream.write(']');
+                    fileStream.write(', "completed": true ');
+                }
+            }
         } catch (err) {
-            lineHeading({ heading: ' something bad happened and a lot of robots died ', writeStream });
-            // eslint-disable-next-line no-console
-            writeStream(`${err}`);
+            console.log(err);
+            if (!reportingConfig.rawJson) {
+                lineHeading({
+                    heading: ' something bad happened and a lot of robots died ',
+                    reportCharWidth,
+                    writeStream
+                });
+                // eslint-disable-next-line no-console
+                writeStream(`${err}\n`, true);
+            } else {
+                // eslint-disable-next-line no-lonely-if
+                if (reportingConfig.file) {
+                    fileStream.write(']');
+                    fileStream.write(', "error": true }');
+                } else {
+                    writeStream(err, true);
+                }
+            }
         } finally {
+            if (reportingConfig.outputRelay) {
+                reportingConfig.outputRelay(null);
+            }
             if (reportingConfig.file) {
+                if (reportingConfig.rawJson) {
+                    fileStream.write('}');
+                }
                 closeStream(fileStream);
             }
         }
     } else {
-        lineHeading({ heading: ' the danielSan bonsai tree is likely null or undefined ', writeStream });
+        const errorMsg = 'the danielSan bonsai tree is likely null or undefined';
+        if (!reportingConfig.rawJson) {
+            lineHeading({
+                heading: ` ${errorMsg} `,
+                reportCharWidth,
+                writeStream
+            });
+        } else {
+            writeStream(` ${errorMsg} `, error);
+        }
+        if (reportingConfig.outputRelay) {
+            reportingConfig.outputRelay(null);
+        }
         if (reportingConfig.file) {
             closeStream(fileStream);
         }

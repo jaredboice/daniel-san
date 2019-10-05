@@ -3,7 +3,7 @@ const { isUndefinedOrNull } = require('../utility/validation');
 const { initializeTimeZoneData, convertTimeZone } = require('../timeZone');
 const { getRelevantDateSegmentByFrequency } = require('../core/dateUtility');
 const { modulateCycleUpToDate } = require('../modulusCycle/modulateCycleToDate');
-const { EVENT_SOURCE, DAILY, ONCE, CURRENCY_DEFAULT } = require('../constants');
+const { EVENT_SOURCE, DAILY, ONCE, CURRENCY_DEFAULT, RULE } = require('../constants');
 
 const validateConfig = (danielSan) => {
     let errorMessage = null;
@@ -65,6 +65,9 @@ const validateRules = ({ danielSan, date, skipTimeTravel = null }) => {
         ruleTracker = rule;
         indexTracker = index;
         rule.context = EVENT_SOURCE;
+        if (isUndefinedOrNull(rule.entityType)) {
+            rule.entityType = RULE; // can be used to categorize if an object is a rule, event, or an aggregate
+        }
         if (isUndefinedOrNull(rule.currencySymbol)) {
             rule.currencySymbol = CURRENCY_DEFAULT;
         } else {

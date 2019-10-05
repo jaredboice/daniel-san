@@ -14,8 +14,8 @@ click [here](https://github.com/jaredboice/daniel-san-starter-kit 'Daniel-San-St
 
 ## Description
 
-maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance. The program features aggregates, terminal and file-based reporting output, multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.  
-  
+maximize your potential with **Daniel-San**, a node-based budget-projection engine that helps your routines and finances find balance. The program features aggregates, terminal and file-based reporting output, multi-currency conversion capability and multi-frequency accounting triggers, including: once, daily, weekly, bi-weekly, tri-weekly, monthly, annually and more. Timezones help to keep your enterprise in sync, while special adjustments allow the movement of process-dates around holidays and weekends via prepay or postpay. Dynamic rule modification allows the injection of growth-and-decay functions. Additionally, the user can create reminder/routine rules for events that won't contribute to the balanceEnding calculation. Extend rule/event properties by adding custom fields. Breathe in through nose, out the mouth. Wax on, wax off. Don't forget to breathe, very important.
+
 ## Install, Import & Execute
 
 **Install**
@@ -44,7 +44,8 @@ const danielSan = {
         timeEnd: null // optional: '05:00pm'
     },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             name: 'monthly bitcoin investment',
             amount: -79.83, // negative amount subtracts, positive amount adds
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js / see list of importable constants at the bottom of this readme
@@ -55,9 +56,10 @@ const danielSan = {
             modulus: 1, // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
             cycle: 1 // not required - for BIWEEKLY / BIMONTHLY types of events - see "Modulus/Cycle" to review this advanced feature
         },
-        { // rule 2
+        {
+            // rule 2
             name: 'shenanigans',
-            amount: -97.00,
+            amount: -97.0,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
             processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
@@ -66,19 +68,22 @@ const danielSan = {
             modulus: 2, // See "Modulus/Cycle" to review this advanced feature
             cycle: 1 // the modulus/cycle attributes here equate to every other Weekday (in this particular case due to the WEEKLY frequency)
         },
-        { // rule 3
+        {
+            // rule 3
             type: STANDARD_EVENT,
             frequency: DAILY,
             name: 'cafeteria breakfast',
-            amount: -5.00,
+            amount: -5.0,
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
-            exclusions: { // exclusion matches will still modulate the cycle when using the modulus/cycle feature
+            exclusions: {
+                // exclusion matches will still modulate the cycle when using the modulus/cycle feature
                 weekdays: [SATURDAY, SUNDAY], // excluding these weekdays (you could have also just imported the WEEKENDS constant and spreaded it within the array here)
                 dates: ['2019-07-04', '2019-09-17', '2019-10-31'] // exluding these specific dates (always in this exact string format: YYYY-MM-DD)
             }
         },
-        { // rule 4
+        {
+            // rule 4
             name: 'fitness routine',
             type: STANDARD_EVENT_ROUTINE, // no amount field needed
             frequency: WEEKLY,
@@ -87,7 +92,8 @@ const danielSan = {
             effectiveDateEnd: null,
             note: '20 minutes of jogging, 20 minutes of cycling, free weights'
         },
-        { // rule 5
+        {
+            // rule 5
             name: 'new years party arrangements',
             type: STANDARD_EVENT_REMINDER, // no amount field needed
             frequency: DAILY, // no processDate needed for DAILY events
@@ -105,7 +111,7 @@ const craneKick = findBalance(danielSan);
 **Execution Example**
 
 ```javascript
-// after executing findBalance with danielSan, craneKick will embody the danielSan object with the newly produced events, 
+// after executing findBalance with danielSan, craneKick will embody the danielSan object with the newly produced events,
 // and it will contain an object called "err" if there are errors during execution
 const craneKick = findBalance(danielSan);
 ```
@@ -139,7 +145,7 @@ const danielSan = {
         { // rule 1
             name: 'monthly bitcoin investment',
             amount: -79.83,
-            type: STANDARD_EVENT, 
+            type: STANDARD_EVENT,
             frequency: MONTHLY, // if a MONTHLY processDate is greater than days in month, it resorts to match against the last day of the month;
                                 // so 31 will always execute on the last day of the month
             processDate: '28',
@@ -328,7 +334,8 @@ const danielSan = {
         effectiveDateEnd: '2019-12-13'
     },
     rules: [
-        { // rule 1
+        {
+            // rule 1
             name: 'monthly bitcoin investment',
             amount: -79.83,
             type: STANDARD_EVENT,
@@ -339,9 +346,10 @@ const danielSan = {
             modulus: 3,
             cycle: 1
         },
-        { // rule 2
+        {
+            // rule 2
             name: 'shenanigans',
-            amount: -97.00,
+            amount: -97.0,
             type: STANDARD_EVENT, // see "Event Types" - import from constants.js
             frequency: WEEKLY,
             processDate: FRIDAY, // 0-6 (Number) with 0 representing Sunday - weekday constants are available to be imported
@@ -495,39 +503,39 @@ options in the above scenario include:
 -   `context: EVENT_SOURCE` _(default value)_
 -   `context: OBSERVER_SOURCE` _(applies the adjustment in the context of the final converted currency value via the currencySymbol in the config object)_
 
--all constants are available for import-  
-  
-## Aggregate Functions  
-  
-Requires the reporting type, DISPLAY_AGGREGATES
-  
+-all constants are available for import-
+
+## Aggregate Functions
+
+Requires the reporting type, AGGREGATES
+
 Add the following aggregates array to the reportingConfig options object for computing aggregates:  
-(add as many as desired)  
+(add as many as desired)
 
 ```javascript
 const reportingConfig = {
     name: 'some name',
-    type: [STANDARD_OUTPUT, DISPLAY_AGGREGATES],
+    type: [STANDARD_OUTPUT, AGGREGATES],
     mode: CONCISE,
-    aggregates: [  
-        {  
-            name: 'some name',  
-            type: SUMS_AND_AVERAGES || MINIMUMS_AND_MAXIMUMS || MEDIANS_AND_MODES || GREATEST_VALUES || LEAST_VALUES,  
-            frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,  
-            propertyKey: 'balanceEnding' || 'amount',  // determines the field that this aggregate will execute against
-            flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES  
-            selectionAmount: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES  
-            dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17  
+    aggregates: [
+        {
+            name: 'some name',
+            type: SUMS_AND_AVERAGES || MINIMUMS_AND_MAXIMUMS || MEDIANS_AND_MODES || GREATEST_VALUES || LEAST_VALUES,
+            frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
+            propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
+            flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES
+            selectionAmount: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
+            dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17
             modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
-            weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types  
-            cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type  
-            fiscalYearStart: '12-25', // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
+            weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types
+            cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type
+            fiscalYearStart: '12-25' // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
         }
     ]
-}
+};
 ```
-    
-## Time  
+
+## Time
 
 timeStart and timeEnd are optional fields for the config object. Any events that fall outside of those start and end time values will be discarded.
 
@@ -589,10 +597,10 @@ options in the above scenario include:
 -   `context: BOTH` _(applies the adjustment with respect to both of the contexts mentioned above; As an example of usage, BOTH is great when you don't want a weekend or bank holiday to trigger in ANY context)_
 
 -all of the above referenced constants are available for import-
-  
-## Reports - File and Terminal Output  
-  
-Terminal output is configured by default. File output is configured, instead, by adding the following attributes to the reportingConfig options object:  
+
+## Reports - File and Terminal Output
+
+Terminal output is configured by default. File output is configured, instead, by adding the following attributes to the reportingConfig options object:
 
 ```javascript
 const reportingConfig = {
@@ -601,56 +609,60 @@ const reportingConfig = {
     mode: CONCISE,
     file: {
         path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
-        name: 'MyReport',
-        extension: '.txt', // .txt is actuallyl the default value, to use an extension within the file name attribute directly, assign null to extension
+        name: 'MyReport.txt',
+        jsonSpacing: 4, // OPTIONAL! This is the default setting when using the rawJson attribute
+        onFinish: () => {}, // optional
+        onError: () => {} // optional
     }
-}
+};
 ```
-  
+
 **Logging Results to the Command-Line**
 
-_note: the reporting options are executed in the context of events (not rules), with exception to DISPLAY_RULES_TO_RETIRE and DISPLAY_IRRELEVANT_RULES_
+_note: the reporting options are executed in the context of events (not rules), with exception to RULES_TO_RETIRE and IRRELEVANT_RULES_
 
 ```javascript
 // passing a non-null value for error will log it to the console and bypass all other report functionality
-createReport({ danielSan, reportingConfig, error, originalDanielSan });// the originalDanielSan is useful for passing the original unmodified danielSan reference to display irrelevant or retired rules.
+createReport({ danielSan, reportingConfig, error, originalDanielSan }); // the originalDanielSan is useful for passing the original unmodified danielSan reference to display irrelevant or retired rules.
 ```
-  
-**Report Type Options**  
-  
--   `type: 'DISPLAY_EVENTS'` _(display only the events, nothing fancy, and will also display discarded events if they exist)_  
--   `type: 'DISPLAY_DISCARDED_EVENTS'` _(when special adjustments move events beyond the effectiveDateStart and effectiveDateEnd range, they can be displayed with this report type )_  
--   `type: 'DISPLAY_CRITICAL_SNAPSHOTS'` _(display only the critical balanceEnding snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_  
--   `type: 'STANDARD_OUTPUT'` _(the default command-line functionality, will output discarded events if they exist, and critical snapshots if passed a criticalThreshold)_  
--   `type: 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events if they exist)_  
--   `type: 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events if they exist)_  
--   `type: 'DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass support: 1000 to display all the amount values greater than 1000)_  
--   `type: 'DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass resistance: 100 to display all the amount values less than 100)_  
--   `type: 'DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass negativeSupport: 1000 to display all negative absolute-value amounts greater than 1000)_  
--   `type: 'DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass negativeResistance: 100 to display all negative absolute-value amounts  greater than 1000)_  
--   `type: 'DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass positiveSupport: 1000 to display all positive amount values greater than 1000)_  
--   `type: 'DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass positiveResistance: 100 to display all positive amount values greater than 1000)_  
--   `type: 'DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT'` _(pass balanceEndingSupport: 1000 to display all the balanceEnding values greater than 1000)_  
--   `type: 'DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_RESISTANCE'` _(pass balanceEndingResistance: 100 to display all the balanceEnding values less than 100)_  
--   `type: 'DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest balanceEnding values, ordered by value)_  
--   `type: 'DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest balanceEnding values, ordered by value)_  
--   `type: 'DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest amount values, ordered by value)_  
--   `type: 'DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest aamount values, ordered by value)_  
--   `type: 'DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest absolute-value amounts, ordered by value)_  
--   `type: 'DISPLAY_LEAST_NEGATIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest absolute-value amounts, ordered by value)_  
--   `type: 'DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest positive amount values, ordered by value)_  
--   `type: 'DISPLAY_LEAST_POSITIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest positive amount values, ordered by value)_  
--   `type: 'DISPLAY_AGGREGATES'` _(see section on Aggregate Functions)_  
--   `type: 'DISPLAY_EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportingConfig will search against the optional group property)_  
--   `type: 'DISPLAY_EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_  
--   `type: 'DISPLAY_EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_  
--   `type: 'DISPLAY_IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_  
--   `type: 'DISPLAY_TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_  
--   `type: 'DISPLAY_ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_  
--   `type: 'DISPLAY_REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_  
--   `type: 'DISPLAY_IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration - this particular report function works on your original danielSan object. However, when executing events as normal, a field called irrelevantRules is populated for you_  
--   `type: 'DISPLAY_RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing -  
-    since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_  
+
+**Report Type Options**
+
+-   `type: 'EVENTS'` _(display only the events, nothing fancy, and will also display discarded events, when not using the rawJson option, if they exist)_
+-   `type: 'DISCARDED_EVENTS'` _(when special adjustments move events beyond the effectiveDateStart and effectiveDateEnd range, they can be displayed with this report type )_
+-   `type: 'CRITICAL_SNAPSHOTS'` _(display only the critical balanceEnding snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
+-   `type: 'STANDARD_OUTPUT'` _(the default command-line functionality, will output discarded events, when not using the rawJson option, if they exist; and it will output critical snapshots, when not using the rawJson option, if passed a criticalThreshold)_
+-   `type: 'SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events, when not using the rawJson option, if they exist)_
+-   `type: 'SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events, when not using the rawJson option, if they exist)_
+-   `type: 'EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass support: 1000 to display all the amount values greater than 1000)_
+-   `type: 'EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass resistance: 100 to display all the amount values less than 100)_
+-   `type: 'NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass negativeSupport: 1000 to display all negative absolute-value amounts greater than 1000)_
+-   `type: 'NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass negativeResistance: 100 to display all negative absolute-value amounts greater than 1000)_
+-   `type: 'POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass positiveSupport: 1000 to display all positive amount values greater than 1000)_
+-   `type: 'POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass positiveResistance: 100 to display all positive amount values greater than 1000)_
+-   `type: 'BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT'` _(pass balanceEndingSupport: 1000 to display all the balanceEnding values greater than 1000)_
+-   `type: 'BALANCE_ENDING_SNAPSHOTS_LESS_THAN_RESISTANCE'` _(pass balanceEndingResistance: 100 to display all the balanceEnding values less than 100)_
+-   `type: 'GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest balanceEnding values, ordered by value)_
+-   `type: 'LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest balanceEnding values, ordered by value)_
+-   `type: 'GREATEST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest amount values, ordered by value)_
+-   `type: 'LEAST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest aamount values, ordered by value)_
+-   `type: 'GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest absolute-value amounts, ordered by value)_
+-   `type: 'LEAST_NEGATIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest absolute-value amounts, ordered by value)_
+-   `type: 'GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest positive amount values, ordered by value)_
+-   `type: 'LEAST_POSITIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest positive amount values, ordered by value)_
+-   `type: 'AGGREGATES'` _(see section on Aggregate Functions)_
+-   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportingConfig will search against the optional group property)_
+-   `type: 'EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
+-   `type: 'EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
+-   `type: 'IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
+-   `type: 'TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
+-   `type: 'ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
+-   `type: 'REMINDER_EVENTS'` _(display events that contain 'REMINDER' somewhere in the string of the type field)_
+-   `type: 'ROUTINE_AND_REMINDER_EVENTS'` _(display events that contain 'ROUTINE' || 'REMINDER' somewhere in the string of the type field)_
+-   `type: 'IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration - this particular report function works on your original danielSan object. However, when executing events as normal, a field called irrelevantRules is populated for you_
+-   `type: 'RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing -  
+    since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_
+
 
 **Report Mode Options**
 
@@ -660,7 +672,7 @@ createReport({ danielSan, reportingConfig, error, originalDanielSan });// the or
 
 **Critical Snapshots**
 
-Passing a criticalThreshold property will log snapshots to the command-line when the balanceEnding is less than the criticalThreshold, for STANDARD_OUTPUT and DISPLAY_CRITICAL_SNAPSHOTS.
+Passing a criticalThreshold property will log snapshots to the command-line when the balanceEnding is less than the criticalThreshold, for STANDARD_OUTPUT and CRITICAL_SNAPSHOTS.
 
 **Search Values**
 
@@ -675,7 +687,7 @@ The default formattingFunction utilizes javascript's built-in toLocaleString() f
 const decimalFormatterCustom = (number, { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }) => { /* return number formatted */ };
 const reportingConfig = {
     name: 'some name',
-    type: [STANDARD_OUTPUT, DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS], // example of providing the reporting type as an array
+    type: [STANDARD_OUTPUT, SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS], // example of providing the reporting type as an array
     mode: CONCISE,
     criticalThreshold: 577.00,
     // the formatting object is optional as the following values are defaulted for you
@@ -724,8 +736,8 @@ createReport({ danielSan: eventResults.danielSan, reportingConfig: reportingConf
 ```
 
 **Filter Events prior to report generation**
-  
-Add the following attributes to the root of the reportingConfig object for filter control. filterKeys and filterValues are parallel arrays.  
+
+Add the following attributes to the root of the reportingConfig object for filter control. filterKeys and filterValues are parallel arrays.
 
 ```javascript
 const reportingConfig = {
@@ -733,18 +745,21 @@ const reportingConfig = {
     type: STANDARD_OUTPUT,
     mode: CONCISE,
     filterKeys: ['name', 'group'],
-    filterValues: ['rent', ANY ], // the constant for ANY, INTERSECTION and UNION are available for import
-    filterType: UNION || INTERSECTION // event inclusion is governed by Any attributes that match || All attributes must match  
-}
+    filterValues: ['rent', ANY], // the constant for ANY, INTERSECTION and UNION are available for import
+    filterType: UNION || INTERSECTION, // event inclusion is governed by Any attributes that match || All attributes must match
+    filterComparator: (filterKey, filterValue) => { // OPTIONAL! This is the default comparator
+        return filterKey === filterValue;
+    }
+};
 ```
-  
+
 With a filterType of UNION, the above configuration will include events that have a name with the value "rent" or a group attribute with any value, including null.
-With a filterType of INTERSECTION, the above configuration will include events that have both a name with the value "rent" And a group attribute with any value.  
-  
+With a filterType of INTERSECTION, the above configuration will include events that have both a name with the value "rent" And a group attribute with any value.
+
 ## More Useful Features
-  
-**Additional Attributes**  
-  
+
+**Additional Attributes**
+
 ```javascript
 const danielSan = {
     config: {
@@ -755,7 +770,7 @@ const danielSan = {
     rules: [
         { // rule 1
             name: 'monthly bitcoin investment',
-            group: 'investments' // optional: assign a group category and filter the results with DISPLAY_EVENTS_BY_GROUP
+            group: 'investments' // optional: assign a group category and filter the results with EVENTS_BY_GROUP
             amount: -79.83,
             type: STANDARD_EVENT,
             frequency: MONTHLY,
@@ -764,7 +779,7 @@ const danielSan = {
             sortPriority: 25,   // optional: forces higher sort priority for event operations, the lower the sortPriority value,
                                 // the sooner it is applied in the event sequence, (the processed event dates and timeStart take precedence over sortPriority)
             notes: 'some message to your future self', // optional
-            important: true, // optional: assign important: true and filter the results with DISPLAY_IMPORTANT_EVENTS
+            important: true, // optional: assign important: true and filter the results with IMPORTANT_EVENTS
             effectiveDateStart: '2019-01-01',
             effectiveDateEnd: null,
             modulus: 1,
@@ -775,16 +790,32 @@ const danielSan = {
 };
 ```
 
-**Useful Functions and Notes**  
+## Options for Fine-Tuning Output Control  
   
-You can always use any exported function in the program by simply requiring it. However, the most useful functions can be found in the analytics and utility directories. Review the code in the reporting folder for examples of usage.  When using multi-currency conversion, the analysis takes place in the context of the currencySymbol within the config object.  Most of the analytic functions, with exception to findRulesToRetire and findIrrelevantRules, are executed on events. If you are running a subroutine related to rules, you should typically run the validation functions in core/validation.js first, in order to avoid errors.
+```javascript
+const reportingConfig = {
+    name: 'some name',
+    type: [STANDARD_OUTPUT, DISPLAY, SUM_OF_ALL_NEGATIVE_EVENT_FLOWS],
+    mode: CONCISE,
+    outputRelay: (content, error) => { if (content) process.stdout.write(content) }, // if you do not want to use the terminal or the default file writing functionality, you can push each chunk to a readstream that pipes into a write stream, or do as you like;
+    // null content indicates end of output
+        // note: the 2nd paramter indicates whether or not the content is provided in the context of an error
+    // note: when not using rawJson, each line of output is already formatted with a newline
+    rawJson: false, // OPTIONAL! When set to true, each chunk is either sent to outputRelay as content, or, if using the default file writing functionality, is output to a json file
+    reportCharWidth: 89, // changes width of the print screen when not using the rawJson option
+};
+```
 
-## Constants  
-  
+**Useful Functions and Notes**
+
+You can always use any exported function in the program by simply requiring it. However, the most useful functions can be found in the analytics and utility directories. Review the code in the reporting folder for examples of usage. When using multi-currency conversion, the analysis takes place in the context of the currencySymbol within the config object. Most of the analytic functions, with exception to findRulesToRetire and findIrrelevantRules, are executed on events. If you are running a subroutine related to rules, you should typically run the validation functions in core/validation.js first, in order to avoid errors.
+
+## Constants
+
 **Constants Available For Import**
-  
-Importing the following constants, to be discoverable by your code editor's auto-complete functionality, makes working with daniel-san more convenient.  
-  
+
+Importing the following constants, to be discoverable by your code editor's auto-complete functionality, makes working with daniel-san more convenient.
+
 ```javascript
 const {
     APP_NAME,
@@ -835,47 +866,55 @@ const {
     THURSDAY,
     FRIDAY,
     SATURDAY,
-    WEEKENDS,
+    WEEKENDS, [6, 0],
+    DISCOVERING_EVENT_TYPE,
+    EVALUATING_RULE_INSERTION,
+    EXECUTING_RULE_INSERTION,
+    EXECUTING_RULE_ADJUSTMENT,
+    EXECUTION_REJECTED,
+    MODIFIED,
+    RETIRING_RULES,
     STANDARD_OUTPUT,
     VERBOSE,
     CONCISE,
     SHY,
-    DISPLAY_EVENTS_BY_GROUP,
-    DISPLAY_EVENTS_BY_GROUPS,
-    DISPLAY_EVENTS_BY_NAME,
-    DISPLAY_EVENTS_BY_NAMES,
-    DISPLAY_EVENTS_BY_TYPE,
-    DISPLAY_EVENTS_BY_TYPES,
-    DISPLAY_EVENTS,
-    DISPLAY_CRITICAL_SNAPSHOTS,
-    DISPLAY_DISCARDED_EVENTS,
-    DISPLAY_IMPORTANT_EVENTS,
-    DISPLAY_TIME_EVENTS,
-    DISPLAY_ROUTINE_EVENTS,
-    DISPLAY_REMINDER_EVENTS,
-    DISPLAY_RULES_TO_RETIRE,
-    DISPLAY_IRRELEVANT_RULES,
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
-    DISPLAY_SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
-    DISPLAY_SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
-    DISPLAY_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    DISPLAY_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    DISPLAY_NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    DISPLAY_NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    DISPLAY_POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    DISPLAY_POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    DISPLAY_BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT,
-    DISPLAY_BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
-    DISPLAY_GREATEST_BALANCE_ENDING_SNAPSHOTS,
-    DISPLAY_LEAST_BALANCE_ENDING_SNAPSHOTS,
-    DISPLAY_GREATEST_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_LEAST_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    DISPLAY_AGGREGATES,
+    EVENTS_BY_GROUP,
+    EVENTS_BY_GROUPS,
+    EVENTS_BY_NAME,
+    EVENTS_BY_NAMES,
+    EVENTS_BY_TYPE,
+    EVENTS_BY_TYPES,
+    EVENTS,
+    CRITICAL_SNAPSHOTS,
+    DISCARDED_EVENTS,
+    IMPORTANT_EVENTS,
+    TIME_EVENTS,
+    ROUTINE_EVENTS,
+    REMINDER_EVENTS,
+    ROUTINE_AND_REMINDER_EVENTS,
+    RULES_TO_RETIRE,
+    IRRELEVANT_RULES,
+    SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
+    SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
+    SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
+    SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
+    EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
+    POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
+    BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT,
+    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    GREATEST_BALANCE_ENDING_SNAPSHOTS,
+    LEAST_BALANCE_ENDING_SNAPSHOTS,
+    GREATEST_EVENT_FLOW_SNAPSHOTS,
+    LEAST_EVENT_FLOW_SNAPSHOTS,
+    GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
+    LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
+    GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    AGGREGATES,
     DAY_CYCLES,
     DATE_SETS,
     SUMS_AND_AVERAGES,
@@ -883,32 +922,40 @@ const {
     MINIMUMS_AND_MAXIMUMS,
     GREATEST_VALUES,
     LEAST_VALUES,
-    FORMATTING_FUNCTION_DEFAULT,
     MIN_INT_DIGITS_DEFAULT,
     MIN_DECIMAL_DIGITS_DEFAULT,
     MAX_DECIMAL_DIGITS_DEFAULT,
     LOCALE_DEFAULT,
     STYLE_DEFAULT,
-    CURRENCY_DEFAULT
+    CURRENCY_DEFAULT,
+    RULE,
+    EVENT,
+    REPORT,
+    AGGREGATE,
+    DEFAULT_JSON_SPACING
 } = require('daniel-san/constants');
 ```
 
-## Breaking Changes in v11.0.0  
+## Breaking Changes in v12.0.0  
   
-Significant changes were made in Version 11 which included many breaking changes. Some of the most significant changes are documented below:  
-  
-changed all of the following constants accordingly:  
-  
+All constants beginning with 'DISPLAY_' had that substring removed with whitespace  
+
+## Breaking Changes in v11.0.0
+
+Significant changes were made in Version 11 which included many breaking changes. Some of the most significant changes are documented below:
+
+changed all of the following constants accordingly:
+
 MAX_AMOUNT with SUPPORT  
 MIN_AMOUNT with RESISTANCE  
 GREATER_THAN_AMOUNT with GREATER_THAN_SUPPORT  
 LESS_THAN_AMOUNT with LESS_THAN_RESISTANCE  
 END_BALANCE with BALANCE_ENDING  
 STANDARD_TERMINAL_OUTPUT to STANDARD_OUTPUT  
-TERMINAL_BOUNDARY_LIMIT to BOUNDARY_LIMIT  
-  
-changed all of the following variable names accordingly:  
-  
+TERMINAL_BOUNDARY_LIMIT to BOUNDARY_LIMIT
+
+changed all of the following variable names accordingly:
+
 LessThanMinAmount with LessThanResistance  
 GreaterThanMaxAmount with GreaterThanSupport  
 GreaterThanAmount with GreaterThanSupport  
@@ -925,9 +972,10 @@ standardTerminalHeader to standardHeader
 standardTerminalSubheader to standardSubheader  
 changed the terminal function to createReport  
 changed terminal to report  
-changed report path to /reporting  
-  
+changed report path to /reporting
+
 ## Breaking Change in v10.0.0
+
 all non-rule configuration for the danielSan object have been moved into the new "config" field.
 
 ## Breaking Change in v8.0.0

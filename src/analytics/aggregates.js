@@ -20,18 +20,12 @@ const {
     MEDIANS_AND_MODES,
     MINIMUMS_AND_MAXIMUMS,
     GREATEST_VALUES,
-    ONCE,
-    SUNDAY,
     MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
     POSITIVE,
     NEGATIVE,
     BOTH,
-    DATE_DELIMITER
+    DATE_DELIMITER,
+    AGGREGATE
 } = require('../constants');
 
 // TODO: the primary aggregate functions here could most certainly be abstracted and modularized further, thereby decreasing the amount of code in this file.
@@ -46,7 +40,7 @@ const aggregateGreatestValuesListProcess = ({
     transientData
 }) => {
     /*
-        TODO: performance could be increased if we replaced the functions being called below with dedicated functions 
+        TODO: performance could be increased if we replaced the functions being called below with dedicated functions
             since we are reusing the snapshot functions, we have to accomodate the object data struture by first creating a value list and then adding back the propertyKey
             if we created dedicated functions for each switch case with simple array data structures, we could speed this process up
             also we are using findGreatestPositiveValueSnapshots for least value situations too by reversing the sort (another performance hit)
@@ -357,6 +351,7 @@ const findAnnualAggregates = ({
         let aggregate = {
             name,
             type,
+            entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
             frequency,
             propertyKey,
             flowDirection,
@@ -441,6 +436,7 @@ const findAnnualAggregates = ({
                     aggregate = {
                         name,
                         type,
+                        entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
                         frequency,
                         propertyKey,
                         flowDirection,
@@ -629,6 +625,7 @@ const findMonthlyAggregates = ({
         let aggregate = {
             name,
             type,
+            entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
             frequency,
             propertyKey,
             flowDirection,
@@ -711,6 +708,7 @@ const findMonthlyAggregates = ({
                     aggregate = {
                         name,
                         type,
+                        entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
                         frequency,
                         propertyKey,
                         flowDirection,
@@ -915,6 +913,7 @@ const findWeeklyAggregates = ({
         let aggregate = {
             name,
             type,
+            entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
             frequency,
             propertyKey,
             flowDirection,
@@ -1000,6 +999,7 @@ const findWeeklyAggregates = ({
                     aggregate = {
                         name,
                         type,
+                        entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
                         frequency,
                         propertyKey,
                         flowDirection,
@@ -1374,6 +1374,7 @@ const findDateSetAggregates = ({
             let aggregate = {
                 name,
                 type,
+                entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
                 frequency,
                 propertyKey,
                 flowDirection,
@@ -1441,6 +1442,7 @@ const findDateSetAggregates = ({
                         aggregate = {
                             name,
                             type,
+                            entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
                             frequency,
                             propertyKey,
                             flowDirection,

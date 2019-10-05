@@ -57,7 +57,17 @@ const getWeekdayNumFromString = (weekdayString) => {
     return weekdayNum;
 };
 
-const filterEventsByKeysAndValues = ({ events, filterKeys = [], filterValues = [], filterType = UNION }) => {
+const defaultStringComparator = (filterKey, filterValue) => {
+    return filterKey === filterValue;
+};
+
+const filterEventsByKeysAndValues = ({
+    events,
+    filterKeys = [],
+    filterValues = [],
+    filterType = UNION,
+    filterComparator = defaultStringComparator
+}) => {
     let transientEvent; // for errorDisc
     try {
         let newEvents = events;
@@ -69,7 +79,8 @@ const filterEventsByKeysAndValues = ({ events, filterKeys = [], filterValues = [
                 for (let looper = 0; looper < filterKeys.length; looper++) {
                     if (
                         !isUndefinedOrNull(event[filterKeys[looper]]) &&
-                        (filterValues[looper] === ANY || event[filterKeys[looper]] === filterValues[looper])
+                        (filterValues[looper] === ANY ||
+                            filterComparator(event[filterKeys[looper]], filterValues[looper]))
                     ) {
                         includeEvent = true;
                         if (isUndefinedOrNull(filterType) || filterType === UNION) {
@@ -250,12 +261,22 @@ const findEventsByPropertyKeyAndValues = ({ events, propertyKey, searchValues })
 };
 
 const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, substring }) => {
+    let substrings;
+    if (typeof substring === 'string') {
+        substrings = [];
+        substrings.push(substring);
+    } else {
+        substrings = substring;
+    }
     // eslint-disable-next-line array-callback-return
     const eventsFound = events.filter((event) => {
-        // eslint-disable-line consistent-return
-        if (!isUndefinedOrNull(event[propertyKey]) && event[propertyKey].includes(substring)) {
-            return event;
-        }
+        // eslint-disable-next-line consistent-return
+        return substrings.some((string) => { // eslint-disable-line array-callback-return
+            // eslint-disable-line consistent-return
+            if (!isUndefinedOrNull(event[propertyKey]) && event[propertyKey].includes(string)) {
+                return true;
+            }
+        });
     });
     if (eventsFound.length > 0) {
         return eventsFound;
@@ -386,30 +407,30 @@ const findGreatestValueSnapshots = ({
     let greaterThanComparator;
     let lessThanComparator;
     switch (flowDirection) {
-    case POSITIVE:
-        newEvents = deepCopy(events).filter((event) => {
-            return event[propertyKey] > 0;
-        });
-        greaterThanComparator = isVal1GreaterThanVal2;
-        lessThanComparator = isVal1LessThanVal2;
-        break;
-    case NEGATIVE:
-        newEvents = deepCopy(events).filter((event) => {
-            return event[propertyKey] < 0;
-        });
-        greaterThanComparator = isAbsVal1GreaterThanAbsVal2;
-        lessThanComparator = isAbsVal1LessThanAbsVal2;
-        break;
-    case BOTH:
-        newEvents = deepCopy(events);
-        greaterThanComparator = isVal1GreaterThanVal2;
-        lessThanComparator = isVal1LessThanVal2;
-        break;
-    default:
-        newEvents = deepCopy(events);
-        greaterThanComparator = isVal1GreaterThanVal2;
-        lessThanComparator = isVal1LessThanVal2;
-        break;
+        case POSITIVE:
+            newEvents = deepCopy(events).filter((event) => {
+                return event[propertyKey] > 0;
+            });
+            greaterThanComparator = isVal1GreaterThanVal2;
+            lessThanComparator = isVal1LessThanVal2;
+            break;
+        case NEGATIVE:
+            newEvents = deepCopy(events).filter((event) => {
+                return event[propertyKey] < 0;
+            });
+            greaterThanComparator = isAbsVal1GreaterThanAbsVal2;
+            lessThanComparator = isAbsVal1LessThanAbsVal2;
+            break;
+        case BOTH:
+            newEvents = deepCopy(events);
+            greaterThanComparator = isVal1GreaterThanVal2;
+            lessThanComparator = isVal1LessThanVal2;
+            break;
+        default:
+            newEvents = deepCopy(events);
+            greaterThanComparator = isVal1GreaterThanVal2;
+            lessThanComparator = isVal1LessThanVal2;
+            break;
     }
     sortedCollection = newEvents.sort((a, b) => {
         if (isUndefinedOrNull(a) && !isUndefinedOrNull(b)) {

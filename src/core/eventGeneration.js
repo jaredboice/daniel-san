@@ -3,7 +3,8 @@ const {
     DATE_FORMAT_STRING,
     MODIFIED,
     DATE_TIME_DELIMITER,
-    TIME_FORMAT_STRING
+    TIME_FORMAT_STRING,
+    EVENT
 } = require('../constants');
 
 const generateTimeSpan = ({ event, date, weekday }) => {
@@ -72,6 +73,7 @@ const redefineTimeStartAndTimeSpan = ({ event, skipTimeTravel = null }) => {
 */
 const generateEvent = ({ danielSan, rule, date, skipTimeTravel = null }) => {
     const newEvent = { ...rule };
+    newEvent.entityType = EVENT; // can be used to categorize if an object is a rule, event, or an aggregate
     // define dateStart
     newEvent.dateStart = date.format(DATE_FORMAT_STRING);
     // whether or not we timeTravel, the output timeZone is always assumed to be from OBSERVER_SOURCE
