@@ -68,6 +68,8 @@ const {
     GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
     LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
     EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
+    NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
+    POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
     BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE,
     AGGREGATES,
     REPORT,
@@ -1174,6 +1176,8 @@ const getEventsWithinXPercentOfValue = ({
     danielSan,
     events,
     reportingConfig,
+    xPercent,
+    xValue,
     propertyKey,
     reportCharWidth,
     writeStream
@@ -1181,8 +1185,8 @@ const getEventsWithinXPercentOfValue = ({
     const collection = findEventsWithinXPercentOfValue({
         events,
         propertyKey,
-        xPercent: reportingConfig.xPercent,
-        xValue: reportingConfig.xValue
+        xPercent,
+        xValue
     });
     const relevantEvents = collection;
     if (!reportingConfig.rawJson) {
@@ -1730,6 +1734,38 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            xPercent: reportingConfig.xPercent,
+                            xValue: reportingConfig.xValue,
+                            propertyKey: 'amount',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE:
+                        transientEvents = newDanielSan.events.filter((element) => {
+                            return element.amount < 0;
+                        });
+                        reportResults = getEventsWithinXPercentOfValue({
+                            danielSan: newDanielSan,
+                            events: transientEvents,
+                            reportingConfig,
+                            xPercent: reportingConfig.negativeXPercent,
+                            xValue: Math.abs(reportingConfig.negativeXValue) * -1, // force negative value
+                            propertyKey: 'amount',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE:
+                        transientEvents = newDanielSan.events.filter((element) => {
+                            return element.amount > 0;
+                        });
+                        reportResults = getEventsWithinXPercentOfValue({
+                            danielSan: newDanielSan,
+                            events: transientEvents,
+                            reportingConfig,
+                            xPercent: reportingConfig.positiveXPercent,
+                            xValue: Math.abs(reportingConfig.positiveXValue), // force positive value
                             propertyKey: 'amount',
                             reportCharWidth,
                             writeStream
@@ -1740,6 +1776,8 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            xPercent: reportingConfig.balanceEndingXPercent,
+                            xValue: reportingConfig.balanceEndingXValue,
                             propertyKey: 'balanceEnding',
                             reportCharWidth,
                             writeStream

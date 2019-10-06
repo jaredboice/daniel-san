@@ -655,7 +655,9 @@ createReport({ danielSan, reportingConfig, error, originalDanielSan }); // the o
 -   `type: 'GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest positive amount values, ordered by value)_
 -   `type: 'LEAST_POSITIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest positive amount values, ordered by value)_
 -   `type: 'EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass xPercent: 0.1 and xValue: -1000 to find all event flows within 10 percent of -1000)_
--   `type: 'BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE'` _(pass xPercent: 0.1 and xValue: 500 to find all balanceEnding snapshots within 10 percent of 500)_
+-   `type: 'NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass negativeXPercent: 0.1 and negativeXValue: -1000 to find all event flows within 10 percent of -1000)_
+-   `type: 'POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass positiveXPercent: 0.1 and positiveXValue: -1000 to find all event flows within 10 percent of -1000)_
+-   `type: 'BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE'` _(pass balanceEndingXPercent: 0.1 and balanceEndingXValue: 500 to find all balanceEnding snapshots within 10 percent of 500)_
 -   `type: 'AGGREGATES'` _(see section on Aggregate Functions)_
 -   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportingConfig will search against the optional group property)_
 -   `type: 'EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
@@ -922,6 +924,8 @@ const {
     GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
     LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
     EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
+    NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
+    POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
     BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE,
     AGGREGATES,
     DEFAULT,
