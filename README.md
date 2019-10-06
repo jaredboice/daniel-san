@@ -524,9 +524,13 @@ const reportingConfig = {
             frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
             propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
             flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES
+            sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
+            sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
             selectionAmount: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
             dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17
             modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
+            xPercent: 0.1, // sets the percentage difference allowed for mode matches, specifically. Defaults to 0 which is 0% difference (exact match); 0.1 indicates 10%
+            // while xPercent defaults to 0, it is probably necessary to boost it to at least 0.01 or so as it might be common for you to otherwise get no mode matches at all
             weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types
             cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type
             fiscalYearStart: '12-25' // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
@@ -645,11 +649,13 @@ createReport({ danielSan, reportingConfig, error, originalDanielSan }); // the o
 -   `type: 'GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest balanceEnding values, ordered by value)_
 -   `type: 'LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest balanceEnding values, ordered by value)_
 -   `type: 'GREATEST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest amount values, ordered by value)_
--   `type: 'LEAST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest aamount values, ordered by value)_
+-   `type: 'LEAST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest amount values, ordered by value)_
 -   `type: 'GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest absolute-value amounts, ordered by value)_
 -   `type: 'LEAST_NEGATIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest absolute-value amounts, ordered by value)_
 -   `type: 'GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest positive amount values, ordered by value)_
 -   `type: 'LEAST_POSITIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest positive amount values, ordered by value)_
+-   `type: 'EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass xPercent: 0.1 and xValue: -1000 to find all event flows within 10 percent of -1000)_
+-   `type: 'BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE'` _(pass xPercent: 0.1 and xValue: 500 to find all balanceEnding snapshots within 10 percent of 500)_
 -   `type: 'AGGREGATES'` _(see section on Aggregate Functions)_
 -   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportingConfig will search against the optional group property)_
 -   `type: 'EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
@@ -813,7 +819,7 @@ You can always use any exported function in the program by simply requiring it. 
 
 ## Constants
 
-**Constants Available For Import**
+**Constants/Formatting Functions Available For Import**
 
 Importing the following constants, to be discoverable by your code editor's auto-complete functionality, makes working with daniel-san more convenient.
 
@@ -915,7 +921,18 @@ const {
     LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
     GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
     LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
+    BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE,
     AGGREGATES,
+    DEFAULT,
+    ASCENDING,
+    DESCENDING,
+    SUM,
+    AVERAGE,
+    MEDIANS,
+    MODES,
+    MIN,
+    MAX,
     DAY_CYCLES,
     DATE_SETS,
     SUMS_AND_AVERAGES,
@@ -933,7 +950,11 @@ const {
     EVENT,
     REPORT,
     AGGREGATE,
-    DEFAULT_JSON_SPACING
+    DEFAULT_JSON_SPACING,
+    decimalFormatterStandard,
+    formattingFunctionDefault,
+    getDefaultParamsForDecimalFormatter,
+    getWeekdayString
 } = require('daniel-san/constants');
 ```
 

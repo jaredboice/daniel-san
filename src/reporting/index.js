@@ -7,6 +7,8 @@ const { TimeStream } = require('../timeStream');
 const { validateConfig, validateRules } = require('../core/validation');
 const selectAggregateFunction = require('../analytics/aggregateSelector');
 const {
+    sortAggregates,
+    findEventsWithinXPercentOfValue,
     filterEventsByKeysAndValues,
     findCriticalSnapshots,
     findRulesToRetire,
@@ -65,6 +67,8 @@ const {
     LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
     GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
     LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+    EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
+    BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE,
     AGGREGATES,
     REPORT,
     CURRENCY_DEFAULT,
@@ -449,7 +453,7 @@ const eventsLogger = ({
     }
 };
 
-const aggregateHeader = ({ aggregate, reportCharWidth, writeStream }) => {
+const aggregateHeader = ({ aggregate, aggregateConfig, reportCharWidth, writeStream }) => {
     reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
     lineHeading({ heading: `  begin aggregate function: `, char: '%', reportCharWidth, writeStream });
     if (!isUndefinedOrNull(aggregate.name)) {
@@ -463,6 +467,12 @@ const aggregateHeader = ({ aggregate, reportCharWidth, writeStream }) => {
     }
     if (!isUndefinedOrNull(aggregate.propertyKey)) {
         lineHeading({ heading: `  propertyKey: ${aggregate.propertyKey}  `, char: '%', reportCharWidth, writeStream });
+    }
+    if (!isUndefinedOrNull(aggregateConfig.sortKey)) {
+        lineHeading({ heading: `  sortKey: ${aggregateConfig.sortKey}  `, char: '%', reportCharWidth, writeStream });
+    }
+    if (!isUndefinedOrNull(aggregateConfig.sortDirection)) {
+        lineHeading({ heading: `  sortDirection: ${aggregateConfig.sortDirection}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.flowDirection)) {
         lineHeading({
@@ -482,6 +492,9 @@ const aggregateHeader = ({ aggregate, reportCharWidth, writeStream }) => {
     }
     if (!isUndefinedOrNull(aggregate.modeMax)) {
         lineHeading({ heading: `  modeMax: ${aggregate.modeMax}  `, char: '%', reportCharWidth, writeStream });
+    }
+    if (aggregate.xPercent) {
+        lineHeading({ heading: `  xPercent: ${aggregate.xPercent}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregate.dayCycles)) {
         lineHeading({ heading: `  dayCycles: ${aggregate.dayCycles}  `, char: '%', reportCharWidth, writeStream });
@@ -1152,6 +1165,34 @@ const getLeastValueSnapshots = ({
     }
 };
 
+const getEventsWithinXPercentOfValue = ({
+    danielSan,
+    events,
+    reportingConfig,
+    propertyKey,
+    reportCharWidth,
+    writeStream
+}) => {
+    const collection = findEventsWithinXPercentOfValue({
+        events,
+        propertyKey,
+        xPercent: reportingConfig.xPercent,
+        xValue: reportingConfig.xValue
+    });
+    const relevantEvents = collection;
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
+};
+
 const standardOutput = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
     const relevantEvents = danielSan.events;
     if (!reportingConfig.rawJson) {
@@ -1678,22 +1719,43 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             writeStream
                         });
                         break;
+                    case EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE:
+                        reportResults = getEventsWithinXPercentOfValue({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'amount',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE:
+                        reportResults = getEventsWithinXPercentOfValue({
+                            danielSan: newDanielSan,
+                            events: newDanielSan.events,
+                            reportingConfig,
+                            propertyKey: 'balanceEnding',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
                     case AGGREGATES:
                         if (!reportingConfig.aggregates) {
                             reportingConfig.aggregates = [];
                         }
                         reportingConfig.aggregates.forEach((aggregateConfig) => {
                             const aggregateFunction = selectAggregateFunction(aggregateConfig);
-                            const aggregateResults = aggregateFunction({
+                            let aggregateResults = aggregateFunction({
                                 ...aggregateConfig,
                                 type: aggregateConfig.type,
                                 events: newDanielSan.events
                             });
+                            aggregateResults = sortAggregates({ aggregateConfig, aggregates: aggregateResults });
                             reportResults = aggregateResults;
                             if (!reportingConfig.rawJson) {
                                 if (aggregateResults && aggregateResults.length > 0) {
                                     const firstElement = aggregateResults[0];
-                                    aggregateHeader({ aggregate: { ...firstElement }, reportCharWidth, writeStream });
+                                    aggregateHeader({ aggregate: { ...firstElement }, aggregateConfig, reportCharWidth, writeStream });
                                     aggregateResults.forEach((aggregateResult) => {
                                         aggregateLogger({
                                             aggregate: aggregateResult,

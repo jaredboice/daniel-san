@@ -1,13 +1,13 @@
-const moment = require('moment');
 const { errorDisc } = require('../utility/errorHandling');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { deepCopy } = require('../utility/dataStructures');
 const {
+    isThisWithinXPercentOfThat,
     findGreatestValueSnapshots,
     findGreatestPositiveValueSnapshots,
     findGreatestNegativeValueSnapshots
 } = require('./index.js');
-const { initializeTimeZoneData, createTimeZone, convertTimeZone } = require('../timeZone');
+const { createTimeZone } = require('../timeZone');
 const { TimeStream } = require('../timeStream');
 const {
     DATE_FORMAT_STRING,
@@ -180,11 +180,11 @@ const findModes = (set, modeMax = 5) => {
             return 0;
         }
     });
-    const maxFrequency = newSet[0].frequency;
-    const thereIsAtLeastOneMode = newSet.some((element) => {
-        return element.frequency < maxFrequency;
-    });
     if (newSet.length > 2) {
+        const maxFrequency = newSet[0].frequency;
+        const thereIsAtLeastOneMode = newSet.some((element) => {
+            return element.frequency < maxFrequency;
+        });
         if (thereIsAtLeastOneMode) {
             const finalSet = newSet.filter((element) => {
                 return element.frequency === maxFrequency;
@@ -207,7 +207,7 @@ const findModes = (set, modeMax = 5) => {
 };
 
 const findMedians = (set) => {
-    const medians = [];
+    let medians = [];
     const transientSet = deepCopy(set);
     const newSet = transientSet.sort((a, b) => {
         if (a > b) {
@@ -231,16 +231,49 @@ const findMedians = (set) => {
             medians.push(newSet[midPointIndex + 1]);
         }
     }
+    medians = medians.sort((a, b) => {
+        if (a > b) {
+            return 1;
+        } else if (a < b) {
+            return -1;
+            // eslint-disable-next-line no-else-return
+        } else {
+            return 0;
+        }
+    });
     return medians;
 };
 
-const pushToMediansAndModesList = ({ value, transientData }) => {
+const pushToMediansAndModesList = ({ value, xPercent, transientData }) => {
     let matchFound = false;
     for (let looper = 0; looper < transientData.modeDataSet.length; looper++) {
         if (transientData.modeDataSet[looper].value.toString() === value.toString()) {
             // toString for more precise comparison
             transientData.modeDataSet[looper].frequency++;
             matchFound = true;
+        } else if (
+            isThisWithinXPercentOfThat({
+                value: transientData.modeDataSet[looper].value,
+                xPercent,
+                xValue: value
+            })
+        ) {
+            // toString for more precise comparison
+            transientData.modeDataSet[looper].frequency++;
+            // since we are matching on xPercent functionality, we should really increment the frequency of both values
+            let indexOfValue = -1;
+            // eslint-disable-next-line no-loop-func
+            matchFound = transientData.modeDataSet.some((element, index) => {
+                if (looper !== index) {
+                    if (element.value.toString() === value.toString()) {
+                        indexOfValue = index;
+                        if (indexOfValue > 0) {
+                            transientData.modeDataSet[indexOfValue].frequency++;
+                            return true;
+                        }
+                    }
+                }
+            });
             break;
         }
     }
@@ -270,17 +303,18 @@ const aggregateMediansAndModesEventProcess = ({
     date,
     propertyKey,
     flowDirection,
+    xPercent,
     transientData
 }) => {
     if (flowDirection === POSITIVE && event[propertyKey] > 0) {
         aggregate.eventCount++;
-        pushToMediansAndModesList({ value: event[propertyKey], transientData });
+        pushToMediansAndModesList({ value: event[propertyKey], xPercent, transientData });
     } else if (flowDirection === NEGATIVE && event[propertyKey] < 0) {
         aggregate.eventCount++;
-        pushToMediansAndModesList({ value: Math.abs(event[propertyKey]), transientData });
+        pushToMediansAndModesList({ value: Math.abs(event[propertyKey]), xPercent, transientData });
     } else if (flowDirection === BOTH && event[propertyKey] !== 0) {
         aggregate.eventCount++;
-        pushToMediansAndModesList({ value: event[propertyKey], transientData });
+        pushToMediansAndModesList({ value: event[propertyKey], xPercent, transientData });
     }
 };
 
@@ -302,6 +336,7 @@ const findAnnualAggregates = ({
     selectionAmount = 7,
     reverse = false,
     modeMax,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -356,8 +391,8 @@ const findAnnualAggregates = ({
             propertyKey,
             flowDirection,
             selectionAmount,
-            reverse,
             modeMax,
+            xPercent,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -393,6 +428,7 @@ const findAnnualAggregates = ({
                     date: timeStream.looperDate,
                     propertyKey,
                     flowDirection,
+                    xPercent,
                     transientData
                 });
                 // end logic unique to this specific function
@@ -441,8 +477,8 @@ const findAnnualAggregates = ({
                         propertyKey,
                         flowDirection,
                         selectionAmount,
-                        reverse,
                         modeMax,
+                        xPercent,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -473,6 +509,7 @@ const findAnnualMediansAndModes = ({
     fiscalYearStart,
     flowDirection = BOTH,
     modeMax = 5,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -487,6 +524,7 @@ const findAnnualMediansAndModes = ({
         fiscalYearStart,
         flowDirection,
         modeMax,
+        xPercent,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -594,6 +632,7 @@ const findMonthlyAggregates = ({
     selectionAmount = 7,
     reverse = false,
     modeMax,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -630,8 +669,8 @@ const findMonthlyAggregates = ({
             propertyKey,
             flowDirection,
             selectionAmount,
-            reverse,
             modeMax,
+            xPercent,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -666,6 +705,7 @@ const findMonthlyAggregates = ({
                     date: timeStream.looperDate,
                     propertyKey,
                     flowDirection,
+                    xPercent,
                     transientData
                 });
                 // end logic unique to this specific function
@@ -713,8 +753,8 @@ const findMonthlyAggregates = ({
                         propertyKey,
                         flowDirection,
                         selectionAmount,
-                        reverse,
                         modeMax,
+                        xPercent,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -744,6 +784,7 @@ const findMonthlyMediansAndModes = ({
     propertyKey = 'balanceEnding',
     flowDirection = BOTH,
     modeMax = 5,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -757,6 +798,7 @@ const findMonthlyMediansAndModes = ({
         propertyKey,
         flowDirection,
         modeMax,
+        xPercent,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -861,6 +903,7 @@ const findWeeklyAggregates = ({
     selectionAmount = 7,
     reverse = false,
     modeMax,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -918,8 +961,8 @@ const findWeeklyAggregates = ({
             propertyKey,
             flowDirection,
             selectionAmount,
-            reverse,
             modeMax,
+            xPercent,
             dayCycles,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
@@ -955,6 +998,7 @@ const findWeeklyAggregates = ({
                     date: timeStream.looperDate,
                     propertyKey,
                     flowDirection,
+                    xPercent,
                     transientData
                 });
                 // end logic unique to this specific function
@@ -1004,8 +1048,8 @@ const findWeeklyAggregates = ({
                         propertyKey,
                         flowDirection,
                         selectionAmount,
-                        reverse,
                         modeMax,
+                        xPercent,
                         dayCycles,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
@@ -1037,6 +1081,7 @@ const findWeeklyMediansAndModes = ({
     flowDirection = BOTH,
     weekdayStart = MONDAY,
     modeMax = 5,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1051,6 +1096,7 @@ const findWeeklyMediansAndModes = ({
         flowDirection,
         weekdayStart,
         modeMax,
+        xPercent,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -1201,6 +1247,7 @@ const findDayCycleMediansAndModes = ({
     dayCycles = 30,
     cycleDateStart = null,
     modeMax = 5,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1217,6 +1264,7 @@ const findDayCycleMediansAndModes = ({
         dayCycles,
         cycleDateStart,
         modeMax,
+        xPercent,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -1301,6 +1349,7 @@ const findDayCycleGreatestValues = ({
     cycleDateStart = null,
     selectionAmount = 7,
     reverse = false,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1318,6 +1367,7 @@ const findDayCycleGreatestValues = ({
         cycleDateStart,
         selectionAmount,
         reverse,
+        xPercent,
         aggregateInit: aggregateGreatestValuesInit,
         aggregateEventProcess: aggregateGreatestValuesEventProcess,
         aggregateListProcess: aggregateGreatestValuesListProcess,
@@ -1336,6 +1386,7 @@ const findDateSetAggregates = ({
     selectionAmount = 7,
     reverse = false,
     modeMax = 5,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1379,8 +1430,8 @@ const findDateSetAggregates = ({
                 propertyKey,
                 flowDirection,
                 selectionAmount,
-                reverse,
                 modeMax,
+                xPercent,
                 eventCount: 0,
                 dateStart: timeStream.effectiveDateStartString,
                 dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -1408,6 +1459,7 @@ const findDateSetAggregates = ({
                         event,
                         date: timeStream.looperDate,
                         propertyKey,
+                        xPercent,
                         flowDirection,
                         transientData
                     });
@@ -1447,8 +1499,8 @@ const findDateSetAggregates = ({
                             propertyKey,
                             flowDirection,
                             selectionAmount,
-                            reverse,
                             modeMax,
+                            xPercent,
                             eventCount: 0,
                             dateStart: events[eventLooper].dateStart,
                             dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -1481,6 +1533,7 @@ const findDateSetMediansAndModes = ({
     flowDirection = BOTH,
     dateSets,
     modeMax = 5,
+    xPercent = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1495,6 +1548,7 @@ const findDateSetMediansAndModes = ({
         flowDirection,
         dateSets,
         modeMax,
+        xPercent,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,

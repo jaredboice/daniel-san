@@ -6,9 +6,6 @@ const { initializeTimeZoneData, createTimeZone, convertTimeZone } = require('../
 const { TimeStream } = require('../timeStream');
 const {
     DATE_FORMAT_STRING,
-    ANNUALLY,
-    MONTHLY,
-    WEEKLY,
     ONCE,
     SUNDAY,
     MONDAY,
@@ -23,8 +20,128 @@ const {
     ANY,
     UNION,
     INTERSECTION,
-    DATE_DELIMITER
+    DEFAULT,
+    ASCENDING,
+    DESCENDING,
+    SUM,
+    AVERAGE,
+    MEDIANS,
+    MODES,
+    MIN,
+    MAX
 } = require('../constants');
+
+const sortAggregates = ({ aggregateConfig, aggregates }) => {
+    let newAggregates;
+    let configSortKey = aggregateConfig.sortKey;
+    let sortKey;
+    let sortDirection;
+    if (isUndefinedOrNull(aggregateConfig.sortKey)) {
+        configSortKey = DEFAULT;
+    }
+    if (configSortKey === DEFAULT || aggregateConfig.sortDirection === DEFAULT) {
+        return aggregates;
+    }
+    if (isUndefinedOrNull(aggregateConfig.sortDirection)) {
+        sortDirection = 1; // defaults to ASCENDING order
+    } else {
+        sortDirection = aggregateConfig.sortDirection === ASCENDING ? 1 : -1;
+    }
+    switch (configSortKey) {
+    case SUM:
+        sortKey = 'sum';
+        break;
+    case AVERAGE:
+        sortKey = 'average';
+        break;
+    case MEDIANS:
+        sortKey = 'medians';
+        break;
+    case MODES:
+        sortKey = 'modes';
+        break;
+    case MIN:
+        sortKey = 'min';
+        break;
+    case MAX:
+        sortKey = 'max';
+        break;
+    case DEFAULT:
+        return aggregates;
+    default:
+        sortKey = aggregateConfig.sortKey;
+    }
+    if (sortKey === 'medians' || sortKey === 'modes') {
+        newAggregates = aggregates.sort((aObj, bObj) => {
+            const aList = aObj[sortKey];
+            const bList = bObj[sortKey];
+            let sortResult = -1;
+            aList.some((a) => {
+                return bList.some((b) => {
+                    if (a > b) {
+                        sortResult = 1 * sortDirection;
+                        if (sortDirection === ASCENDING) return true;
+                    } else if (a < b) {
+                        sortResult = -1 * sortDirection;
+                        if (sortDirection === DESCENDING) return true;
+                        // eslint-disable-next-line no-else-return
+                    } else {
+                        sortResult = 0;
+                    }
+                });
+            });
+            return sortResult;
+        });
+    } else {
+        newAggregates = aggregates.sort((aObj, bObj) => {
+            const a = aObj[sortKey];
+            const b = bObj[sortKey];
+            if (a > b) {
+                return 1 * sortDirection;
+            } else if (a < b) {
+                return -1 * sortDirection;
+                // eslint-disable-next-line no-else-return
+            } else {
+                return 0;
+            }
+        });
+    }
+    return newAggregates;
+};
+
+const isThisWithinXPercentOfThat = ({ value, xPercent = 0, xValue }) => {
+    // const difference = value - xValue;
+    const xPercentOfValue = Math.abs(xPercent * xValue);
+    const lowValue = xValue - xPercentOfValue;
+    const highValue = xValue + xPercentOfValue;
+    if (value >= lowValue && value <= highValue) {
+        return true;
+        // eslint-disable-next-line no-else-return
+    } else {
+        return false;
+    }
+};
+
+// TODO: delete
+// const isThisWithinXPercentOfThat = ({ value, xPercent = 0, xValue }) => {
+//     // const difference = value - xValue;
+//     const xPercentOfValue = Math.abs(xPercent * xValue);
+//     const lowValue = value - xPercentOfValue;
+//     const highValue = value + xPercentOfValue;
+//     if (xValue >= lowValue && xValue <= highValue) {
+//         return true;
+//         // eslint-disable-next-line no-else-return
+//     } else {
+//         return false;
+//     }
+// };
+
+const findEventsWithinXPercentOfValue = ({ events, propertyKey = 'balanceEnding', xPercent = 0, xValue }) => {
+    const newEvents = events.filter((event) => {
+        return isThisWithinXPercentOfThat({ value: event[propertyKey], xPercent, xValue });
+    });
+    return newEvents || [];
+};
 
 const getWeekdayNumFromString = (weekdayString) => {
     let weekdayNum;
@@ -271,7 +388,8 @@ const findEventsWithPropertyKeyContainingSubstring = ({ events, propertyKey, sub
     // eslint-disable-next-line array-callback-return
     const eventsFound = events.filter((event) => {
         // eslint-disable-next-line consistent-return
-        return substrings.some((string) => { // eslint-disable-line array-callback-return
+        return substrings.some((string) => {
+            // eslint-disable-line array-callback-return
             // eslint-disable-line consistent-return
             if (!isUndefinedOrNull(event[propertyKey]) && event[propertyKey].includes(string)) {
                 return true;
@@ -561,6 +679,9 @@ const sumAllNegativeEventAmounts = (events) => {
 };
 
 module.exports = {
+    sortAggregates,
+    isThisWithinXPercentOfThat,
+    findEventsWithinXPercentOfValue,
     filterEventsByKeysAndValues,
     findSnapshotsGreaterThanSupport,
     findSnapshotsLessThanResistance,
