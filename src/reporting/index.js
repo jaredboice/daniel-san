@@ -472,7 +472,12 @@ const aggregateHeader = ({ aggregate, aggregateConfig, reportCharWidth, writeStr
         lineHeading({ heading: `  sortKey: ${aggregateConfig.sortKey}  `, char: '%', reportCharWidth, writeStream });
     }
     if (!isUndefinedOrNull(aggregateConfig.sortDirection)) {
-        lineHeading({ heading: `  sortDirection: ${aggregateConfig.sortDirection}  `, char: '%', reportCharWidth, writeStream });
+        lineHeading({
+            heading: `  sortDirection: ${aggregateConfig.sortDirection}  `,
+            char: '%',
+            reportCharWidth,
+            writeStream
+        });
     }
     if (!isUndefinedOrNull(aggregate.flowDirection)) {
         lineHeading({
@@ -1060,7 +1065,7 @@ const getSnapshotsGreaterThanSupport = ({
 }) => {
     const collection = findSnapshotsGreaterThanSupport({
         events,
-        amount: boundaryField || 0,
+        amount: reportingConfig[boundaryField] || 0,
         propertyKey
     });
     const relevantEvents = collection;
@@ -1088,7 +1093,7 @@ const getSnapshotsLessThanResistance = ({
 }) => {
     const collection = findSnapshotsLessThanResistance({
         events,
-        amount: boundaryField || 0,
+        amount: reportingConfig[boundaryField] || 0,
         propertyKey
     });
     const relevantEvents = collection;
@@ -1535,6 +1540,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                     case EVENT_FLOWS_GREATER_THAN_SUPPORT:
                         reportResults = getSnapshotsGreaterThanSupport({
                             danielSan: newDanielSan,
+                            events: newDanielSan.events,
                             reportingConfig,
                             propertyKey: 'amount',
                             boundaryField: 'support',
@@ -1755,7 +1761,12 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             if (!reportingConfig.rawJson) {
                                 if (aggregateResults && aggregateResults.length > 0) {
                                     const firstElement = aggregateResults[0];
-                                    aggregateHeader({ aggregate: { ...firstElement }, aggregateConfig, reportCharWidth, writeStream });
+                                    aggregateHeader({
+                                        aggregate: { ...firstElement },
+                                        aggregateConfig,
+                                        reportCharWidth,
+                                        writeStream
+                                    });
                                     aggregateResults.forEach((aggregateResult) => {
                                         aggregateLogger({
                                             aggregate: aggregateResult,
