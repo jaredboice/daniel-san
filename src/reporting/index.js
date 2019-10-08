@@ -1431,9 +1431,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
             rules.forEach((rule, reportIndex) => {
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
-                    let ruleHeading = `  begin reporting rule => type: ${rule.type}  `;
+                    let ruleHeading = `  begin reporting rule  =>  type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  name: ${rule.name}  `;
+                        ruleHeading = `${ruleHeading}=>  name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
@@ -1892,9 +1892,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                 }
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '$', reportCharWidth, writeStream });
-                    let ruleHeading = `  end reporting rule => type: ${rule.type}  `;
+                    let ruleHeading = `  end reporting rule  =>  type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  name: ${rule.name}  `;
+                        ruleHeading = `${ruleHeading}=>  name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
