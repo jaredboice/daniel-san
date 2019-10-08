@@ -60,7 +60,7 @@ const {
     POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET,
     POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET,
     BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET,
-    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET,
     GREATEST_BALANCE_ENDING_SNAPSHOTS,
     LEAST_BALANCE_ENDING_SNAPSHOTS,
     GREATEST_EVENT_FLOWS,
@@ -1682,7 +1682,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                             writeStream
                         });
                         break;
-                    case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                    case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET:
                         reportResults = getSnapshotsLessThanResistance({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
