@@ -734,7 +734,7 @@ const standardHeader = ({ reportingConfig, dateString, timeString, weekdayString
     lineHeading({ heading: ' must find balance ', reportCharWidth, writeStream });
     reportingBoundary({ loops: 2, reportCharWidth, writeStream });
     if (!isUndefinedOrNull(reportingConfig.name)) {
-        lineHeading({ heading: ` report: ${reportingConfig.name} `, reportCharWidth, writeStream });
+        lineHeading({ heading: ` report name: ${reportingConfig.name} `, reportCharWidth, writeStream });
     }
     lineHeading({ heading: ` report mode: ${reportingConfig.mode} `, reportCharWidth, writeStream });
     lineHeading({ heading: ` report date: ${weekdayString}, ${dateString} ${timeString} local time `, reportCharWidth, writeStream });
@@ -1431,9 +1431,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
             rules.forEach((rule, reportIndex) => {
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
-                    let ruleHeading = `  begin report type: ${rule.type}  `;
+                    let ruleHeading = `  begin reporting rule type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                        ruleHeading = `${ruleHeading}/  reporting rule name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
@@ -1892,9 +1892,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                 }
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '$', reportCharWidth, writeStream });
-                    let ruleHeading = `  end report type: ${rule.type}  `;
+                    let ruleHeading = `  end reporting rule type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                        ruleHeading = `${ruleHeading}/  reporting rule name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
