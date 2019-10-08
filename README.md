@@ -441,7 +441,7 @@ const danielSan = {
         effectiveDateStart: '2019-03-20',
         effectiveDateEnd: '2019-12-13',
         currencySymbol: 'USD', // the PRIMARY-OUTPUT currency symbol that everything will be converted to, it represents the outputSymbol parameter in the currencyConversion function
-        // (when using the reportingConfig, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
+        // (when using the reportController, the currencySymbol parameter should be exact/case-sensitive as respected by javascripts built-in toLocaleString function - via the Intl api)
         currencyConversion: ({ amount, inputSymbol, outputSymbol }) => {
             // a global currency conversion function that will return the converted amount.
             // the amount parameter represents the rule amount (as defined below for each provided rule)
@@ -509,31 +509,46 @@ options in the above scenario include:
 
 Requires the reporting type, AGGREGATES
 
-Add the following aggregates array to the reportingConfig options object for computing aggregates:  
+Add the following aggregates array to a report rule for computing aggregates:  
 (add as many as desired)
 
 ```javascript
-const reportingConfig = {
-    name: 'some name',
-    type: [STANDARD_OUTPUT, AGGREGATES],
-    mode: CONCISE,
-    aggregates: [
+const reportController = {
+    config: {
+        name: 'some name',
+        mode: CONCISE
+    },
+    rules: [
         {
-            name: 'some name',
-            type: SUMS_AND_AVERAGES || MINIMUMS_AND_MAXIMUMS || MEDIANS_AND_MODES || GREATEST_VALUES || LEAST_VALUES,
-            frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
-            propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
-            flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES
-            sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
-            sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
-            selectionAmount: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
-            dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17
-            modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
-            xPercent: 0.1, // sets the percentage difference allowed for mode matches, specifically. Defaults to 0 which is 0% difference (exact match); 0.1 indicates 10%
-            // while xPercent defaults to 0, it is probably necessary to boost it to at least 0.01 or so as it might be common for you to otherwise get no mode matches at all
-            weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types
-            cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type
-            fiscalYearStart: '12-25' // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
+            type: STANDARD_OUTPUT
+        },
+        {
+            name: 'some name', // optional
+            type: AGGREGATES, // both type and aggregates properties are necessary
+            aggregates: [
+                {
+                    name: 'some name',
+                    type:
+                        SUMS_AND_AVERAGES ||
+                        MINIMUMS_AND_MAXIMUMS ||
+                        MEDIANS_AND_MODES ||
+                        GREATEST_VALUES ||
+                        LEAST_VALUES,
+                    frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
+                    propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
+                    flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES
+                    sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
+                    sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
+                    selectionAmount: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
+                    dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17
+                    modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
+                    xPercent: 0.1, // sets the percentage difference allowed for mode matches, specifically. Defaults to 0 which is 0% difference (exact match); 0.1 indicates 10%
+                    // while xPercent defaults to 0, it is probably necessary to boost it to at least 0.01 or so as it might be common for you to otherwise get no mode matches at all
+                    weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types
+                    cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type
+                    fiscalYearStart: '12-25' // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
+                }
+            ]
         }
     ]
 };
@@ -604,20 +619,32 @@ options in the above scenario include:
 
 ## Reports - File and Terminal Output
 
-Terminal output is configured by default. File output is configured, instead, by adding the following attributes to the reportingConfig options object:
+Terminal output is configured by default. File output is configured, instead, by adding the following attributes to the reportController options object:
 
 ```javascript
-const reportingConfig = {
-    name: 'some name',
-    type: STANDARD_OUTPUT, // can be provided as an array of types as well!!
-    mode: CONCISE,
-    file: {
-        path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
-        name: 'MyReport.txt',
-        onFinish: () => {}, // optional
-        onError: (err) => {}, // optional
-        jsonSpacing: 4, // OPTIONAL! This is the default setting when using the rawJson attribute
-    }
+const reportController = {
+    config: {
+        mode: CONCISE,
+        file: {
+            path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
+            name: 'MyReport.txt',
+            onFinish: () => {}, // optional
+            onError: (err) => {}, // optional
+            jsonSpacing: 4 // OPTIONAL! This is the default setting when using the rawJson attribute
+        }
+    },
+    rules: [
+        {
+            name: 'All Events',
+            type: STANDARD_OUTPUT,
+            criticalThreshold: 500.0 // optional for STANDARD_OUTPUT, adding this property to a STANDARD_OUTPUT report type will force the execution of CRITICAL_SNAPSHOTS
+        },
+        {
+            name: 'Largest Expenses',
+            type: GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
+            selectionAmount: 10
+        }
+    ]
 };
 ```
 
@@ -627,17 +654,17 @@ _note: the reporting options are executed in the context of events (not rules), 
 
 ```javascript
 // passing a non-null value for error will log it to the console and bypass all other report functionality
-createReport({ danielSan, reportingConfig, error, originalDanielSan }); // the originalDanielSan is useful for passing the original unmodified danielSan reference to display irrelevant or retired rules.
+createReport({ danielSan, controller: reportController, error, originalDanielSan }); // the originalDanielSan is useful for passing the original unmodified danielSan reference to display irrelevant or retired rules.
 ```
 
 **Report Type Options**
 
--   `type: 'EVENTS'` _(display only the events, nothing fancy, and will also display discarded events, when not using the rawJson option, if they exist)_
--   `type: 'DISCARDED_EVENTS'` _(when special adjustments move events beyond the effectiveDateStart and effectiveDateEnd range, they can be displayed with this report type )_
+-   `type: 'EVENTS'` _(display only the events, nothing fancy)_
+-   `type: 'DISCARDED_EVENTS'` _(this function is automatically called for you to alert you when special adjustments move specific events beyond the effectiveDateStart and effectiveDateEnd range)_
 -   `type: 'CRITICAL_SNAPSHOTS'` _(display only the critical balanceEnding snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
--   `type: 'STANDARD_OUTPUT'` _(the default command-line functionality, will output discarded events, when not using the rawJson option, if they exist; and it will output critical snapshots, when not using the rawJson option, if passed a criticalThreshold)_
--   `type: 'SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows, and will also display discarded events, when not using the rawJson option, if they exist)_
--   `type: 'SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows, and will also display discarded events, when not using the rawJson option, if they exist)_
+-   `type: 'STANDARD_OUTPUT'` _(the default command-line functionality, displays events and will also conveniently add critical snapshots if passed a criticalThreshold)_
+-   `type: 'SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows)_
+-   `type: 'SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows)_
 -   `type: 'EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass support: 1000 to display all the amount values greater than 1000)_
 -   `type: 'EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass resistance: 100 to display all the amount values less than 100)_
 -   `type: 'NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass negativeSupport: 1000 to display all negative absolute-value amounts greater than 1000)_
@@ -659,7 +686,7 @@ createReport({ danielSan, reportingConfig, error, originalDanielSan }); // the o
 -   `type: 'POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass positiveXPercent: 0.1 and positiveXValue: -1000 to find all event flows within 10 percent of -1000)_
 -   `type: 'BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE'` _(pass balanceEndingXPercent: 0.1 and balanceEndingXValue: 500 to find all balanceEnding snapshots within 10 percent of 500)_
 -   `type: 'AGGREGATES'` _(see section on Aggregate Functions)_
--   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportingConfig will search against the optional group property)_
+-   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportController will search against the optional group property)_
 -   `type: 'EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
 -   `type: 'EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
 -   `type: 'IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
@@ -670,7 +697,6 @@ createReport({ danielSan, reportingConfig, error, originalDanielSan }); // the o
 -   `type: 'IRRELEVANT_RULES'` _(display rules that have no chance of being triggered via the current configuration - this particular report function works on your original danielSan object. However, when executing events as normal, a field called irrelevantRules is populated for you_
 -   `type: 'RULES_TO_RETIRE'` _(displays obsolete rules to retire - but only works on your original danielSan object. It does not work if you pass it the danielSan object that is returned by findBalance after proecessing -  
     since findBalance retires rules [with obsolete effectiveDateEnd dates] automatically during the projection phase)_
-
 
 **Report Mode Options**
 
@@ -692,43 +718,39 @@ See the report option configuration example below. If passing a custom formattin
 The default formattingFunction utilizes javascript's built-in toLocaleString() function - via the Intl api
 
 ```javascript
-const decimalFormatterCustom = (number, { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }) => { /* return number formatted */ };
-const reportingConfig = {
-    name: 'some name',
-    type: [STANDARD_OUTPUT, SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS], // example of providing the reporting type as an array
-    mode: CONCISE,
-    criticalThreshold: 577.00,
-    // the formatting object is optional as the following values are defaulted for you
-    // which will format amount, balanceBeginning, and balanceEnding
-    formatting: {
-        formattingFunction: decimalFormatterCustom
-        minIntegerDigits: 1,
-        minDecimalDigits: 2,
-        maxDecimalDigits: 2,
-        locale: 'en-US',
-        style: 'currency', // change to 'decimal' to remove the prepended currency symbol (if using the default formattingFunction)
-        currency: 'USD'
-    }
-}
-```
-
-**Report Option Configuration Example**
-
-```javascript
-const reportingConfig = {
-    type: STANDARD_OUTPUT,
-    mode: CONCISE,
-    criticalThreshold: 577.0,
-    // the formatting object is optional as the following values are defaulted for you
-    // which will format amount, balanceBeginning, and balanceEnding in mode: CONCISE
-    formatting: {
-        minIntegerDigits: 1,
-        minDecimalDigits: 2,
-        maxDecimalDigits: 2,
-        locale: 'en-US',
-        style: 'currency', // change to 'decimal' to remove the prepended currency symbol if using the default formattingFunction
-        currency: 'USD'
-    } // in addition, you can also pass formattingFunction into the formatting object above and all of the above parameters will be passed into that function call for you
+const decimalFormatterCustom = (
+    number,
+    { minIntegerDigits, minDecimalDigits, maxDecimalDigits, locale, style, currency }
+) => {
+    /* return number formatted */
+};
+const reportController = {
+    config: {
+        name: 'some name',
+        mode: CONCISE,
+        // the formatting object is optional as the following values are defaulted for you
+        // which will format amount, balanceBeginning, and balanceEnding
+        formatting: {
+            formattingFunction: decimalFormatterCustom,
+            minIntegerDigits: 1,
+            minDecimalDigits: 2,
+            maxDecimalDigits: 2,
+            locale: 'en-US',
+            style: 'currency', // change to 'decimal' to remove the prepended currency symbol (if using the default formattingFunction)
+            currency: 'USD'
+        } // in addition, you can also pass formattingFunction into the formatting object above and all of the above parameters will be passed into that function call for you
+    },
+    rules: [
+        {
+            name: 'Sum of all Revenue',
+            type: SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
+            criticalThreshold: 577.0 // optional for STANDARD_OUTPUT reports
+        },
+        {
+            name: 'some name',
+            type: STANDARD_OUTPUT
+        }
+    ]
 };
 ```
 
@@ -740,22 +762,23 @@ const findBalance = require('daniel-san');
 const createReport = require('daniel-san/reporting');
 
 const eventResults = findBalance(waxOn.danielSan);
-createReport({ danielSan: eventResults.danielSan, reportingConfig: reportingConfig, error: eventResults.err }); // on err, the report's error logger will be executed instead of the event logger
+createReport({ danielSan: eventResults.danielSan, controller: reportController, error: eventResults.err }); // on err, the report's error logger will be executed instead of the event logger
 ```
 
 **Filter Events prior to report generation**
 
-Add the following attributes to the root of the reportingConfig object for filter control. filterKeys and filterValues are parallel arrays.
+Add the following attributes to the root of the reportController object for filter control. filterKeys and filterValues are parallel arrays.
 
 ```javascript
-const reportingConfig = {
+const reportController = {
     name: 'some name',
     type: STANDARD_OUTPUT,
     mode: CONCISE,
     filterKeys: ['name', 'group'],
     filterValues: ['rent', ANY], // the constant for ANY, INTERSECTION and UNION are available for import
     filterType: UNION || INTERSECTION, // event inclusion is governed by Any attributes that match || All attributes must match
-    filterComparator: (filterKey, filterValue) => { // OPTIONAL! This is the default comparator
+    filterComparator: (filterKey, filterValue) => {
+        // OPTIONAL! This is the default comparator
         return filterKey === filterValue;
     }
 };
@@ -798,20 +821,22 @@ const danielSan = {
 };
 ```
 
-## Options for Fine-Tuning Output Control  
-  
+## Options for Fine-Tuning Output Control
+
 ```javascript
-const reportingConfig = {
+const reportController = {
     name: 'some name',
     type: [STANDARD_OUTPUT, DISPLAY, SUM_OF_ALL_NEGATIVE_EVENT_FLOWS],
     mode: CONCISE,
     // note: you can use outputRelay or the file options but you cannot use both
-    outputRelay: (content, error) => { if (content) process.stdout.write(content) }, // if you do not want to use the terminal or the default file writing functionality, you can push each chunk to a readstream that pipes into a write stream, or do as you like;
+    outputRelay: (content, error) => {
+        if (content) process.stdout.write(content);
+    }, // if you do not want to use the terminal or the default file writing functionality, you can push each chunk to a readstream that pipes into a write stream, or do as you like;
     // null content indicates end of output "stream"
     // note: the 2nd paramter indicates whether or not the content is provided in the context of an error
     // note: when not using rawJson, each line of output is already formatted with a newline
     rawJson: false, // OPTIONAL! When set to true, each json chunk is either sent to outputRelay as content, or, if using the default file writing functionality, is output to a json file
-    reportCharWidth: 89, // changes width of the print screen when not using the rawJson option
+    reportCharWidth: 89 // changes width of the print screen when not using the rawJson option
 };
 ```
 
@@ -962,9 +987,9 @@ const {
 } = require('daniel-san/constants');
 ```
 
-## Breaking Changes in v12.0.0  
-  
-All constants beginning with 'DISPLAY_' had that substring removed with whitespace  
+## Breaking Changes in v12.0.0
+
+All constants beginning with 'DISPLAY\_' had that substring removed with whitespace
 
 ## Breaking Changes in v11.0.0
 
@@ -990,7 +1015,7 @@ maxAmount with balanceEndingSupport
 minAmount with balanceEndingResistance  
 endBalance with balanceEnding  
 terminalType to reportingType  
-terminalOptions to reportingConfig  
+terminalOptions to reportController  
 standardTerminalOutput to standardOutput  
 terminalTypes to reportingTypes  
 terminalBoundary to reportingBoundary  
