@@ -515,7 +515,7 @@ Add the following aggregates array to a report rule for computing aggregates:
 ```javascript
 const reportController = {
     config: {
-        name: 'some name',
+        name: 'some name', // optional but convenient
         mode: CONCISE
     },
     rules: [
@@ -523,11 +523,11 @@ const reportController = {
             type: STANDARD_OUTPUT
         },
         {
-            name: 'some name', // optional
+            name: 'some name', // optional but convenient
             type: AGGREGATES, // both type and aggregates properties are necessary
             aggregates: [
                 {
-                    name: 'some name',
+                    name: 'some name', // optional but convenient
                     type:
                         SUMS_AND_AVERAGES ||
                         MINIMUMS_AND_MAXIMUMS ||
