@@ -509,7 +509,7 @@ options in the above scenario include:
 
 Requires the reporting type, AGGREGATES
 
-Add the following aggregates array to a report rule for computing aggregates:  
+To compute aggregates, add the following "aggregateRules" array to a report rule of type AGGREGATES for computing aggregates:  
 (add as many as desired)
 
 ```javascript
@@ -525,7 +525,7 @@ const reportController = {
         {
             name: 'some name', // optional but convenient
             type: AGGREGATES, // both type and aggregates properties are necessary
-            aggregates: [
+            aggregateRules: [
                 {
                     name: 'some name', // optional but convenient
                     type:
@@ -539,11 +539,11 @@ const reportController = {
                     flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES
                     sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
                     sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
-                    selectionAmount: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
+                    selectionLimit: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
                     dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17
                     modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
-                    xPercent: 0.1, // sets the percentage difference allowed for mode matches, specifically. Defaults to 0 which is 0% difference (exact match); 0.1 indicates 10%
-                    // while xPercent defaults to 0, it is probably necessary to boost it to at least 0.01 or so as it might be common for you to otherwise get no mode matches at all
+                    xPercentRange: 0.1, // sets the percentage difference allowed for mode matches, specifically. Defaults to 0 which is 0% difference (exact match); 0.1 indicates 10%
+                    // while xPercentRange defaults to 0, it is probably necessary to boost it to at least 0.01 or so as it might be common for you to otherwise get no mode matches at all
                     weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types
                     cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type
                     fiscalYearStart: '12-25' // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
@@ -641,8 +641,8 @@ const reportController = {
         },
         {
             name: 'Largest Expenses',
-            type: GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-            selectionAmount: 10
+            type: GREATEST_NEGATIVE_EVENT_FLOWS,
+            selectionLimit: 10
         }
     ]
 };
@@ -663,28 +663,28 @@ createReport({ danielSan, controller: reportController, error, originalDanielSan
 -   `type: 'DISCARDED_EVENTS'` _(this function is automatically called for you to alert you when special adjustments move specific events beyond the effectiveDateStart and effectiveDateEnd range)_
 -   `type: 'CRITICAL_SNAPSHOTS'` _(display only the critical balanceEnding snapshots below a criticalThreshold by passing something like criticalThreshold: 150.00)_
 -   `type: 'STANDARD_OUTPUT'` _(the default command-line functionality, displays events and will also conveniently add critical snapshots if passed a criticalThreshold)_
--   `type: 'SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows)_
--   `type: 'SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS' or 'SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows)_
--   `type: 'EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass support: 1000 to display all the amount values greater than 1000)_
--   `type: 'EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass resistance: 100 to display all the amount values less than 100)_
--   `type: 'NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass negativeSupport: 1000 to display all negative absolute-value amounts greater than 1000)_
--   `type: 'NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass negativeResistance: 100 to display all negative absolute-value amounts greater than 1000)_
--   `type: 'POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT'` _(pass positiveSupport: 1000 to display all positive amount values greater than 1000)_
--   `type: 'POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE'` _(pass positiveResistance: 100 to display all positive amount values greater than 1000)_
--   `type: 'BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT'` _(pass balanceEndingSupport: 1000 to display all the balanceEnding values greater than 1000)_
--   `type: 'BALANCE_ENDING_SNAPSHOTS_LESS_THAN_RESISTANCE'` _(pass balanceEndingResistance: 100 to display all the balanceEnding values less than 100)_
--   `type: 'GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest balanceEnding values, ordered by value)_
--   `type: 'LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest balanceEnding values, ordered by value)_
--   `type: 'GREATEST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest amount values, ordered by value)_
--   `type: 'LEAST_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest amount values, ordered by value)_
--   `type: 'GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest absolute-value amounts, ordered by value)_
--   `type: 'LEAST_NEGATIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest absolute-value amounts, ordered by value)_
--   `type: 'GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS'` _(pass selectionAmount: 10 to display the top 10 highest positive amount values, ordered by value)_
--   `type: 'LEAST_POSITIVE_EVENT_SNAPSHOTS'` _(pass selectionAmount: 10 to display the 10 lowest positive amount values, ordered by value)_
--   `type: 'EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass xPercent: 0.1 and xValue: -1000 to find all event flows within 10 percent of -1000)_
--   `type: 'NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass negativeXPercent: 0.1 and negativeXValue: -1000 to find all event flows within 10 percent of -1000)_
--   `type: 'POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE'` _(pass positiveXPercent: 0.1 and positiveXValue: -1000 to find all event flows within 10 percent of -1000)_
--   `type: 'BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE'` _(pass balanceEndingXPercent: 0.1 and balanceEndingXValue: 500 to find all balanceEnding snapshots within 10 percent of 500)_
+-   `type: 'SUM_OF_ALL_POSITIVE_EVENT_FLOWS'` _(displays the sum of all positive event flows)_
+-   `type: 'SUM_OF_ALL_NEGATIVE_EVENT_FLOWS'` _(displays the sum of all negative event flows)_
+-   `type: 'EVENT_FLOWS_GREATER_THAN_TARGET'` _(pass target: 1000 to display all the amount values greater than 1000)_
+-   `type: 'EVENT_FLOWS_LESS_THAN_TARGET'` _(pass target: 100 to display all the amount values less than 100)_
+-   `type: 'NEGATIVE_EVENT_FLOWS_GREATER_THAN_TARGET'` _(pass target: 1000 to display all negative absolute-value amount values greater than 1000)_
+-   `type: 'NEGATIVE_EVENT_FLOWS_LESS_THAN_TARGET'` _(pass target: 100 to display all negative absolute-value amount values greater than 1000)_
+-   `type: 'POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET'` _(pass target: 1000 to display all positive amount values greater than 1000)_
+-   `type: 'POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET'` _(pass target: 100 to display all positive amount values greater than 1000)_
+-   `type: 'BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET'` _(pass target: 1000 to display all the balanceEnding values greater than 1000)_
+-   `type: 'BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET'` _(pass target: 100 to display all the balanceEnding values less than 100)_
+-   `type: 'GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionLimit: 10 to display the top 10 highest balanceEnding values, ordered by value)_
+-   `type: 'LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionLimit: 10 to display the 10 lowest balanceEnding values, ordered by value)_
+-   `type: 'GREATEST_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest amount values, ordered by value)_
+-   `type: 'LEAST_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest amount values, ordered by value)_
+-   `type: 'GREATEST_NEGATIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest absolute-value amounts, ordered by value)_
+-   `type: 'LEAST_NEGATIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest absolute-value amounts, ordered by value)_
+-   `type: 'GREATEST_POSITIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest positive amount values, ordered by value)_
+-   `type: 'LEAST_POSITIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest positive amount values, ordered by value)_
+-   `type: 'EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET'` _(pass xPercentRange: 0.1 and xPercentTarget: -1000 to find all event flows within 10 percent of -1000)_
+-   `type: 'NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET'` _(pass xPercentRange: 0.1 and xPercentTarget: -1000 to find all event flows within 10 percent of -1000)_
+-   `type: 'POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET'` _(pass xPercentRange: 0.1 and xPercentTarget: -1000 to find all event flows within 10 percent of -1000)_
+-   `type: 'BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_TARGET'` _(pass xPercentRange: 0.1 and xPercentTarget: 500 to find all balanceEnding snapshots within 10 percent of 500)_
 -   `type: 'AGGREGATES'` _(see section on Aggregate Functions)_
 -   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportController will search against the optional group property)_
 -   `type: 'EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
@@ -710,7 +710,7 @@ Passing a criticalThreshold property will log snapshots to the command-line when
 
 **Search Values**
 
-searchValues: [string1, string2, string3] is used for the DISPLAY*EVENTS_BY*\* report types. Case-Sensitive!
+searchValues: [string1, string2, string3] is used for the "EVENTS_BY" report types. Case-Sensitive!
 
 **Formatting**
 
@@ -854,7 +854,6 @@ Importing the following constants, to be discoverable by your code editor's auto
 const {
     APP_NAME,
     DEFAULT_ERROR_MESSAGE,
-    DATE_DELIMITER,
     TIME_DELIMITER,
     DATE_TIME_DELIMITER,
     DATE_FORMAT_STRING,
@@ -900,14 +899,7 @@ const {
     THURSDAY,
     FRIDAY,
     SATURDAY,
-    WEEKENDS, [6, 0],
-    DISCOVERING_EVENT_TYPE,
-    EVALUATING_RULE_INSERTION,
-    EXECUTING_RULE_INSERTION,
-    EXECUTING_RULE_ADJUSTMENT,
-    EXECUTION_REJECTED,
-    MODIFIED,
-    RETIRING_RULES,
+    WEEKENDS,
     STANDARD_OUTPUT,
     VERBOSE,
     CONCISE,
@@ -932,27 +924,34 @@ const {
     SUM_OF_ALL_POSITIVE_EVENT_AMOUNTS,
     SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
     SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
-    EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT,
+    EVENT_FLOWS_GREATER_THAN_TARGET,
+    EVENT_FLOWS_LESS_THAN_TARGET,
+    NEGATIVE_EVENT_FLOWS_GREATER_THAN_TARGET,
+    NEGATIVE_EVENT_FLOWS_LESS_THAN_TARGET,
+    POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET,
+    POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET,
+    BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET,
     BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     GREATEST_BALANCE_ENDING_SNAPSHOTS,
     LEAST_BALANCE_ENDING_SNAPSHOTS,
-    GREATEST_EVENT_FLOW_SNAPSHOTS,
-    LEAST_EVENT_FLOW_SNAPSHOTS,
-    GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
-    NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
-    POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
-    BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE,
+    GREATEST_EVENT_FLOWS,
+    LEAST_EVENT_FLOWS,
+    GREATEST_POSITIVE_EVENT_FLOWS,
+    LEAST_POSITIVE_EVENT_FLOWS,
+    GREATEST_NEGATIVE_EVENT_FLOWS,
+    LEAST_NEGATIVE_EVENT_FLOWS,
+    EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET,
+    NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET,
+    POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET,
+    BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_TARGET,
     AGGREGATES,
+    DAY_CYCLES,
+    DATE_SETS,
+    SUMS_AND_AVERAGES,
+    MEDIANS_AND_MODES,
+    MINIMUMS_AND_MAXIMUMS,
+    GREATEST_VALUES,
+    LEAST_VALUES,
     DEFAULT,
     ASCENDING,
     DESCENDING,
@@ -962,13 +961,6 @@ const {
     MODES,
     MIN,
     MAX,
-    DAY_CYCLES,
-    DATE_SETS,
-    SUMS_AND_AVERAGES,
-    MEDIANS_AND_MODES,
-    MINIMUMS_AND_MAXIMUMS,
-    GREATEST_VALUES,
-    LEAST_VALUES,
     MIN_INT_DIGITS_DEFAULT,
     MIN_DECIMAL_DIGITS_DEFAULT,
     MAX_DECIMAL_DIGITS_DEFAULT,
@@ -979,13 +971,15 @@ const {
     EVENT,
     REPORT,
     AGGREGATE,
+    AGGREGATE_GROUP,
     DEFAULT_JSON_SPACING,
-    decimalFormatterStandard,
-    formattingFunctionDefault,
-    getDefaultParamsForDecimalFormatter,
-    getWeekdayString
+    DEFAULT_SELECTION_AMOUNT
 } = require('daniel-san/constants');
 ```
+
+## Breaking Changes in v13.0.0
+
+Completely revamped the entire reporting experience and updated many of the application constants.
 
 ## Breaking Changes in v12.0.0
 
@@ -997,10 +991,10 @@ Significant changes were made in Version 11 which included many breaking changes
 
 changed all of the following constants accordingly:
 
-MAX_AMOUNT with SUPPORT  
-MIN_AMOUNT with RESISTANCE  
-GREATER_THAN_AMOUNT with GREATER_THAN_SUPPORT  
-LESS_THAN_AMOUNT with LESS_THAN_RESISTANCE  
+MAX_AMOUNT with TARGET  
+MIN_AMOUNT with TARGET  
+GREATER_THAN_AMOUNT with GREATER_THAN_TARGET  
+LESS_THAN_AMOUNT with LESS_THAN_TARGET  
 END_BALANCE with BALANCE_ENDING  
 STANDARD_TERMINAL_OUTPUT to STANDARD_OUTPUT  
 TERMINAL_BOUNDARY_LIMIT to BOUNDARY_LIMIT

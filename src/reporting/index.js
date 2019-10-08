@@ -1,3 +1,5 @@
+const moment = require('moment-timezone');
+const { createTimeZone, convertTimeZone } = require('../timeZone');
 const { isUndefinedOrNull } = require('../utility/validation');
 const { deepCopy } = require('../utility/dataStructures');
 const { danielSanAsciiArt } = require('./asciiArt');
@@ -51,32 +53,35 @@ const {
     SUM_OF_ALL_POSITIVE_EVENT_FLOWS,
     SUM_OF_ALL_NEGATIVE_EVENT_AMOUNTS,
     SUM_OF_ALL_NEGATIVE_EVENT_FLOWS,
-    EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT,
-    POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE,
-    BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT,
+    EVENT_FLOWS_GREATER_THAN_TARGET,
+    EVENT_FLOWS_LESS_THAN_TARGET,
+    NEGATIVE_EVENT_FLOWS_GREATER_THAN_TARGET,
+    NEGATIVE_EVENT_FLOWS_LESS_THAN_TARGET,
+    POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET,
+    POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET,
+    BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET,
     BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
     GREATEST_BALANCE_ENDING_SNAPSHOTS,
     LEAST_BALANCE_ENDING_SNAPSHOTS,
-    GREATEST_EVENT_FLOW_SNAPSHOTS,
-    LEAST_EVENT_FLOW_SNAPSHOTS,
-    GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS,
-    GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS,
-    EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
-    NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
-    POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE,
-    BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE,
+    GREATEST_EVENT_FLOWS,
+    LEAST_EVENT_FLOWS,
+    GREATEST_POSITIVE_EVENT_FLOWS,
+    LEAST_POSITIVE_EVENT_FLOWS,
+    GREATEST_NEGATIVE_EVENT_FLOWS,
+    LEAST_NEGATIVE_EVENT_FLOWS,
+    EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET,
+    NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET,
+    POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET,
+    BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_TARGET,
     AGGREGATES,
     REPORT,
+    AGGREGATE_GROUP,
     CURRENCY_DEFAULT,
+    DEFAULT_JSON_SPACING,
+    UTC,
+    LOCAL,
     getDefaultParamsForDecimalFormatter,
-    getWeekdayString,
-    DEFAULT_JSON_SPACING
+    getWeekdayString
 } = require('../constants');
 
 const BOUNDARY_LIMIT = 144;
@@ -455,20 +460,30 @@ const eventsLogger = ({
     }
 };
 
-const aggregateHeader = ({ aggregate, aggregateConfig, reportCharWidth, writeStream }) => {
+const aggregateHeader = ({ aggregateConfig, reportCharWidth, writeStream }) => {
     reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
-    lineHeading({ heading: `  begin aggregate function: `, char: '%', reportCharWidth, writeStream });
-    if (!isUndefinedOrNull(aggregate.name)) {
-        lineHeading({ heading: `  name: ${aggregate.name}  `, char: '%', reportCharWidth, writeStream });
+    lineHeading({ heading: `  begin aggregate group: `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.name)) {
+        lineHeading({ heading: `  name: ${aggregateConfig.name}  `, char: '%', reportCharWidth, writeStream });
     }
-    if (!isUndefinedOrNull(aggregate.type)) {
-        lineHeading({ heading: `  type: ${aggregate.type}  `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.type)) {
+        lineHeading({ heading: `  type: ${aggregateConfig.type}  `, char: '%', reportCharWidth, writeStream });
     }
-    if (!isUndefinedOrNull(aggregate.frequency)) {
-        lineHeading({ heading: `  frequency: ${aggregate.frequency}  `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.frequency)) {
+        lineHeading({
+            heading: `  frequency: ${aggregateConfig.frequency}  `,
+            char: '%',
+            reportCharWidth,
+            writeStream
+        });
     }
-    if (!isUndefinedOrNull(aggregate.propertyKey)) {
-        lineHeading({ heading: `  propertyKey: ${aggregate.propertyKey}  `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.propertyKey)) {
+        lineHeading({
+            heading: `  propertyKey: ${aggregateConfig.propertyKey}  `,
+            char: '%',
+            reportCharWidth,
+            writeStream
+        });
     }
     if (!isUndefinedOrNull(aggregateConfig.sortKey)) {
         lineHeading({ heading: `  sortKey: ${aggregateConfig.sortKey}  `, char: '%', reportCharWidth, writeStream });
@@ -481,43 +496,48 @@ const aggregateHeader = ({ aggregate, aggregateConfig, reportCharWidth, writeStr
             writeStream
         });
     }
-    if (!isUndefinedOrNull(aggregate.flowDirection)) {
+    if (!isUndefinedOrNull(aggregateConfig.flowDirection)) {
         lineHeading({
-            heading: `  flowDirection: ${aggregate.flowDirection}  `,
+            heading: `  flowDirection: ${aggregateConfig.flowDirection}  `,
             char: '%',
             reportCharWidth,
             writeStream
         });
     }
-    if (!isUndefinedOrNull(aggregate.selectionAmount)) {
+    if (!isUndefinedOrNull(aggregateConfig.selectionLimit)) {
         lineHeading({
-            heading: `  selectionAmount: ${aggregate.selectionAmount}  `,
+            heading: `  selectionLimit: ${aggregateConfig.selectionLimit}  `,
             char: '%',
             reportCharWidth,
             writeStream
         });
     }
-    if (!isUndefinedOrNull(aggregate.modeMax)) {
-        lineHeading({ heading: `  modeMax: ${aggregate.modeMax}  `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.modeMax)) {
+        lineHeading({ heading: `  modeMax: ${aggregateConfig.modeMax}  `, char: '%', reportCharWidth, writeStream });
     }
-    if (aggregate.xPercent) {
-        lineHeading({ heading: `  xPercent: ${aggregate.xPercent}  `, char: '%', reportCharWidth, writeStream });
+    if (aggregateConfig.xPercentRange) {
+        lineHeading({ heading: `  xPercentRange: ${aggregateConfig.xPercentRange}  `, char: '%', reportCharWidth, writeStream });
     }
-    if (!isUndefinedOrNull(aggregate.dayCycles)) {
-        lineHeading({ heading: `  dayCycles: ${aggregate.dayCycles}  `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.dayCycles)) {
+        lineHeading({
+            heading: `  dayCycles: ${aggregateConfig.dayCycles}  `,
+            char: '%',
+            reportCharWidth,
+            writeStream
+        });
     }
     reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
     lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const aggregateFooter = ({ aggregate, reportCharWidth, writeStream }) => {
+const aggregateFooter = ({ aggregateConfig, reportCharWidth, writeStream }) => {
     reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
-    lineHeading({ heading: `  end aggregate function: `, char: '%', reportCharWidth, writeStream });
-    if (!isUndefinedOrNull(aggregate.name)) {
-        lineHeading({ heading: `  name: ${aggregate.name}  `, char: '%', reportCharWidth, writeStream });
+    lineHeading({ heading: `  end aggregate group: `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.name)) {
+        lineHeading({ heading: `  name: ${aggregateConfig.name}  `, char: '%', reportCharWidth, writeStream });
     }
-    if (!isUndefinedOrNull(aggregate.type)) {
-        lineHeading({ heading: `  type: ${aggregate.type}  `, char: '%', reportCharWidth, writeStream });
+    if (!isUndefinedOrNull(aggregateConfig.type)) {
+        lineHeading({ heading: `  type: ${aggregateConfig.type}  `, char: '%', reportCharWidth, writeStream });
     }
     reportingBoundary({ loops: 1, char: '%', reportCharWidth, writeStream });
     lineSeparator({ loops: 2, reportCharWidth, writeStream });
@@ -562,7 +582,15 @@ const getStringOfValues = ({
     return stringOfValues;
 };
 
-const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, reportCharWidth, writeStream }) => {
+const aggregateLogger = ({
+    aggregateConfig,
+    aggregate,
+    reportingConfig,
+    currencySymbol,
+    reportCharWidth,
+    writeStream
+}) => {
+    // adding
     const {
         formattingFunction,
         minIntegerDigits,
@@ -571,12 +599,14 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, reportCha
         locale,
         style
     } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
-    writeStream(`name: ${aggregate.name}\n`);
+    if (!isUndefinedOrNull(aggregateConfig.name)) {
+        writeStream(`group: ${aggregateConfig.name}\n`);
+    }
     if (reportingConfig.mode === CONCISE) {
-        writeStream(`type: ${aggregate.type}\n`);
+        writeStream(`type: ${aggregateConfig.type}\n`);
     } else if (reportingConfig.mode === VERBOSE) {
         writeStream(`entityType: ${aggregate.entityType}\n`);
-        writeStream(`type: ${aggregate.type}\n`);
+        writeStream(`type: ${aggregateConfig.type}\n`);
     }
     writeStream(`dateStart: ${aggregate.dateStart}\n`); // eslint-disable-line quotes
     writeStream(`dateEnd: ${aggregate.dateEnd}\n`); // eslint-disable-line quotes
@@ -694,7 +724,7 @@ const aggregateLogger = ({ aggregate, reportingConfig, currencySymbol, reportCha
     lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const standardHeader = ({ reportingConfig, reportCharWidth, writeStream }) => {
+const standardHeader = ({ reportingConfig, dateString, timeString, weekdayString, reportCharWidth, writeStream }) => {
     reportingBoundary({ loops: 3, reportCharWidth, writeStream });
     lineHeading({
         heading: ' daniel-san: astral-projecting your budget with a crane-kick to the face ',
@@ -706,7 +736,8 @@ const standardHeader = ({ reportingConfig, reportCharWidth, writeStream }) => {
     if (!isUndefinedOrNull(reportingConfig.name)) {
         lineHeading({ heading: ` report: ${reportingConfig.name} `, reportCharWidth, writeStream });
     }
-    lineHeading({ heading: ` reporting mode: ${reportingConfig.mode} `, reportCharWidth, writeStream });
+    lineHeading({ heading: ` report mode: ${reportingConfig.mode} `, reportCharWidth, writeStream });
+    lineHeading({ heading: ` report date: ${weekdayString}, ${dateString} ${timeString} local time `, reportCharWidth, writeStream });
     reportingBoundary({ loops: 3, reportCharWidth, writeStream });
     lineSeparator({ loops: 2, reportCharWidth, writeStream });
     // eslint-disable-next-line no-console
@@ -764,15 +795,17 @@ const standardSubheader = ({ danielSan, reportingConfig, reportCharWidth, writeS
         reportCharWidth,
         writeStream
     });
-    if (danielSan.config.timeStart)
+    if (danielSan.config.timeStart) {
         lineHeading({ heading: ` timeStart: ${danielSan.config.timeStart} `, reportCharWidth, writeStream });
+    }
     lineHeading({
         heading: ` effectiveDateEnd:   ${danielSan.config.effectiveDateEnd} `,
         reportCharWidth,
         writeStream
     });
-    if (danielSan.config.timeEnd)
+    if (danielSan.config.timeEnd) {
         lineHeading({ heading: ` timeEnd: ${danielSan.config.timeEnd} `, reportCharWidth, writeStream });
+    }
     lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
@@ -838,10 +871,10 @@ const showIrrelevantRules = ({ danielSan, reportingConfig, reportCharWidth, writ
 const showDiscardedEvents = ({
     danielSan,
     reportingConfig,
-    showNothingToDisplaySwitch = true,
+    showNothingToDisplaySwitch = true, // TODO: prob not needed anymore
     reportCharWidth,
-    leadingLineSeparator = true,
-    trailingFooter = true,
+    leadingLineSeparator = true, // TODO: prob not needed anymore
+    trailingFooter = false, // TODO: prob not needed anymore
     writeStream
 }) => {
     const discardedEvents = danielSan.discardedEvents;
@@ -883,14 +916,15 @@ const showDiscardedEvents = ({
 const showCriticalSnapshots = ({
     danielSan,
     reportingConfig,
-    showNothingToDisplaySwitch = true,
+    rule,
+    showNothingToDisplaySwitch = true, // TODO: prob not needed anymore
     reportCharWidth,
-    leadingLineSeparator = true,
+    leadingLineSeparator = true, // TODO: prob not needed anymore
     writeStream
 }) => {
     const criticalSnapshots = findCriticalSnapshots({
         events: danielSan.events,
-        criticalThreshold: reportingConfig.criticalThreshold
+        criticalThreshold: rule.criticalThreshold
     });
     if (!reportingConfig.rawJson) {
         if (criticalSnapshots && criticalSnapshots.length > 0) {
@@ -902,12 +936,12 @@ const showCriticalSnapshots = ({
                 locale,
                 style
             } = getDefaultParamsForDecimalFormatter(reportingConfig.formatting || {});
-            if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
+            if (!isUndefinedOrNull(rule.criticalThreshold)) {
                 if (leadingLineSeparator) {
                     lineSeparator({ loops: 2, reportCharWidth, writeStream });
                 }
                 lineHeading({
-                    heading: ` begin critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
+                    heading: ` begin critical threshold: < ${formattingFunction(rule.criticalThreshold, {
                         minIntegerDigits,
                         minDecimalDigits,
                         maxDecimalDigits,
@@ -928,9 +962,9 @@ const showCriticalSnapshots = ({
                 leadingLineSeparator: true,
                 writeStream
             });
-            if (!isUndefinedOrNull(reportingConfig.criticalThreshold)) {
+            if (!isUndefinedOrNull(rule.criticalThreshold)) {
                 lineHeading({
-                    heading: ` end critical threshold: < ${formattingFunction(reportingConfig.criticalThreshold, {
+                    heading: ` end critical threshold: < ${formattingFunction(rule.criticalThreshold, {
                         minIntegerDigits,
                         minDecimalDigits,
                         maxDecimalDigits,
@@ -977,16 +1011,6 @@ const showSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCh
             writeStream
         });
         lineSeparator({ loops: 2, reportCharWidth, writeStream });
-        if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-            showDiscardedEvents({
-                danielSan,
-                reportingConfig,
-                showNothingToDisplaySwitch: false,
-                reportCharWidth,
-                leadingLineSeparator: false,
-                writeStream
-            });
-        }
     } else {
         return sum;
     }
@@ -1017,16 +1041,6 @@ const showSumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, reportCh
             writeStream
         });
         lineSeparator({ loops: 2, reportCharWidth, writeStream });
-        if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-            showDiscardedEvents({
-                danielSan,
-                reportingConfig,
-                showNothingToDisplaySwitch: false,
-                leadingLineSeparator: false,
-                reportCharWidth,
-                writeStream
-            });
-        }
     } else {
         return sum;
     }
@@ -1044,8 +1058,8 @@ const getDiscardedEvents = ({ danielSan, reportingConfig, reportCharWidth, write
     return showDiscardedEvents({ danielSan, reportingConfig, reportCharWidth, trailingFooter: false, writeStream });
 };
 
-const getCriticalSnapshots = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    return showCriticalSnapshots({ danielSan, reportingConfig, reportCharWidth, writeStream });
+const getCriticalSnapshots = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    return showCriticalSnapshots({ danielSan, reportingConfig, rule, reportCharWidth, writeStream });
 };
 
 const getSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
@@ -1060,6 +1074,7 @@ const getSnapshotsGreaterThanSupport = ({
     danielSan,
     events,
     reportingConfig,
+    rule,
     propertyKey,
     boundaryField,
     reportCharWidth,
@@ -1067,7 +1082,7 @@ const getSnapshotsGreaterThanSupport = ({
 }) => {
     const collection = findSnapshotsGreaterThanSupport({
         events,
-        amount: reportingConfig[boundaryField] || 0,
+        amount: rule[boundaryField] || 0,
         propertyKey
     });
     const relevantEvents = collection;
@@ -1088,6 +1103,7 @@ const getSnapshotsLessThanResistance = ({
     danielSan,
     events,
     reportingConfig,
+    rule,
     propertyKey,
     boundaryField,
     reportCharWidth,
@@ -1095,7 +1111,7 @@ const getSnapshotsLessThanResistance = ({
 }) => {
     const collection = findSnapshotsLessThanResistance({
         events,
-        amount: reportingConfig[boundaryField] || 0,
+        amount: rule[boundaryField] || 0,
         propertyKey
     });
     const relevantEvents = collection;
@@ -1116,6 +1132,7 @@ const getGreatestValueSnapshots = ({
     danielSan,
     events,
     reportingConfig,
+    rule,
     propertyKey,
     flowDirection,
     reportCharWidth,
@@ -1125,7 +1142,7 @@ const getGreatestValueSnapshots = ({
         events,
         propertyKey,
         flowDirection,
-        selectionAmount: reportingConfig.selectionAmount || 7,
+        selectionLimit: rule.selectionLimit || 7,
         reverse: false
     });
     const relevantEvents = collection;
@@ -1146,6 +1163,7 @@ const getLeastValueSnapshots = ({
     danielSan,
     events,
     reportingConfig,
+    rule,
     propertyKey,
     flowDirection,
     reportCharWidth,
@@ -1155,7 +1173,7 @@ const getLeastValueSnapshots = ({
         events,
         propertyKey,
         flowDirection,
-        selectionAmount: reportingConfig.selectionAmount || 7,
+        selectionLimit: rule.selectionLimit || 7,
         reverse: true // used to reverse the results of findGreatestValueSnapshots
     });
     const relevantEvents = collection;
@@ -1176,8 +1194,8 @@ const getEventsWithinXPercentOfValue = ({
     danielSan,
     events,
     reportingConfig,
-    xPercent,
-    xValue,
+    xPercentRange,
+    xPercentTarget,
     propertyKey,
     reportCharWidth,
     writeStream
@@ -1185,8 +1203,8 @@ const getEventsWithinXPercentOfValue = ({
     const collection = findEventsWithinXPercentOfValue({
         events,
         propertyKey,
-        xPercent,
-        xValue
+        xPercentRange,
+        xPercentTarget
     });
     const relevantEvents = collection;
     if (!reportingConfig.rawJson) {
@@ -1202,7 +1220,7 @@ const getEventsWithinXPercentOfValue = ({
     }
 };
 
-const standardOutput = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+const standardOutput = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
     const relevantEvents = danielSan.events;
     if (!reportingConfig.rawJson) {
         eventsLogger({
@@ -1213,26 +1231,6 @@ const standardOutput = ({ danielSan, reportingConfig, reportCharWidth, writeStre
             leadingLineSeparator: true,
             writeStream
         });
-        if (reportingConfig.type !== EVENTS) {
-            showCriticalSnapshots({
-                danielSan,
-                reportingConfig,
-                showNothingToDisplaySwitch: false,
-                reportCharWidth,
-                leadingLineSeparator: false,
-                writeStream
-            });
-        }
-        if (danielSan.discardedEvents && danielSan.discardedEvents.length > 0) {
-            showDiscardedEvents({
-                danielSan,
-                reportingConfig,
-                showNothingToDisplaySwitch: false,
-                reportCharWidth,
-                leadingLineSeparator: false,
-                writeStream
-            });
-        }
     } else {
         return relevantEvents || [];
     }
@@ -1263,12 +1261,13 @@ const getEventsWithProperty = ({
 const getEventsByPropertyKeyAndValues = ({
     danielSan,
     reportingConfig,
+    rule,
     propertyKey,
     findFunction = findEventsByPropertyKeyAndValues,
     reportCharWidth,
     writeStream
 }) => {
-    const { searchValues } = reportingConfig;
+    const { searchValues } = rule;
     const relevantEvents = findFunction({ events: danielSan.events, propertyKey, searchValues });
     if (!reportingConfig.rawJson) {
         eventsLogger({
@@ -1306,12 +1305,14 @@ const getEventsWithPropertyKeyContainingSubstring = ({
     }
 };
 
-const createReport = ({ danielSan, reportingConfig = {}, error = null, originalDanielSan = null }) => {
+const createReport = ({ danielSan, controller = {}, error = null, originalDanielSan = null }) => {
+    let { config: reportingConfig, rules } = controller; // eslint-disable-line prefer-const
     let jsonSpacingSelected = DEFAULT_JSON_SPACING;
     let reportResults = null;
     let fileStream = null;
     let writeStream = null;
     let newDanielSan = null;
+    // note: add date to report
     if (reportingConfig.outputRelay) {
         writeStream = reportingConfig.outputRelay;
     } else if (reportingConfig.file) {
@@ -1364,51 +1365,91 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
     } else if (danielSan) {
         newDanielSan = deepCopy(danielSan);
         try {
-            // begin validating reportingConfig
+            // begin validating controller
             if (!reportingConfig) reportingConfig = { type: STANDARD_OUTPUT, mode: CONCISE };
             // eslint-disable-next-line no-lonely-if
             if (!reportingConfig.mode) reportingConfig.mode = CONCISE;
-            // eslint-disable-next-line no-lonely-if
-            if (!reportingConfig.type) reportingConfig.type = STANDARD_OUTPUT;
-            // end validating reportingConfig
+            if (!rules) {
+                rules = [];
+            }
+            // note: include CRITICAL_SNAPSHOTS if a STANDARD_OUTPUT rule exists which includes the property criticalThreshold that is assigned with a value
+            let indexOfStandardOutputRule = -1;
+            if (
+                rules.some((r, i) => {
+                    if (r.type === STANDARD_OUTPUT && !isUndefinedOrNull(r.criticalThreshold)) {
+                        indexOfStandardOutputRule = i;
+                    }
+                })
+            ) {
+                rules.push({
+                    type: CRITICAL_SNAPSHOTS,
+                    criticalThreshold: rules[indexOfStandardOutputRule].criticalThreshold
+                }); // pass criticalThreshold from the standardOutput rule
+            }
+            // note: include DISCARDED_EVENTS no matter what
+            if (
+                newDanielSan.discardEvents &&
+                newDanielSan.discardEvents.length > 0 &&
+                !rules.every((r) => {
+                    if (r.type !== DISCARDED_EVENTS) {
+                        return true;
+                    }
+                })
+            ) {
+                rules.push({ type: DISCARDED_EVENTS });
+            }
+            // end validating controller
+            // note: filter events according to specification
             newDanielSan.events = filterEventsByKeysAndValues({
                 events: newDanielSan.events,
                 filterKeys: reportingConfig.filterKeys,
                 filterValues: reportingConfig.filterValues,
                 filterType: reportingConfig.filterType
             });
+            // note: capture current system date of report generation and stamp it on the report
+            const thisMomentFunction = moment.tz;
+            const todaysDate = createTimeZone({
+                timeZone: newDanielSan.config.timeZone,
+                timeZoneType: LOCAL,
+                date: thisMomentFunction()
+            });
+            const todaysDateConversionData = convertTimeZone({
+                timeZone: newDanielSan.config.timeZone,
+                timeZoneType: LOCAL,
+                date: todaysDate,
+                timeString: true
+            });
             if (!reportingConfig.rawJson) {
-                standardHeader({ reportingConfig, reportCharWidth, writeStream });
+                standardHeader({ reportingConfig, dateString: todaysDateConversionData.dateString, timeString: todaysDateConversionData.timeString, weekdayString: getWeekdayString(todaysDateConversionData.weekday), reportCharWidth, writeStream });
                 standardSubheader({ danielSan: newDanielSan, reportingConfig, reportCharWidth, writeStream });
-            }
-            let reportingTypes = [];
-            if (Array.isArray(reportingConfig.type)) {
-                reportingTypes = reportingConfig.type;
-            } else {
-                reportingTypes.push(reportingConfig.type);
             }
             let transientEvents = [];
             if (reportingConfig.rawJson && reportingConfig.file) {
                 fileStream.write('{');
                 fileStream.write(' "reports": [');
             }
-            reportingTypes.forEach((reportingType, reportIndex) => {
+            rules.forEach((rule, reportIndex) => {
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
+                    let ruleHeading = `  begin report type: ${rule.type}  `;
+                    if (rule.name) {
+                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                    }
                     lineHeading({
-                        heading: `  begin reporting type: ${reportingType}  `,
+                        heading: ruleHeading,
                         char: '#',
                         reportCharWidth,
                         writeStream
                     });
                     reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
                 }
-                switch (reportingType) {
+                switch (rule.type) {
                     case EVENTS:
                     case STANDARD_OUTPUT:
                         reportResults = standardOutput({
                             danielSan: newDanielSan,
                             reportingConfig,
+                            rule,
                             reportCharWidth,
                             writeStream
                         });
@@ -1418,6 +1459,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                         reportResults = getEventsByPropertyKeyAndValues({
                             danielSan: newDanielSan,
                             reportingConfig,
+                            rule,
                             propertyKey: 'group',
                             reportCharWidth,
                             writeStream
@@ -1428,6 +1470,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                         reportResults = getEventsByPropertyKeyAndValues({
                             danielSan: newDanielSan,
                             reportingConfig,
+                            rule,
                             propertyKey: 'name',
                             reportCharWidth,
                             writeStream
@@ -1438,6 +1481,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                         reportResults = getEventsByPropertyKeyAndValues({
                             danielSan: newDanielSan,
                             reportingConfig,
+                            rule,
                             propertyKey: 'type',
                             reportCharWidth,
                             writeStream
@@ -1447,6 +1491,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                         reportResults = getCriticalSnapshots({
                             danielSan: newDanielSan,
                             reportingConfig,
+                            rule,
                             reportCharWidth,
                             writeStream
                         });
@@ -1541,29 +1586,31 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             writeStream
                         });
                         break;
-                    case EVENT_FLOWS_GREATER_THAN_SUPPORT:
+                    case EVENT_FLOWS_GREATER_THAN_TARGET:
                         reportResults = getSnapshotsGreaterThanSupport({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
-                            boundaryField: 'support',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case EVENT_FLOWS_LESS_THAN_RESISTANCE:
+                    case EVENT_FLOWS_LESS_THAN_TARGET:
                         reportResults = getSnapshotsLessThanResistance({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
-                            boundaryField: 'resistance',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case NEGATIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT:
+                    case NEGATIVE_EVENT_FLOWS_GREATER_THAN_TARGET:
                         transientEvents = newDanielSan.events.filter((element) => {
                             return element.amount < 0;
                         });
@@ -1571,13 +1618,14 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: transientEvents,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
-                            boundaryField: 'negativeSupport',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case NEGATIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE:
+                    case NEGATIVE_EVENT_FLOWS_LESS_THAN_TARGET:
                         transientEvents = newDanielSan.events.filter((element) => {
                             return element.amount < 0;
                         });
@@ -1585,13 +1633,14 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: transientEvents,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
-                            boundaryField: 'negativeResistance',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case POSITIVE_EVENT_FLOWS_GREATER_THAN_SUPPORT:
+                    case POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET:
                         transientEvents = newDanielSan.events.filter((element) => {
                             return element.amount > 0;
                         });
@@ -1599,13 +1648,14 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: transientEvents,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
-                            boundaryField: 'positiveSupport',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case POSITIVE_EVENT_FLOWS_LESS_THAN_RESISTANCE:
+                    case POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET:
                         transientEvents = newDanielSan.events.filter((element) => {
                             return element.amount > 0;
                         });
@@ -1613,19 +1663,21 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: transientEvents,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
-                            boundaryField: 'positiveResistance',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_SUPPORT:
+                    case BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET:
                         reportResults = getSnapshotsGreaterThanSupport({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'balanceEnding',
-                            boundaryField: 'balanceEndingSupport',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
@@ -1635,8 +1687,9 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'balanceEnding',
-                            boundaryField: 'balanceEndingResistance',
+                            boundaryField: 'target',
                             reportCharWidth,
                             writeStream
                         });
@@ -1646,6 +1699,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'balanceEnding',
                             flowDirection: BOTH,
                             reportCharWidth,
@@ -1657,91 +1711,98 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'balanceEnding',
                             flowDirection: BOTH,
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case GREATEST_EVENT_FLOW_SNAPSHOTS:
+                    case GREATEST_EVENT_FLOWS:
                         reportResults = getGreatestValueSnapshots({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
                             flowDirection: BOTH,
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case LEAST_EVENT_FLOW_SNAPSHOTS:
+                    case LEAST_EVENT_FLOWS:
                         reportResults = getLeastValueSnapshots({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
                             flowDirection: BOTH,
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case GREATEST_POSITIVE_EVENT_FLOW_SNAPSHOTS:
+                    case GREATEST_POSITIVE_EVENT_FLOWS:
                         reportResults = getGreatestValueSnapshots({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
                             flowDirection: POSITIVE,
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case LEAST_POSITIVE_EVENT_FLOW_SNAPSHOTS:
+                    case LEAST_POSITIVE_EVENT_FLOWS:
                         reportResults = getLeastValueSnapshots({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
                             flowDirection: POSITIVE,
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case GREATEST_NEGATIVE_EVENT_FLOW_SNAPSHOTS:
+                    case GREATEST_NEGATIVE_EVENT_FLOWS:
                         reportResults = getGreatestValueSnapshots({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
                             flowDirection: NEGATIVE,
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case LEAST_NEGATIVE_EVENT_FLOW_SNAPSHOTS:
+                    case LEAST_NEGATIVE_EVENT_FLOWS:
                         reportResults = getLeastValueSnapshots({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
+                            rule,
                             propertyKey: 'amount',
                             flowDirection: NEGATIVE,
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE:
+                    case EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET:
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
-                            xPercent: reportingConfig.xPercent,
-                            xValue: reportingConfig.xValue,
+                            xPercentRange: rule.xPercentRange,
+                            xPercentTarget: rule.xPercentTarget,
                             propertyKey: 'amount',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE:
+                    case NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET:
                         transientEvents = newDanielSan.events.filter((element) => {
                             return element.amount < 0;
                         });
@@ -1749,14 +1810,14 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: transientEvents,
                             reportingConfig,
-                            xPercent: reportingConfig.negativeXPercent,
-                            xValue: Math.abs(reportingConfig.negativeXValue) * -1, // force negative value
+                            xPercentRange: rule.xPercentRange,
+                            xPercentTarget: Math.abs(rule.xPercentTarget) * -1, // force negative value
                             propertyKey: 'amount',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_VALUE:
+                    case POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET:
                         transientEvents = newDanielSan.events.filter((element) => {
                             return element.amount > 0;
                         });
@@ -1764,30 +1825,31 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                             danielSan: newDanielSan,
                             events: transientEvents,
                             reportingConfig,
-                            xPercent: reportingConfig.positiveXPercent,
-                            xValue: Math.abs(reportingConfig.positiveXValue), // force positive value
+                            xPercentRange: rule.xPercentRange,
+                            xPercentTarget: Math.abs(rule.xPercentTarget), // force positive value
                             propertyKey: 'amount',
                             reportCharWidth,
                             writeStream
                         });
                         break;
-                    case BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_VALUE:
+                    case BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_TARGET:
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
                             reportingConfig,
-                            xPercent: reportingConfig.balanceEndingXPercent,
-                            xValue: reportingConfig.balanceEndingXValue,
+                            xPercentRange: rule.balanceEndingXPercent,
+                            xPercentTarget: rule.balanceEndingXValue,
                             propertyKey: 'balanceEnding',
                             reportCharWidth,
                             writeStream
                         });
                         break;
                     case AGGREGATES:
-                        if (!reportingConfig.aggregates) {
-                            reportingConfig.aggregates = [];
+                        if (!rule.aggregateRules) {
+                            rule.aggregateRules = [];
                         }
-                        reportingConfig.aggregates.forEach((aggregateConfig) => {
+                        reportResults = [];
+                        rule.aggregateRules.forEach((aggregateConfig) => {
                             const aggregateFunction = selectAggregateFunction(aggregateConfig);
                             let aggregateResults = aggregateFunction({
                                 ...aggregateConfig,
@@ -1795,18 +1857,22 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                                 events: newDanielSan.events
                             });
                             aggregateResults = sortAggregates({ aggregateConfig, aggregates: aggregateResults });
-                            reportResults = aggregateResults;
+                            reportResults.push({
+                                entityType: AGGREGATE_GROUP,
+                                name: aggregateConfig.name,
+                                type: aggregateConfig.type,
+                                aggregates: aggregateResults
+                            });
                             if (!reportingConfig.rawJson) {
                                 if (aggregateResults && aggregateResults.length > 0) {
-                                    const firstElement = aggregateResults[0];
                                     aggregateHeader({
-                                        aggregate: { ...firstElement },
                                         aggregateConfig,
                                         reportCharWidth,
                                         writeStream
                                     });
                                     aggregateResults.forEach((aggregateResult) => {
                                         aggregateLogger({
+                                            aggregateConfig,
                                             aggregate: aggregateResult,
                                             reportingConfig,
                                             currencySymbol: newDanielSan.currencySymbol,
@@ -1814,7 +1880,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                                             writeStream
                                         });
                                     });
-                                    aggregateFooter({ aggregate: { ...firstElement }, reportCharWidth, writeStream });
+                                    aggregateFooter({ aggregateConfig, reportCharWidth, writeStream });
                                 } else {
                                     showNothingToDisplay({ reportCharWidth, writeStream });
                                 }
@@ -1826,8 +1892,12 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                 }
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '$', reportCharWidth, writeStream });
+                    let ruleHeading = `  end report type: ${rule.type}  `;
+                    if (rule.name) {
+                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                    }
                     lineHeading({
-                        heading: `  end reporting type: ${reportingType}  `,
+                        heading: ruleHeading,
                         char: '$',
                         reportCharWidth,
                         writeStream
@@ -1837,12 +1907,12 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
                 } else {
                     const returnObject = {
                         entityType: REPORT,
-                        reportType: reportingType,
-                        reportResults
+                        rule,
+                        results: reportResults
                     };
                     // eslint-disable-next-line no-lonely-if
                     if (reportingConfig.file) {
-                        if (reportIndex !== reportingTypes.length - 1) {
+                        if (reportIndex !== rules.length - 1) {
                             fileStream.write(`${JSON.stringify(returnObject, null, jsonSpacingSelected)},`);
                         } else {
                             fileStream.write(`${JSON.stringify(returnObject, null, jsonSpacingSelected)}`);
@@ -1854,7 +1924,7 @@ const createReport = ({ danielSan, reportingConfig = {}, error = null, originalD
             });
             if (!reportingConfig.rawJson) {
                 standardSubheader({ danielSan: newDanielSan, reportingConfig, reportCharWidth, writeStream });
-                standardHeader({ reportingConfig, reportCharWidth, writeStream });
+                standardHeader({ reportingConfig, dateString: todaysDateConversionData.dateString, timeString: todaysDateConversionData.timeString, weekdayString: getWeekdayString(todaysDateConversionData.weekday), reportCharWidth, writeStream });
                 danielSanAsciiArt(writeStream);
             } else {
                 // eslint-disable-next-line no-lonely-if

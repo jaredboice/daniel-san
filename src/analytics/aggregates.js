@@ -25,7 +25,8 @@ const {
     NEGATIVE,
     BOTH,
     DATE_DELIMITER,
-    AGGREGATE
+    AGGREGATE,
+    DEFAULT_SELECTION_AMOUNT
 } = require('../constants');
 
 // TODO: the primary aggregate functions here could most certainly be abstracted and modularized further, thereby decreasing the amount of code in this file.
@@ -35,7 +36,7 @@ const aggregateGreatestValuesListProcess = ({
     events,
     propertyKey,
     flowDirection,
-    selectionAmount,
+    selectionLimit,
     reverse,
     transientData
 }) => {
@@ -56,7 +57,7 @@ const aggregateGreatestValuesListProcess = ({
             collection = findGreatestPositiveValueSnapshots({
                 events: newList,
                 propertyKey,
-                selectionAmount,
+                selectionLimit,
                 reverse
             });
             break;
@@ -64,7 +65,7 @@ const aggregateGreatestValuesListProcess = ({
             collection = findGreatestNegativeValueSnapshots({
                 events: newList,
                 propertyKey,
-                selectionAmount,
+                selectionLimit,
                 reverse
             });
             break;
@@ -72,7 +73,7 @@ const aggregateGreatestValuesListProcess = ({
             collection = findGreatestValueSnapshots({
                 events: newList,
                 propertyKey,
-                selectionAmount,
+                selectionLimit,
                 reverse
             });
             break;
@@ -80,7 +81,7 @@ const aggregateGreatestValuesListProcess = ({
             collection = findGreatestValueSnapshots({
                 events: newList,
                 propertyKey,
-                selectionAmount,
+                selectionLimit,
                 reverse
             });
             break;
@@ -244,7 +245,7 @@ const findMedians = (set) => {
     return medians;
 };
 
-const pushToMediansAndModesList = ({ value, xPercent, transientData }) => {
+const pushToMediansAndModesList = ({ value, xPercentRange, transientData }) => {
     let matchFound = false;
     for (let looper = 0; looper < transientData.modeDataSet.length; looper++) {
         if (transientData.modeDataSet[looper].value.toString() === value.toString()) {
@@ -254,13 +255,13 @@ const pushToMediansAndModesList = ({ value, xPercent, transientData }) => {
         } else if (
             isThisWithinXPercentOfThat({
                 value: transientData.modeDataSet[looper].value,
-                xPercent,
-                xValue: value
+                xPercentRange,
+                xPercentTarget: value
             })
         ) {
             // toString for more precise comparison
             transientData.modeDataSet[looper].frequency++;
-            // since we are matching on xPercent functionality, we should really increment the frequency of both values
+            // since we are matching on xPercentRange functionality, we should really increment the frequency of both values
             let indexOfValue = -1;
             // eslint-disable-next-line no-loop-func
             matchFound = transientData.modeDataSet.some((element, index) => {
@@ -303,27 +304,44 @@ const aggregateMediansAndModesEventProcess = ({
     date,
     propertyKey,
     flowDirection,
-    xPercent,
+    xPercentRange,
     transientData
 }) => {
     if (flowDirection === POSITIVE && event[propertyKey] > 0) {
         aggregate.eventCount++;
-        pushToMediansAndModesList({ value: event[propertyKey], xPercent, transientData });
+        pushToMediansAndModesList({ value: event[propertyKey], xPercentRange, transientData });
     } else if (flowDirection === NEGATIVE && event[propertyKey] < 0) {
         aggregate.eventCount++;
-        pushToMediansAndModesList({ value: Math.abs(event[propertyKey]), xPercent, transientData });
+        pushToMediansAndModesList({ value: Math.abs(event[propertyKey]), xPercentRange, transientData });
     } else if (flowDirection === BOTH && event[propertyKey] !== 0) {
         aggregate.eventCount++;
-        pushToMediansAndModesList({ value: event[propertyKey], xPercent, transientData });
+        pushToMediansAndModesList({ value: event[propertyKey], xPercentRange, transientData });
     }
 };
 
 const aggregateMediansAndModesInit = ({ aggregate, event, date, propertyKey, flowDirection, transientData }) => {
-    aggregate.propertyKey = propertyKey;
-    aggregate.flowDirection = flowDirection;
     transientData.modeDataSet = [];
     transientData.medianDataSet = [];
 };
+
+/*
+    TODO:
+    due to remove the following variables from the aggregate assignment structs, they can probably be removed from several functions
+
+    frequency,
+    propertyKey,
+    flowDirection,
+    selectionLimit,
+    modeMax,
+    xPercentRange,
+    dayCycles
+    
+*/
+
+
+
+
+
 
 const findAnnualAggregates = ({
     name,
@@ -333,10 +351,10 @@ const findAnnualAggregates = ({
     propertyKey = 'balanceEnding',
     fiscalYearStart,
     flowDirection = BOTH,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     modeMax,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -384,15 +402,9 @@ const findAnnualAggregates = ({
         });
         const aggregates = [];
         let aggregate = {
-            name,
-            type,
             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-            frequency,
-            propertyKey,
-            flowDirection,
-            selectionAmount,
-            modeMax,
-            xPercent,
+            group: name,
+            type,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -428,7 +440,7 @@ const findAnnualAggregates = ({
                     date: timeStream.looperDate,
                     propertyKey,
                     flowDirection,
-                    xPercent,
+                    xPercentRange,
                     transientData
                 });
                 // end logic unique to this specific function
@@ -453,7 +465,7 @@ const findAnnualAggregates = ({
                     events,
                     propertyKey,
                     flowDirection,
-                    selectionAmount,
+                    selectionLimit,
                     reverse,
                     modeMax,
                     transientData
@@ -470,15 +482,9 @@ const findAnnualAggregates = ({
                 }
                 if (!breakLoop) {
                     aggregate = {
-                        name,
-                        type,
                         entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                        frequency,
-                        propertyKey,
-                        flowDirection,
-                        selectionAmount,
-                        modeMax,
-                        xPercent,
+                        group: name,
+                        type,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -509,7 +515,7 @@ const findAnnualMediansAndModes = ({
     fiscalYearStart,
     flowDirection = BOTH,
     modeMax = 5,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -524,7 +530,7 @@ const findAnnualMediansAndModes = ({
         fiscalYearStart,
         flowDirection,
         modeMax,
-        xPercent,
+        xPercentRange,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -597,7 +603,7 @@ const findAnnualGreatestValues = ({
     propertyKey = 'balanceEnding',
     fiscalYearStart,
     flowDirection = BOTH,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
@@ -612,7 +618,7 @@ const findAnnualGreatestValues = ({
         propertyKey,
         fiscalYearStart,
         flowDirection,
-        selectionAmount,
+        selectionLimit,
         reverse,
         aggregateInit: aggregateGreatestValuesInit,
         aggregateEventProcess: aggregateGreatestValuesEventProcess,
@@ -629,10 +635,10 @@ const findMonthlyAggregates = ({
     events,
     propertyKey = 'balanceEnding',
     flowDirection = BOTH,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     modeMax,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -662,15 +668,9 @@ const findMonthlyAggregates = ({
         });
         const aggregates = [];
         let aggregate = {
-            name,
-            type,
             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-            frequency,
-            propertyKey,
-            flowDirection,
-            selectionAmount,
-            modeMax,
-            xPercent,
+            group: name,
+            type,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -705,7 +705,7 @@ const findMonthlyAggregates = ({
                     date: timeStream.looperDate,
                     propertyKey,
                     flowDirection,
-                    xPercent,
+                    xPercentRange,
                     transientData
                 });
                 // end logic unique to this specific function
@@ -729,7 +729,7 @@ const findMonthlyAggregates = ({
                     events,
                     propertyKey,
                     flowDirection,
-                    selectionAmount,
+                    selectionLimit,
                     reverse,
                     modeMax,
                     transientData
@@ -746,15 +746,9 @@ const findMonthlyAggregates = ({
                 }
                 if (!breakLoop) {
                     aggregate = {
-                        name,
-                        type,
                         entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                        frequency,
-                        propertyKey,
-                        flowDirection,
-                        selectionAmount,
-                        modeMax,
-                        xPercent,
+                        group: name,
+                        type,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -784,7 +778,7 @@ const findMonthlyMediansAndModes = ({
     propertyKey = 'balanceEnding',
     flowDirection = BOTH,
     modeMax = 5,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -798,7 +792,7 @@ const findMonthlyMediansAndModes = ({
         propertyKey,
         flowDirection,
         modeMax,
-        xPercent,
+        xPercentRange,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -866,7 +860,7 @@ const findMonthlyGreatestValues = ({
     events,
     propertyKey = 'balanceEnding',
     flowDirection = BOTH,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
@@ -880,7 +874,7 @@ const findMonthlyGreatestValues = ({
         events,
         propertyKey,
         flowDirection,
-        selectionAmount,
+        selectionLimit,
         reverse,
         aggregateInit: aggregateGreatestValuesInit,
         aggregateEventProcess: aggregateGreatestValuesEventProcess,
@@ -900,10 +894,10 @@ const findWeeklyAggregates = ({
     weekdayStart = MONDAY,
     dayCycles = 7, // this variable is adjustable in findDayCycleAggregates
     cycleDateStart = null, // for findDayCycleAggregates
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     modeMax,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -954,16 +948,9 @@ const findWeeklyAggregates = ({
         });
         const aggregates = [];
         let aggregate = {
-            name,
-            type,
             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-            frequency,
-            propertyKey,
-            flowDirection,
-            selectionAmount,
-            modeMax,
-            xPercent,
-            dayCycles,
+            group: name,
+            type,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -998,7 +985,7 @@ const findWeeklyAggregates = ({
                     date: timeStream.looperDate,
                     propertyKey,
                     flowDirection,
-                    xPercent,
+                    xPercentRange,
                     transientData
                 });
                 // end logic unique to this specific function
@@ -1025,7 +1012,7 @@ const findWeeklyAggregates = ({
                     weekdayStart,
                     dayCycles,
                     cycleDateStart,
-                    selectionAmount,
+                    selectionLimit,
                     reverse,
                     modeMax,
                     transientData
@@ -1041,16 +1028,9 @@ const findWeeklyAggregates = ({
                 }
                 if (!breakLoop) {
                     aggregate = {
-                        name,
-                        type,
                         entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                        frequency,
-                        propertyKey,
-                        flowDirection,
-                        selectionAmount,
-                        modeMax,
-                        xPercent,
-                        dayCycles,
+                        group: name,
+                        type,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -1081,7 +1061,7 @@ const findWeeklyMediansAndModes = ({
     flowDirection = BOTH,
     weekdayStart = MONDAY,
     modeMax = 5,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1096,7 +1076,7 @@ const findWeeklyMediansAndModes = ({
         flowDirection,
         weekdayStart,
         modeMax,
-        xPercent,
+        xPercentRange,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -1169,7 +1149,7 @@ const findWeeklyGreatestValues = ({
     propertyKey = 'balanceEnding',
     flowDirection = BOTH,
     weekdayStart = MONDAY,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
@@ -1184,7 +1164,7 @@ const findWeeklyGreatestValues = ({
         propertyKey,
         flowDirection,
         weekdayStart,
-        selectionAmount,
+        selectionLimit,
         reverse,
         aggregateInit: aggregateGreatestValuesInit,
         aggregateEventProcess: aggregateGreatestValuesEventProcess,
@@ -1204,7 +1184,7 @@ const findDayCycleAggregates = ({
     weekdayStart = null,
     dayCycles = 30,
     cycleDateStart = null,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     modeMax,
     aggregateInit = () => {},
@@ -1223,7 +1203,7 @@ const findDayCycleAggregates = ({
             weekdayStart,
             dayCycles,
             cycleDateStart,
-            selectionAmount,
+            selectionLimit,
             reverse,
             modeMax,
             aggregateInit,
@@ -1247,7 +1227,7 @@ const findDayCycleMediansAndModes = ({
     dayCycles = 30,
     cycleDateStart = null,
     modeMax = 5,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1264,7 +1244,7 @@ const findDayCycleMediansAndModes = ({
         dayCycles,
         cycleDateStart,
         modeMax,
-        xPercent,
+        xPercentRange,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -1347,9 +1327,9 @@ const findDayCycleGreatestValues = ({
     weekdayStart = MONDAY,
     dayCycles = 30,
     cycleDateStart = null,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1365,9 +1345,9 @@ const findDayCycleGreatestValues = ({
         weekdayStart,
         dayCycles,
         cycleDateStart,
-        selectionAmount,
+        selectionLimit,
         reverse,
-        xPercent,
+        xPercentRange,
         aggregateInit: aggregateGreatestValuesInit,
         aggregateEventProcess: aggregateGreatestValuesEventProcess,
         aggregateListProcess: aggregateGreatestValuesListProcess,
@@ -1383,10 +1363,10 @@ const findDateSetAggregates = ({
     events,
     propertyKey = 'balanceEnding',
     flowDirection = BOTH,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     modeMax = 5,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1423,15 +1403,9 @@ const findDateSetAggregates = ({
                 timeZoneType: events[0].timeZoneType
             });
             let aggregate = {
-                name,
-                type,
                 entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                frequency,
-                propertyKey,
-                flowDirection,
-                selectionAmount,
-                modeMax,
-                xPercent,
+                group: name,
+                type,
                 eventCount: 0,
                 dateStart: timeStream.effectiveDateStartString,
                 dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -1459,7 +1433,7 @@ const findDateSetAggregates = ({
                         event,
                         date: timeStream.looperDate,
                         propertyKey,
-                        xPercent,
+                        xPercentRange,
                         flowDirection,
                         transientData
                     });
@@ -1476,7 +1450,7 @@ const findDateSetAggregates = ({
                         events,
                         propertyKey,
                         flowDirection,
-                        selectionAmount,
+                        selectionLimit,
                         reverse,
                         modeMax,
                         transientData
@@ -1492,15 +1466,9 @@ const findDateSetAggregates = ({
                     }
                     if (!breakLoop) {
                         aggregate = {
-                            name,
-                            type,
                             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                            frequency,
-                            propertyKey,
-                            flowDirection,
-                            selectionAmount,
-                            modeMax,
-                            xPercent,
+                            group: name,
+                            type,
                             eventCount: 0,
                             dateStart: events[eventLooper].dateStart,
                             dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -1533,7 +1501,7 @@ const findDateSetMediansAndModes = ({
     flowDirection = BOTH,
     dateSets,
     modeMax = 5,
-    xPercent = 0,
+    xPercentRange = 0,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
     aggregateListProcess = () => {},
@@ -1548,7 +1516,7 @@ const findDateSetMediansAndModes = ({
         flowDirection,
         dateSets,
         modeMax,
-        xPercent,
+        xPercentRange,
         aggregateInit: aggregateMediansAndModesInit,
         aggregateEventProcess: aggregateMediansAndModesEventProcess,
         aggregateListProcess: aggregateMediansAndModesListProcess,
@@ -1621,7 +1589,7 @@ const findDateSetGreatestValues = ({
     propertyKey = 'balanceEnding',
     flowDirection = BOTH,
     dateSets,
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false,
     aggregateInit = () => {},
     aggregateEventProcess = () => {},
@@ -1636,7 +1604,7 @@ const findDateSetGreatestValues = ({
         propertyKey,
         flowDirection,
         dateSets,
-        selectionAmount,
+        selectionLimit,
         reverse,
         aggregateInit: aggregateGreatestValuesInit,
         aggregateEventProcess: aggregateGreatestValuesEventProcess,

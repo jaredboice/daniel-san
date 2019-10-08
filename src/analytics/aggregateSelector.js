@@ -133,25 +133,25 @@ const selectDateSetAggregate = (type) => {
     }
 };
 
-const selectAggregateFrequency = (reportingConfig) => {
-    switch (reportingConfig.frequency) {
+const selectAggregateFrequency = (rule) => {
+    switch (rule.frequency) {
     case ANNUALLY:
-        return selectAnnualAggregate(reportingConfig.type);
+        return selectAnnualAggregate(rule.type);
     case MONTHLY:
-        return selectMonthlyAggregate(reportingConfig.type);
+        return selectMonthlyAggregate(rule.type);
     case WEEKLY:
-        return selectWeeklyAggregate(reportingConfig.type);
+        return selectWeeklyAggregate(rule.type);
     case DAY_CYCLES:
-        return selectDayCycleAggregate(reportingConfig.type);
+        return selectDayCycleAggregate(rule.type);
     case DATE_SETS:
-        return selectDateSetAggregate(reportingConfig.type);
+        return selectDateSetAggregate(rule.type);
     default:
         break;
     }
 };
 
-const selectAggregateFunction = (reportingConfig) => {
-    return selectAggregateFrequency(reportingConfig);
+const selectAggregateFunction = (rule) => {
+    return selectAggregateFrequency(rule);
 };
 
 module.exports = selectAggregateFunction;

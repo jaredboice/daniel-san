@@ -28,7 +28,8 @@ const {
     MEDIANS,
     MODES,
     MIN,
-    MAX
+    MAX,
+    DEFAULT_SELECTION_AMOUNT
 } = require('../constants');
 
 const sortAggregates = ({ aggregateConfig, aggregates }) => {
@@ -109,11 +110,11 @@ const sortAggregates = ({ aggregateConfig, aggregates }) => {
     return newAggregates;
 };
 
-const isThisWithinXPercentOfThat = ({ value, xPercent = 0, xValue }) => {
-    // const difference = value - xValue;
-    const xPercentOfValue = Math.abs(xPercent * xValue);
-    const lowValue = xValue - xPercentOfValue;
-    const highValue = xValue + xPercentOfValue;
+const isThisWithinXPercentOfThat = ({ value, xPercentRange = 0, xPercentTarget }) => {
+    // const difference = value - xPercentTarget;
+    const xPercentOfValue = Math.abs(xPercentRange * xPercentTarget);
+    const lowValue = xPercentTarget - xPercentOfValue;
+    const highValue = xPercentTarget + xPercentOfValue;
     if (value >= lowValue && value <= highValue) {
         return true;
         // eslint-disable-next-line no-else-return
@@ -123,12 +124,12 @@ const isThisWithinXPercentOfThat = ({ value, xPercent = 0, xValue }) => {
 };
 
 // TODO: delete
-// const isThisWithinXPercentOfThat = ({ value, xPercent = 0, xValue }) => {
-//     // const difference = value - xValue;
-//     const xPercentOfValue = Math.abs(xPercent * xValue);
+// const isThisWithinXPercentOfThat = ({ value, xPercentRange = 0, xPercentTarget }) => {
+//     // const difference = value - xPercentTarget;
+//     const xPercentOfValue = Math.abs(xPercentRange * xPercentTarget);
 //     const lowValue = value - xPercentOfValue;
 //     const highValue = value + xPercentOfValue;
-//     if (xValue >= lowValue && xValue <= highValue) {
+//     if (xPercentTarget >= lowValue && xPercentTarget <= highValue) {
 //         return true;
 //         // eslint-disable-next-line no-else-return
 //     } else {
@@ -136,9 +137,9 @@ const isThisWithinXPercentOfThat = ({ value, xPercent = 0, xValue }) => {
 //     }
 // };
 
-const findEventsWithinXPercentOfValue = ({ events, propertyKey = 'balanceEnding', xPercent = 0, xValue }) => {
+const findEventsWithinXPercentOfValue = ({ events, propertyKey = 'balanceEnding', xPercentRange = 0, xPercentTarget }) => {
     const newEvents = events.filter((event) => {
-        return isThisWithinXPercentOfThat({ value: event[propertyKey], xPercent, xValue });
+        return isThisWithinXPercentOfThat({ value: event[propertyKey], xPercentRange, xPercentTarget });
     });
     return newEvents || [];
 };
@@ -187,7 +188,7 @@ const filterEventsByKeysAndValues = ({
 }) => {
     let transientEvent; // for errorDisc
     try {
-        let newEvents = events;
+        let newEvents = events; // default value
         if (filterKeys && filterKeys.length > 0 && filterValues && filterValues.length === filterKeys.length) {
             const duplicateEvents = deepCopy(events);
             newEvents = duplicateEvents.filter((event) => {
@@ -516,7 +517,7 @@ const isAbsVal1LessThanAbsVal2 = (val1, val2) => {
 const findGreatestValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     flowDirection = BOTH,
     reverse = false
 }) => {
@@ -571,7 +572,7 @@ const findGreatestValueSnapshots = ({
     }
     const finalCollection = sortedCollection.slice(
         0,
-        selectionAmount <= sortedCollection.length ? selectionAmount : sortedCollection.length
+        selectionLimit <= sortedCollection.length ? selectionLimit : sortedCollection.length
     );
     return finalCollection;
 };
@@ -579,7 +580,7 @@ const findGreatestValueSnapshots = ({
 const findGreatestPositiveValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false
 }) => {
     const newEvents = deepCopy(events);
@@ -608,7 +609,7 @@ const findGreatestPositiveValueSnapshots = ({
     }
     const finalCollection = sortedCollection.slice(
         0,
-        selectionAmount <= sortedCollection.length ? selectionAmount : sortedCollection.length
+        selectionLimit <= sortedCollection.length ? selectionLimit : sortedCollection.length
     );
     return finalCollection;
 };
@@ -616,7 +617,7 @@ const findGreatestPositiveValueSnapshots = ({
 const findGreatestNegativeValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
-    selectionAmount = 7,
+    selectionLimit = DEFAULT_SELECTION_AMOUNT,
     reverse = false
 }) => {
     const newEvents = deepCopy(events);
@@ -645,7 +646,7 @@ const findGreatestNegativeValueSnapshots = ({
     }
     const finalCollection = sortedCollection.slice(
         0,
-        selectionAmount <= sortedCollection.length ? selectionAmount : sortedCollection.length
+        selectionLimit <= sortedCollection.length ? selectionLimit : sortedCollection.length
     );
     return finalCollection;
 };
