@@ -70,8 +70,8 @@ const aggregateGreatestValuesListProcess = ({
             });
             break;
         case BOTH:
-            collection = findGreatestValueSnapshots({
-                events: newList,
+            collection = findGreatestValueSnapshots({ // TODO: we might not need seaparate functions for these anymore?
+                events: newList, // TODO cont: since we are pre-filtering via flowDirection before we hit this function in createReport
                 propertyKey,
                 selectionLimit,
                 reverse
@@ -94,7 +94,7 @@ const aggregateGreatestValuesListProcess = ({
 };
 
 const aggregateGreatestValuesEventProcess = ({ aggregate, event, date, propertyKey, flowDirection, transientData }) => {
-    if (flowDirection === POSITIVE && event[propertyKey] > 0) {
+    if (flowDirection === POSITIVE && event[propertyKey] > 0) { // TODO: could refactor this to use filterByFlowDirection or somethig in the main createReport function prior to aggregation for each aggregate rule?
         aggregate.eventCount++;
         transientData.dataSet.push({ [propertyKey]: event[propertyKey] });
     } else if (flowDirection === NEGATIVE && event[propertyKey] < 0) {
@@ -111,7 +111,7 @@ const aggregateGreatestValuesInit = ({ aggregate, event, date, propertyKey, flow
 };
 
 const aggregateSumsAndAvgsEventProcess = ({ aggregate, event, date, propertyKey, flowDirection, transientData }) => {
-    if (flowDirection === POSITIVE && event[propertyKey] > 0) {
+    if (flowDirection === POSITIVE && event[propertyKey] > 0) { // TODO: could refactor this to use filterByFlowDirection or somethig in the main createReport function prior to aggregation for each aggregate rule?
         aggregate.eventCount++;
         aggregate.sum += event[propertyKey];
     } else if (flowDirection === NEGATIVE && event[propertyKey] < 0) {
@@ -141,7 +141,7 @@ const aggregateMinimumsAndMaximumsEventProcess = ({
 }) => {
     if (flowDirection === POSITIVE && event[propertyKey] > 0) {
         aggregate.eventCount++;
-        if (!aggregate.max || event[propertyKey] > aggregate.max) {
+        if (!aggregate.max || event[propertyKey] > aggregate.max) { // TODO: could refactor this to use filterByFlowDirection or somethig in the main createReport function prior to aggregation for each aggregate rule?
             aggregate.max = event[propertyKey];
         }
         if (!aggregate.min || event[propertyKey] < aggregate.min) {
@@ -181,10 +181,12 @@ const findModes = (set, modeMax = 5) => {
             return 0;
         }
     });
-    if (newSet.length > 2) {
+    if (newSet.length > 0) {
         const maxFrequency = newSet[0].frequency;
         const thereIsAtLeastOneMode = newSet.some((element) => {
-            return element.frequency < maxFrequency;
+            // by commenting out the below block, we now are merely checking that there is a list, we are not concerend if its the only value in the set, and I think we should allow that
+            // return element.frequency < maxFrequency;
+            return true;
         });
         if (thereIsAtLeastOneMode) {
             const finalSet = newSet.filter((element) => {

@@ -12,6 +12,7 @@ const {
     sortAggregates,
     findEventsWithinXPercentOfValue,
     filterEventsByKeysAndValues,
+    filterEventsByFlowDirection,
     findCriticalSnapshots,
     findRulesToRetire,
     findIrrelevantRules,
@@ -925,6 +926,7 @@ const showDiscardedEvents = ({
 
 const showCriticalSnapshots = ({
     danielSan,
+    events,
     reportingConfig,
     rule,
     showNothingToDisplaySwitch = true, // TODO: prob not needed anymore
@@ -933,7 +935,7 @@ const showCriticalSnapshots = ({
     writeStream
 }) => {
     const criticalSnapshots = findCriticalSnapshots({
-        events: danielSan.events,
+        events,
         criticalThreshold: rule.criticalThreshold
     });
     if (!reportingConfig.rawJson) {
@@ -996,8 +998,8 @@ const showCriticalSnapshots = ({
     }
 };
 
-const showSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    const sum = sumAllPositiveEventAmounts(danielSan.events);
+const showSumOfAllPositiveEventAmounts = ({ danielSan, events, reportingConfig, reportCharWidth, writeStream }) => {
+    const sum = sumAllPositiveEventAmounts(events);
     if (!reportingConfig.rawJson) {
         const {
             formattingFunction,
@@ -1026,8 +1028,8 @@ const showSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCh
     }
 };
 
-const showSumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    const sum = sumAllNegativeEventAmounts(danielSan.events);
+const showSumOfAllNegativeEventAmounts = ({ danielSan, events, reportingConfig, reportCharWidth, writeStream }) => {
+    const sum = sumAllNegativeEventAmounts(events);
     if (!reportingConfig.rawJson) {
         const {
             formattingFunction,
@@ -1068,16 +1070,16 @@ const getDiscardedEvents = ({ danielSan, reportingConfig, reportCharWidth, write
     return showDiscardedEvents({ danielSan, reportingConfig, reportCharWidth, trailingFooter: false, writeStream });
 };
 
-const getCriticalSnapshots = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
-    return showCriticalSnapshots({ danielSan, reportingConfig, rule, reportCharWidth, writeStream });
+const getCriticalSnapshots = ({ danielSan, events, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    return showCriticalSnapshots({ danielSan, events, reportingConfig, rule, reportCharWidth, writeStream });
 };
 
-const getSumOfAllPositiveEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    return showSumOfAllPositiveEventAmounts({ danielSan, reportingConfig, reportCharWidth, writeStream });
+const getSumOfAllPositiveEventAmounts = ({ danielSan, events, reportingConfig, reportCharWidth, writeStream }) => {
+    return showSumOfAllPositiveEventAmounts({ danielSan, events, reportingConfig, reportCharWidth, writeStream });
 };
 
-const getSumOfAllNegativeEventAmounts = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    return showSumOfAllNegativeEventAmounts({ danielSan, reportingConfig, reportCharWidth, writeStream });
+const getSumOfAllNegativeEventAmounts = ({ danielSan, events, reportingConfig, reportCharWidth, writeStream }) => {
+    return showSumOfAllNegativeEventAmounts({ danielSan, events, reportingConfig, reportCharWidth, writeStream });
 };
 
 const getSnapshotsGreaterThanSupport = ({
@@ -1230,8 +1232,8 @@ const getEventsWithinXPercentOfValue = ({
     }
 };
 
-const standardOutput = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
-    const relevantEvents = danielSan.events;
+const standardOutput = ({ danielSan, events, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    const relevantEvents = events;
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1248,13 +1250,14 @@ const standardOutput = ({ danielSan, reportingConfig, rule, reportCharWidth, wri
 
 const getEventsWithProperty = ({
     danielSan,
+    events,
     reportingConfig,
     propertyKey,
     findFunction = findEventsWithProperty,
     reportCharWidth,
     writeStream
 }) => {
-    const relevantEvents = findFunction({ events: danielSan.events, propertyKey });
+    const relevantEvents = findFunction({ events, propertyKey });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1268,12 +1271,13 @@ const getEventsWithProperty = ({
     }
 };
 
-const getEventsByKeysAndValues = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
+const getEventsByKeysAndValues = ({ danielSan, events, reportingConfig, rule, reportCharWidth, writeStream }) => {
     const relevantEvents = filterEventsByKeysAndValues({
-        events: danielSan.events,
+        events,
         filterKeys: rule.filterKeys,
         filterValues: rule.filterValues,
-        filterType: rule.filterType
+        filterType: rule.filterType,
+        filterComparator: rule.filterComparator
     });
     if (!reportingConfig.rawJson) {
         eventsLogger({
@@ -1290,6 +1294,7 @@ const getEventsByKeysAndValues = ({ danielSan, reportingConfig, rule, reportChar
 
 const getEventsByPropertyKeyAndValues = ({
     danielSan,
+    events,
     reportingConfig,
     rule,
     propertyKey,
@@ -1298,7 +1303,7 @@ const getEventsByPropertyKeyAndValues = ({
     writeStream
 }) => {
     const { searchValues } = rule;
-    const relevantEvents = findFunction({ events: danielSan.events, propertyKey, searchValues });
+    const relevantEvents = findFunction({ events, propertyKey, searchValues });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1314,6 +1319,7 @@ const getEventsByPropertyKeyAndValues = ({
 
 const getEventsWithPropertyKeyContainingSubstring = ({
     danielSan,
+    events,
     reportingConfig,
     propertyKey,
     substring,
@@ -1321,7 +1327,7 @@ const getEventsWithPropertyKeyContainingSubstring = ({
     reportCharWidth,
     writeStream
 }) => {
-    const relevantEvents = findFunction({ events: danielSan.events, propertyKey, substring });
+    const relevantEvents = findFunction({ events, propertyKey, substring });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1435,8 +1441,16 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                 events: newDanielSan.events,
                 filterKeys: reportingConfig.filterKeys,
                 filterValues: reportingConfig.filterValues,
-                filterType: reportingConfig.filterType
+                filterType: reportingConfig.filterType,
+                filterComparator: reportingConfig.filterComparator
             });
+            if (reportingConfig.flowDirection) {
+                newDanielSan.events = filterEventsByFlowDirection({
+                    events: newDanielSan.events,
+                    propertyKey: reportingConfig.flowKey,
+                    flowDirection: reportingConfig.flowDirection
+                });
+            }
             // note: capture current system date of report generation and stamp it on the report
             const thisMomentFunction = moment.tz;
             const todaysDate = createTimeZone({
@@ -1467,6 +1481,23 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                 fileStream.write(' "reports": [');
             }
             rules.forEach((rule, reportIndex) => {
+                transientEvents = newDanielSan.events; // default value
+                if (rule.filterKeys) {
+                    transientEvents = filterEventsByKeysAndValues({
+                        events: transientEvents,
+                        filterKeys: rule.filterKeys,
+                        filterValues: rule.filterValues,
+                        filterType: rule.filterType,
+                        filterComparator: rule.filterComparator
+                    });
+                }
+                if (rule.flowDirection) {
+                    transientEvents = filterEventsByFlowDirection({
+                        events: transientEvents,
+                        propertyKey: rule.flowKey,
+                        flowDirection: rule.flowDirection
+                    });
+                }
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
                     let ruleHeading = `  begin reporting rule  =>  type: ${rule.type}  `;
@@ -1486,6 +1517,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case STANDARD_OUTPUT:
                         reportResults = standardOutput({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             reportCharWidth,
@@ -1496,6 +1528,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENTS_BY_GROUPS:
                         reportResults = getEventsByPropertyKeyAndValues({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'group',
@@ -1507,6 +1540,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENTS_BY_NAMES:
                         reportResults = getEventsByPropertyKeyAndValues({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'name',
@@ -1518,6 +1552,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENTS_BY_TYPES:
                         reportResults = getEventsByPropertyKeyAndValues({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'type',
@@ -1528,6 +1563,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENTS_BY_KEYS_AND_VALUES:
                         reportResults = getEventsByKeysAndValues({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             reportCharWidth,
@@ -1537,6 +1573,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case CRITICAL_SNAPSHOTS:
                         reportResults = getCriticalSnapshots({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             reportCharWidth,
@@ -1554,6 +1591,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case IMPORTANT_EVENTS:
                         reportResults = getEventsWithProperty({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             propertyKey: 'important',
                             reportCharWidth,
@@ -1563,6 +1601,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case TIME_EVENTS:
                         reportResults = getEventsWithProperty({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             propertyKey: 'timeStart',
                             reportCharWidth,
@@ -1572,6 +1611,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case ROUTINE_EVENTS:
                         reportResults = getEventsWithPropertyKeyContainingSubstring({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             propertyKey: 'type',
                             substring: 'ROUTINE',
@@ -1582,6 +1622,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case REMINDER_EVENTS:
                         reportResults = getEventsWithPropertyKeyContainingSubstring({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             propertyKey: 'type',
                             substring: 'REMINDER',
@@ -1592,6 +1633,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case ROUTINE_AND_REMINDER_EVENTS:
                         reportResults = getEventsWithPropertyKeyContainingSubstring({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             propertyKey: 'type',
                             substring: ['ROUTINE', 'REMINDER'],
@@ -1619,6 +1661,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case SUM_OF_ALL_POSITIVE_EVENT_FLOWS:
                         reportResults = getSumOfAllPositiveEventAmounts({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             reportCharWidth,
                             writeStream
@@ -1628,6 +1671,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case SUM_OF_ALL_NEGATIVE_EVENT_FLOWS:
                         reportResults = getSumOfAllNegativeEventAmounts({
                             danielSan: newDanielSan,
+                            events: transientEvents,
                             reportingConfig,
                             reportCharWidth,
                             writeStream
@@ -1636,7 +1680,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENT_FLOWS_GREATER_THAN_TARGET:
                         reportResults = getSnapshotsGreaterThanSupport({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1648,7 +1692,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENT_FLOWS_LESS_THAN_TARGET:
                         reportResults = getSnapshotsLessThanResistance({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1658,7 +1702,8 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         break;
                     case NEGATIVE_EVENT_FLOWS_GREATER_THAN_TARGET:
-                        transientEvents = newDanielSan.events.filter((element) => {
+                        transientEvents = transientEvents.filter((element) => {
+                            // TODO: this might be redundant now that we can pass flowDirection anywhere
                             return element.amount < 0;
                         });
                         reportResults = getSnapshotsGreaterThanSupport({
@@ -1673,7 +1718,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         break;
                     case NEGATIVE_EVENT_FLOWS_LESS_THAN_TARGET:
-                        transientEvents = newDanielSan.events.filter((element) => {
+                        transientEvents = transientEvents.filter((element) => {
                             return element.amount < 0;
                         });
                         reportResults = getSnapshotsLessThanResistance({
@@ -1688,7 +1733,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         break;
                     case POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET:
-                        transientEvents = newDanielSan.events.filter((element) => {
+                        transientEvents = transientEvents.filter((element) => {
                             return element.amount > 0;
                         });
                         reportResults = getSnapshotsGreaterThanSupport({
@@ -1703,7 +1748,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         break;
                     case POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET:
-                        transientEvents = newDanielSan.events.filter((element) => {
+                        transientEvents = transientEvents.filter((element) => {
                             return element.amount > 0;
                         });
                         reportResults = getSnapshotsLessThanResistance({
@@ -1720,7 +1765,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET:
                         reportResults = getSnapshotsGreaterThanSupport({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'balanceEnding',
@@ -1732,7 +1777,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET:
                         reportResults = getSnapshotsLessThanResistance({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'balanceEnding',
@@ -1744,7 +1789,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case GREATEST_BALANCE_ENDING_SNAPSHOTS:
                         reportResults = getGreatestValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'balanceEnding',
@@ -1756,7 +1801,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case LEAST_BALANCE_ENDING_SNAPSHOTS:
                         reportResults = getLeastValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'balanceEnding',
@@ -1768,7 +1813,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case GREATEST_EVENT_FLOWS:
                         reportResults = getGreatestValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1780,7 +1825,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case LEAST_EVENT_FLOWS:
                         reportResults = getLeastValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1792,7 +1837,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case GREATEST_POSITIVE_EVENT_FLOWS:
                         reportResults = getGreatestValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1804,7 +1849,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case LEAST_POSITIVE_EVENT_FLOWS:
                         reportResults = getLeastValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1816,7 +1861,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case GREATEST_NEGATIVE_EVENT_FLOWS:
                         reportResults = getGreatestValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1828,7 +1873,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case LEAST_NEGATIVE_EVENT_FLOWS:
                         reportResults = getLeastValueSnapshots({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             rule,
                             propertyKey: 'amount',
@@ -1840,7 +1885,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET:
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             xPercentRange: rule.xPercentRange,
                             xPercentTarget: rule.xPercentTarget,
@@ -1850,7 +1895,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         break;
                     case NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET:
-                        transientEvents = newDanielSan.events.filter((element) => {
+                        transientEvents = transientEvents.filter((element) => {
                             return element.amount < 0;
                         });
                         reportResults = getEventsWithinXPercentOfValue({
@@ -1865,7 +1910,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         break;
                     case POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET:
-                        transientEvents = newDanielSan.events.filter((element) => {
+                        transientEvents = transientEvents.filter((element) => {
                             return element.amount > 0;
                         });
                         reportResults = getEventsWithinXPercentOfValue({
@@ -1882,7 +1927,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_TARGET:
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
-                            events: newDanielSan.events,
+                            events: transientEvents,
                             reportingConfig,
                             xPercentRange: rule.balanceEndingXPercent,
                             xPercentTarget: rule.balanceEndingXValue,
@@ -1897,11 +1942,28 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         }
                         reportResults = [];
                         rule.aggregateRules.forEach((aggregateConfig) => {
+                            let transientEventsForAggregate = transientEvents; // default value
+                            if (aggregateConfig.filterKeys) {
+                                transientEventsForAggregate = filterEventsByKeysAndValues({
+                                    events: transientEventsForAggregate,
+                                    filterKeys: aggregateConfig.filterKeys,
+                                    filterValues: aggregateConfig.filterValues,
+                                    filterType: aggregateConfig.filterType,
+                                    filterComparator: aggregateConfig.filterComparator
+                                });
+                            }
+                            if (aggregateConfig.flowDirection) {
+                                transientEventsForAggregate = filterEventsByFlowDirection({
+                                    events: transientEventsForAggregate,
+                                    propertyKey: aggregateConfig.flowKey,
+                                    flowDirection: aggregateConfig.flowDirection
+                                });
+                            }
                             const aggregateFunction = selectAggregateFunction(aggregateConfig);
                             let aggregateResults = aggregateFunction({
                                 ...aggregateConfig,
                                 type: aggregateConfig.type,
-                                events: newDanielSan.events
+                                events: transientEventsForAggregate
                             });
                             aggregateResults = sortAggregates({ aggregateConfig, aggregates: aggregateResults });
                             reportResults.push({

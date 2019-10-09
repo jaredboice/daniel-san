@@ -19,6 +19,8 @@ const SATURDAY = 6;
 
 const appConstants = {
     APP_NAME: 'daniel-san',
+    AMOUNT: 'amount',
+    BALANCE_ENDING: 'balanceEnding',
     DEFAULT_ERROR_MESSAGE: 'something bad happened and a lot of robots died',
     DATE_DELIMITER,
     TIME_DELIMITER,

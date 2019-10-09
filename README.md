@@ -536,7 +536,8 @@ const reportController = {
                         LEAST_VALUES,
                     frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
                     propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
-                    flowDirection: POSITIVE || NEGATIVE || BOTH, // this property is only for GREATEST_VALUES || LEAST_VALUES
+                    flowDirection: POSITIVE || NEGATIVE || BOTH, // note: flowDirection/flowKey can be used on the reportController's config object and also in any particular report rule object
+                    flowKey: 'balanceEnding', // when using flowDirection, this is the key that it checks against
                     sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
                     sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
                     selectionLimit: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
@@ -689,7 +690,7 @@ createReport({ danielSan, controller: reportController, error, originalDanielSan
 -   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportController will search against the optional group property)_
 -   `type: 'EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
 -   `type: 'EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
--   `type: 'EVENTS_BY_KEYS_AND_VALUES'` _(works exactly like filterKeys on the config object, but the params are assigned to a particular rule object instead; for numeric values you are better off using one of the WITHIN_X_PERCENT_OF_TARGET types)_  
+-   `type: 'EVENTS_BY_KEYS_AND_VALUES'` _(works exactly like filterKeys on the reportController's config object, but the params are assigned to a particular rule object instead; for numeric values you might be better off using one of the WITHIN_X_PERCENT_OF_TARGET types)_  
 -   `type: 'IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
 -   `type: 'TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
 -   `type: 'ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
@@ -749,7 +750,8 @@ const reportController = {
         },
         {
             name: 'some name',
-            type: STANDARD_OUTPUT
+            type: STANDARD_OUTPUT,
+            flowDirection: POSITIVE || NEGATIVE || BOTH, // eg. NEGATIVE will focus the computations on only expenses
         }
     ]
 };
@@ -766,22 +768,22 @@ const eventResults = findBalance(waxOn.danielSan);
 createReport({ danielSan: eventResults.danielSan, controller: reportController, error: eventResults.err }); // on err, the report's error logger will be executed instead of the event logger
 ```
 
-**Filter Events prior to report generation**
+**Filter Events prior to running calculations**
 
-Add the following attributes to the config object of the reportController for fine-tuned pre-filter control. filterKeys and filterValues are parallel arrays.
+Add the following attributes to the config object of the reportController || a report rule object || an aggregate rule - for fine-tuned pre-filter control. filterKeys and filterValues are parallel arrays.
 
 ```javascript
 const reportController = {
     config: {
         name: 'my report',
         mode: CONCISE,
-        filterKeys: ['name', 'group'],
+        filterKeys: ['name', 'group'], 
         filterValues: ['rent', ANY], // the constant for ANY, INTERSECTION and UNION are available for import
         filterType: UNION || INTERSECTION, // event inclusion is governed by Any attributes that match || All attributes must match
         filterComparator: (filterKey, filterValue) => {
-        // OPTIONAL! This is the default comparator
-        return filterKey === filterValue;
-    }
+            // OPTIONAL! This is the default comparator
+            return filterKey === filterValue;
+        }   
     },
     rules: [
         {
@@ -861,6 +863,8 @@ Importing the following constants, to be discoverable by your code editor's auto
 ```javascript
 const {
     APP_NAME,
+    AMOUNT,
+    BALANCE_ENDING,
     DEFAULT_ERROR_MESSAGE,
     TIME_DELIMITER,
     DATE_TIME_DELIMITER,

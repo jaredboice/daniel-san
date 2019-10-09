@@ -49,28 +49,28 @@ const sortAggregates = ({ aggregateConfig, aggregates }) => {
         sortDirection = aggregateConfig.sortDirection === ASCENDING ? 1 : -1;
     }
     switch (configSortKey) {
-    case SUM:
-        sortKey = 'sum';
-        break;
-    case AVERAGE:
-        sortKey = 'average';
-        break;
-    case MEDIANS:
-        sortKey = 'medians';
-        break;
-    case MODES:
-        sortKey = 'modes';
-        break;
-    case MIN:
-        sortKey = 'min';
-        break;
-    case MAX:
-        sortKey = 'max';
-        break;
-    case DEFAULT:
-        return aggregates;
-    default:
-        sortKey = aggregateConfig.sortKey;
+        case SUM:
+            sortKey = 'sum';
+            break;
+        case AVERAGE:
+            sortKey = 'average';
+            break;
+        case MEDIANS:
+            sortKey = 'medians';
+            break;
+        case MODES:
+            sortKey = 'modes';
+            break;
+        case MIN:
+            sortKey = 'min';
+            break;
+        case MAX:
+            sortKey = 'max';
+            break;
+        case DEFAULT:
+            return aggregates;
+        default:
+            sortKey = aggregateConfig.sortKey;
     }
     if (sortKey === 'medians' || sortKey === 'modes') {
         newAggregates = aggregates.sort((aObj, bObj) => {
@@ -107,7 +107,13 @@ const sortAggregates = ({ aggregateConfig, aggregates }) => {
             }
         });
     }
-    return newAggregates;
+    const finalCollection = newAggregates.slice(
+        0,
+        !isUndefinedOrNull(aggregateConfig.selectionLimit) && aggregateConfig.selectionLimit <= newAggregates.length
+            ? aggregateConfig.selectionLimit
+            : newAggregates.length
+    );
+    return finalCollection;
 };
 
 const isThisWithinXPercentOfThat = ({ value, xPercentRange = 0, xPercentTarget }) => {
@@ -137,7 +143,12 @@ const isThisWithinXPercentOfThat = ({ value, xPercentRange = 0, xPercentTarget }
 //     }
 // };
 
-const findEventsWithinXPercentOfValue = ({ events, propertyKey = 'balanceEnding', xPercentRange = 0, xPercentTarget }) => {
+const findEventsWithinXPercentOfValue = ({
+    events,
+    propertyKey = 'balanceEnding',
+    xPercentRange = 0,
+    xPercentTarget
+}) => {
     const newEvents = events.filter((event) => {
         return isThisWithinXPercentOfThat({ value: event[propertyKey], xPercentRange, xPercentTarget });
     });
@@ -184,8 +195,14 @@ const filterEventsByKeysAndValues = ({
     filterKeys = [],
     filterValues = [],
     filterType = UNION,
-    filterComparator = defaultStringComparator
+    filterComparator = defaultStringComparator // note: this default value might not be sufficient
 }) => {
+    if (isUndefinedOrNull(filterComparator)) {
+        filterComparator = defaultStringComparator;
+    }
+    if (isUndefinedOrNull(filterType)) {
+        filterType = UNION;
+    }
     let transientEvent; // for errorDisc
     try {
         let newEvents = events; // default value
@@ -512,6 +529,30 @@ const isAbsVal1LessThanAbsVal2 = (val1, val2) => {
     return Math.abs(val1) < Math.abs(val2);
 };
 
+const filterEventsByFlowDirection = ({ events, propertyKey = 'balanceEnding', flowDirection }) => {
+    const deepCopyOfEvents = deepCopy(events);
+    let newEvents;
+    switch (flowDirection) {
+        case POSITIVE:
+            newEvents = deepCopyOfEvents.filter((event) => {
+                return event[propertyKey] > 0;
+            });
+            break;
+        case NEGATIVE:
+            newEvents = deepCopyOfEvents.filter((event) => {
+                return event[propertyKey] < 0;
+            });
+            break;
+        case BOTH:
+            newEvents = deepCopyOfEvents;
+            break;
+        default:
+            newEvents = deepCopyOfEvents;
+            break;
+    }
+    return newEvents;
+};
+
 // TODO: performance could be increased by making a separete function for findLeastValueSnapshots
 // TODO cont: instead of passing reverse as a parameter and reverse the sort
 const findGreatestValueSnapshots = ({
@@ -519,38 +560,32 @@ const findGreatestValueSnapshots = ({
     propertyKey = 'balanceEnding',
     selectionLimit = DEFAULT_SELECTION_LIMIT,
     flowDirection = BOTH,
-    reverse = false
+    reverse = false,
+    alreadyFiltered = false // TODO: check if this can be used in findGreatestPositiveValueSnapshots and findGreatestNegativeValueSnapshots and similar functions since we are sometimes already prefiltering before calling this function
 }) => {
-    let newEvents = [];
     let sortedCollection = [];
+    const newEvents = deepCopy(events); // TODO: should refactor to only send this function pre-filtered events: for eg. with filterEventsByFlowDirection, whatever you do make sure you test it a lot!
     let greaterThanComparator;
     let lessThanComparator;
     switch (flowDirection) {
         case POSITIVE:
-            newEvents = deepCopy(events).filter((event) => {
-                return event[propertyKey] > 0;
-            });
             greaterThanComparator = isVal1GreaterThanVal2;
             lessThanComparator = isVal1LessThanVal2;
             break;
         case NEGATIVE:
-            newEvents = deepCopy(events).filter((event) => {
-                return event[propertyKey] < 0;
-            });
             greaterThanComparator = isAbsVal1GreaterThanAbsVal2;
             lessThanComparator = isAbsVal1LessThanAbsVal2;
             break;
         case BOTH:
-            newEvents = deepCopy(events);
             greaterThanComparator = isVal1GreaterThanVal2;
             lessThanComparator = isVal1LessThanVal2;
             break;
         default:
-            newEvents = deepCopy(events);
             greaterThanComparator = isVal1GreaterThanVal2;
             lessThanComparator = isVal1LessThanVal2;
             break;
     }
+
     sortedCollection = newEvents.sort((a, b) => {
         if (isUndefinedOrNull(a) && !isUndefinedOrNull(b)) {
             return -1;
@@ -684,6 +719,7 @@ module.exports = {
     isThisWithinXPercentOfThat,
     findEventsWithinXPercentOfValue,
     filterEventsByKeysAndValues,
+    filterEventsByFlowDirection,
     findSnapshotsGreaterThanSupport,
     findSnapshotsLessThanResistance,
     findPositiveSnapshotsGreaterThanSupport,
