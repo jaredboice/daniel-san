@@ -60,7 +60,7 @@ const {
     POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET,
     POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET,
     BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET,
-    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET,
     GREATEST_BALANCE_ENDING_SNAPSHOTS,
     LEAST_BALANCE_ENDING_SNAPSHOTS,
     GREATEST_EVENT_FLOWS,
@@ -516,7 +516,12 @@ const aggregateHeader = ({ aggregateConfig, reportCharWidth, writeStream }) => {
         lineHeading({ heading: `  modeMax: ${aggregateConfig.modeMax}  `, char: '%', reportCharWidth, writeStream });
     }
     if (aggregateConfig.xPercentRange) {
-        lineHeading({ heading: `  xPercentRange: ${aggregateConfig.xPercentRange}  `, char: '%', reportCharWidth, writeStream });
+        lineHeading({
+            heading: `  xPercentRange: ${aggregateConfig.xPercentRange}  `,
+            char: '%',
+            reportCharWidth,
+            writeStream
+        });
     }
     if (!isUndefinedOrNull(aggregateConfig.dayCycles)) {
         lineHeading({
@@ -734,10 +739,14 @@ const standardHeader = ({ reportingConfig, dateString, timeString, weekdayString
     lineHeading({ heading: ' must find balance ', reportCharWidth, writeStream });
     reportingBoundary({ loops: 2, reportCharWidth, writeStream });
     if (!isUndefinedOrNull(reportingConfig.name)) {
-        lineHeading({ heading: ` report: ${reportingConfig.name} `, reportCharWidth, writeStream });
+        lineHeading({ heading: ` report name: ${reportingConfig.name} `, reportCharWidth, writeStream });
     }
     lineHeading({ heading: ` report mode: ${reportingConfig.mode} `, reportCharWidth, writeStream });
-    lineHeading({ heading: ` report date: ${weekdayString}, ${dateString} ${timeString} local time `, reportCharWidth, writeStream });
+    lineHeading({
+        heading: ` report date: ${weekdayString}, ${dateString} ${timeString} local time `,
+        reportCharWidth,
+        writeStream
+    });
     reportingBoundary({ loops: 3, reportCharWidth, writeStream });
     lineSeparator({ loops: 2, reportCharWidth, writeStream });
     // eslint-disable-next-line no-console
@@ -1421,7 +1430,14 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                 timeString: true
             });
             if (!reportingConfig.rawJson) {
-                standardHeader({ reportingConfig, dateString: todaysDateConversionData.dateString, timeString: todaysDateConversionData.timeString, weekdayString: getWeekdayString(todaysDateConversionData.weekday), reportCharWidth, writeStream });
+                standardHeader({
+                    reportingConfig,
+                    dateString: todaysDateConversionData.dateString,
+                    timeString: todaysDateConversionData.timeString,
+                    weekdayString: getWeekdayString(todaysDateConversionData.weekday),
+                    reportCharWidth,
+                    writeStream
+                });
                 standardSubheader({ danielSan: newDanielSan, reportingConfig, reportCharWidth, writeStream });
             }
             let transientEvents = [];
@@ -1432,9 +1448,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
             rules.forEach((rule, reportIndex) => {
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
-                    let ruleHeading = `  begin report type: ${rule.type}  `;
+                    let ruleHeading = `  begin reporting rule  =>  type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                        ruleHeading = ` ${ruleHeading}=>  report name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
@@ -1683,7 +1699,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                             writeStream
                         });
                         break;
-                    case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                    case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET:
                         reportResults = getSnapshotsLessThanResistance({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
@@ -1893,9 +1909,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                 }
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '$', reportCharWidth, writeStream });
-                    let ruleHeading = `  end report type: ${rule.type}  `;
+                    let ruleHeading = `  end reporting rule  =>  type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                        ruleHeading = `${ruleHeading}=>  name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
@@ -1925,7 +1941,14 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
             });
             if (!reportingConfig.rawJson) {
                 standardSubheader({ danielSan: newDanielSan, reportingConfig, reportCharWidth, writeStream });
-                standardHeader({ reportingConfig, dateString: todaysDateConversionData.dateString, timeString: todaysDateConversionData.timeString, weekdayString: getWeekdayString(todaysDateConversionData.weekday), reportCharWidth, writeStream });
+                standardHeader({
+                    reportingConfig,
+                    dateString: todaysDateConversionData.dateString,
+                    timeString: todaysDateConversionData.timeString,
+                    weekdayString: getWeekdayString(todaysDateConversionData.weekday),
+                    reportCharWidth,
+                    writeStream
+                });
                 danielSanAsciiArt(writeStream);
             } else {
                 // eslint-disable-next-line no-lonely-if

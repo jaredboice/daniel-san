@@ -271,7 +271,7 @@ const pushToMediansAndModesList = ({ value, xPercentRange, transientData }) => {
             // eslint-disable-next-line no-loop-func
             matchFound = transientData.modeDataSet.some((element, index) => {
                 if (looper !== index) {
-                    // only increment if 
+                    // only increment if it was already in the list
                     if (element.value.toString() === value.toString()) {
                         indexOfValue = index;
                         if (indexOfValue > 0) {
