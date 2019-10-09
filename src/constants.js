@@ -148,7 +148,7 @@ const appConstants = {
     AGGREGATE: 'AGGREGATE',
     AGGREGATE_GROUP: 'AGGREGATE_GROUP',
     DEFAULT_JSON_SPACING: 4,
-    DEFAULT_SELECTION_AMOUNT: 7
+    DEFAULT_SELECTION_LIMIT: 7
 };
 
 const decimalFormatterStandard = (

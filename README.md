@@ -982,7 +982,7 @@ const {
     AGGREGATE,
     AGGREGATE_GROUP,
     DEFAULT_JSON_SPACING,
-    DEFAULT_SELECTION_AMOUNT
+    DEFAULT_SELECTION_LIMIT
 } = require('daniel-san/constants');
 ```
 

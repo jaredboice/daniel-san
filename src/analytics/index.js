@@ -29,7 +29,7 @@ const {
     MODES,
     MIN,
     MAX,
-    DEFAULT_SELECTION_AMOUNT
+    DEFAULT_SELECTION_LIMIT
 } = require('../constants');
 
 const sortAggregates = ({ aggregateConfig, aggregates }) => {
@@ -517,7 +517,7 @@ const isAbsVal1LessThanAbsVal2 = (val1, val2) => {
 const findGreatestValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
-    selectionLimit = DEFAULT_SELECTION_AMOUNT,
+    selectionLimit = DEFAULT_SELECTION_LIMIT,
     flowDirection = BOTH,
     reverse = false
 }) => {
@@ -580,7 +580,7 @@ const findGreatestValueSnapshots = ({
 const findGreatestPositiveValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
-    selectionLimit = DEFAULT_SELECTION_AMOUNT,
+    selectionLimit = DEFAULT_SELECTION_LIMIT,
     reverse = false
 }) => {
     const newEvents = deepCopy(events);
@@ -617,7 +617,7 @@ const findGreatestPositiveValueSnapshots = ({
 const findGreatestNegativeValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
-    selectionLimit = DEFAULT_SELECTION_AMOUNT,
+    selectionLimit = DEFAULT_SELECTION_LIMIT,
     reverse = false
 }) => {
     const newEvents = deepCopy(events);
