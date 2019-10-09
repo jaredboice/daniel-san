@@ -39,6 +39,7 @@ const {
     EVENTS_BY_NAMES,
     EVENTS_BY_TYPE,
     EVENTS_BY_TYPES,
+    EVENTS_BY_KEYS_AND_VALUES,
     EVENTS,
     CRITICAL_SNAPSHOTS,
     DISCARDED_EVENTS,
@@ -1267,6 +1268,26 @@ const getEventsWithProperty = ({
     }
 };
 
+const getEventsByKeysAndValues = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    const relevantEvents = filterEventsByKeysAndValues({
+        events: danielSan.events,
+        filterKeys: rule.filterKeys,
+        filterValues: rule.filterValues,
+        filterType: rule.filterType
+    });
+    if (!reportingConfig.rawJson) {
+        eventsLogger({
+            events: relevantEvents,
+            reportingConfig,
+            currencySymbol: danielSan.config.currencySymbol || CURRENCY_DEFAULT,
+            reportCharWidth,
+            writeStream
+        });
+    } else {
+        return relevantEvents || [];
+    }
+};
+
 const getEventsByPropertyKeyAndValues = ({
     danielSan,
     reportingConfig,
@@ -1500,6 +1521,15 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                             reportingConfig,
                             rule,
                             propertyKey: 'type',
+                            reportCharWidth,
+                            writeStream
+                        });
+                        break;
+                    case EVENTS_BY_KEYS_AND_VALUES:
+                        reportResults = getEventsByKeysAndValues({
+                            danielSan: newDanielSan,
+                            reportingConfig,
+                            rule,
                             reportCharWidth,
                             writeStream
                         });

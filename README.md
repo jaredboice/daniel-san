@@ -689,6 +689,7 @@ createReport({ danielSan, controller: reportController, error, originalDanielSan
 -   `type: 'EVENTS_BY_GROUP'` _(passing searchValues: ['Group1', 'Group2'] into reportController will search against the optional group property)_
 -   `type: 'EVENTS_BY_NAME'` _(passing searchValues: ['Name1', 'Name2'] will search against the name property)_
 -   `type: 'EVENTS_BY_TYPE'` _(passing searchValues: ['STANDARD_EVENT', 'NTH_WEEKDAYS_OF_MONTH'] will search against the type property)_
+-   `type: 'EVENTS_BY_KEYS_AND_VALUES'` _(works exactly like filterKeys on the config object, but the params are assigned to a particular rule object instead; for numeric values you are better off using one of the WITHIN_X_PERCENT_OF_TARGET types)_  
 -   `type: 'IMPORTANT_EVENTS'` _(display events with the optional attribute important: true)_
 -   `type: 'TIME_EVENTS'` _(display events with the optional attribute timeStart: '09:30pm')_
 -   `type: 'ROUTINE_EVENTS'` _(display events that contain 'ROUTINE' somewhere in the string of the type field)_
@@ -767,20 +768,27 @@ createReport({ danielSan: eventResults.danielSan, controller: reportController, 
 
 **Filter Events prior to report generation**
 
-Add the following attributes to the root of the reportController object for filter control. filterKeys and filterValues are parallel arrays.
+Add the following attributes to the config object of the reportController for fine-tuned pre-filter control. filterKeys and filterValues are parallel arrays.
 
 ```javascript
 const reportController = {
-    name: 'some name',
-    type: STANDARD_OUTPUT,
-    mode: CONCISE,
-    filterKeys: ['name', 'group'],
-    filterValues: ['rent', ANY], // the constant for ANY, INTERSECTION and UNION are available for import
-    filterType: UNION || INTERSECTION, // event inclusion is governed by Any attributes that match || All attributes must match
-    filterComparator: (filterKey, filterValue) => {
+    config: {
+        name: 'my report',
+        mode: CONCISE,
+        filterKeys: ['name', 'group'],
+        filterValues: ['rent', ANY], // the constant for ANY, INTERSECTION and UNION are available for import
+        filterType: UNION || INTERSECTION, // event inclusion is governed by Any attributes that match || All attributes must match
+        filterComparator: (filterKey, filterValue) => {
         // OPTIONAL! This is the default comparator
         return filterKey === filterValue;
     }
+    },
+    rules: [
+        {
+            name: 'standard events',
+            type: STANDARD_OUTPUT,
+        }
+    ]
 };
 ```
 
@@ -910,6 +918,7 @@ const {
     EVENTS_BY_NAMES,
     EVENTS_BY_TYPE,
     EVENTS_BY_TYPES,
+    EVENTS_BY_KEYS_AND_VALUES,
     EVENTS,
     CRITICAL_SNAPSHOTS,
     DISCARDED_EVENTS,
