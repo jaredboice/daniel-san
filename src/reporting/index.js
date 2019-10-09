@@ -60,7 +60,7 @@ const {
     POSITIVE_EVENT_FLOWS_GREATER_THAN_TARGET,
     POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET,
     BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET,
-    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT,
+    BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET,
     GREATEST_BALANCE_ENDING_SNAPSHOTS,
     LEAST_BALANCE_ENDING_SNAPSHOTS,
     GREATEST_EVENT_FLOWS,
@@ -734,7 +734,7 @@ const standardHeader = ({ reportingConfig, dateString, timeString, weekdayString
     lineHeading({ heading: ' must find balance ', reportCharWidth, writeStream });
     reportingBoundary({ loops: 2, reportCharWidth, writeStream });
     if (!isUndefinedOrNull(reportingConfig.name)) {
-        lineHeading({ heading: ` report: ${reportingConfig.name} `, reportCharWidth, writeStream });
+        lineHeading({ heading: ` report name: ${reportingConfig.name} `, reportCharWidth, writeStream });
     }
     lineHeading({ heading: ` report mode: ${reportingConfig.mode} `, reportCharWidth, writeStream });
     lineHeading({ heading: ` report date: ${weekdayString}, ${dateString} ${timeString} local time `, reportCharWidth, writeStream });
@@ -1432,9 +1432,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
             rules.forEach((rule, reportIndex) => {
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '#', reportCharWidth, writeStream });
-                    let ruleHeading = `  begin report type: ${rule.type}  `;
+                    let ruleHeading = `  begin reporting rule  =>  type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                        ruleHeading = `${ruleHeading}=>  name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
@@ -1683,7 +1683,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                             writeStream
                         });
                         break;
-                    case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_MIN_AMOUNT:
+                    case BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET:
                         reportResults = getSnapshotsLessThanResistance({
                             danielSan: newDanielSan,
                             events: newDanielSan.events,
@@ -1893,9 +1893,9 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                 }
                 if (!reportingConfig.rawJson) {
                     reportingBoundary({ loops: 2, char: '$', reportCharWidth, writeStream });
-                    let ruleHeading = `  end report type: ${rule.type}  `;
+                    let ruleHeading = `  end reporting rule  =>  type: ${rule.type}  `;
                     if (rule.name) {
-                        ruleHeading = `${ruleHeading}/  report name: ${rule.name}  `;
+                        ruleHeading = `${ruleHeading}=>  name: ${rule.name}  `;
                     }
                     lineHeading({
                         heading: ruleHeading,
