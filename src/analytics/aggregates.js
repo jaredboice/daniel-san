@@ -253,7 +253,13 @@ const pushToMediansAndModesList = ({ value, xPercentRange, transientData }) => {
             transientData.modeDataSet[looper].frequency++;
             matchFound = true;
         } else if (
+            // matching on the xPercentRange strategy
+            // check for commonality in either direction and if matched then increment the frequency of both
             isThisWithinXPercentOfThat({
+                value,
+                xPercentRange,
+                xPercentTarget: transientData.modeDataSet[looper].value
+            }) || isThisWithinXPercentOfThat({
                 value: transientData.modeDataSet[looper].value,
                 xPercentRange,
                 xPercentTarget: value
@@ -261,11 +267,11 @@ const pushToMediansAndModesList = ({ value, xPercentRange, transientData }) => {
         ) {
             // toString for more precise comparison
             transientData.modeDataSet[looper].frequency++;
-            // since we are matching on xPercentRange functionality, we should really increment the frequency of both values
             let indexOfValue = -1;
             // eslint-disable-next-line no-loop-func
             matchFound = transientData.modeDataSet.some((element, index) => {
                 if (looper !== index) {
+                    // only increment if 
                     if (element.value.toString() === value.toString()) {
                         indexOfValue = index;
                         if (indexOfValue > 0) {
@@ -335,6 +341,8 @@ const aggregateMediansAndModesInit = ({ aggregate, event, date, propertyKey, flo
     modeMax,
     xPercentRange,
     dayCycles
+
+    later I also removed group(name) and type
     
 */
 
@@ -403,8 +411,6 @@ const findAnnualAggregates = ({
         const aggregates = [];
         let aggregate = {
             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-            group: name,
-            type,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -483,8 +489,6 @@ const findAnnualAggregates = ({
                 if (!breakLoop) {
                     aggregate = {
                         entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                        group: name,
-                        type,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -669,8 +673,6 @@ const findMonthlyAggregates = ({
         const aggregates = [];
         let aggregate = {
             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-            group: name,
-            type,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -747,8 +749,6 @@ const findMonthlyAggregates = ({
                 if (!breakLoop) {
                     aggregate = {
                         entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                        group: name,
-                        type,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -949,8 +949,6 @@ const findWeeklyAggregates = ({
         const aggregates = [];
         let aggregate = {
             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-            group: name,
-            type,
             eventCount: 0,
             dateStart: timeStream.effectiveDateStartString,
             dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -1029,8 +1027,6 @@ const findWeeklyAggregates = ({
                 if (!breakLoop) {
                     aggregate = {
                         entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                        group: name,
-                        type,
                         eventCount: 0,
                         dateStart: events[eventLooper].dateStart,
                         dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
@@ -1404,8 +1400,6 @@ const findDateSetAggregates = ({
             });
             let aggregate = {
                 entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                group: name,
-                type,
                 eventCount: 0,
                 dateStart: timeStream.effectiveDateStartString,
                 dateEnd: timeStream.effectiveDateStartString // default value; it will most likely be modified
@@ -1467,8 +1461,6 @@ const findDateSetAggregates = ({
                     if (!breakLoop) {
                         aggregate = {
                             entityType: AGGREGATE, // can be used to categorize if an object is a rule, event, or an aggregate
-                            group: name,
-                            type,
                             eventCount: 0,
                             dateStart: events[eventLooper].dateStart,
                             dateEnd: events[eventLooper].dateStart // default value; it will most likely be modified
