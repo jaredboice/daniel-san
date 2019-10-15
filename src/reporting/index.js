@@ -1704,6 +1704,8 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case NEGATIVE_EVENT_FLOWS_GREATER_THAN_TARGET:
                         transientEvents = transientEvents.filter((element) => {
                             // TODO: this might be redundant now that we can pass flowDirection anywhere
+                            // TODO: investigate how flowDirection is being used among the aggregate functions
+                            // TODO cont. and see if we can make that process more efficient
                             return element.amount < 0;
                         });
                         reportResults = getSnapshotsGreaterThanSupport({
