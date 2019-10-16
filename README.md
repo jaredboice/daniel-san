@@ -536,8 +536,8 @@ const reportController = {
                         LEAST_VALUES,
                     frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
                     propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
-                    flowDirection: POSITIVE || NEGATIVE || BOTH, // note: flowDirection/flowKey can be used on the reportController's config object and also in any particular report rule object, where the effects will be made  in each respective scope
                     flowKey: 'balanceEnding', // when using flowDirection, this is the key that it checks against
+                    flowDirection: POSITIVE || NEGATIVE || BOTH, // note: flowDirection/flowKey can be used on the reportController's config object and also in any particular report rule object, where the effects will be made  in each respective scope
                     sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
                     sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
                     selectionLimit: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
@@ -555,6 +555,17 @@ const reportController = {
 };
 ```
 
+**Additional Rule Options**
+
+After aggregates were added as a reporting type, a few of the following aggregateRule options were added as options to the primary rules of the report controller.  
+Refer to the aggregate section as well.  
+
+-   `sortKey: 'balanceEnding` _(any property key to sort on)_  
+-   `sortDirection: ASCENDING || DESCENDING`  
+-   `selectionAmount: 10` _(max amount of events returned)_  
+-   `flowKey: 'balanceEnding' || 'amount`  _(you can restrict this property to positive or negative values)_  
+-   `flowDirection: POSITIVE || NEGATIVE`  
+  
 ## Time
 
 timeStart and timeEnd are optional fields for the config object. Any events that fall outside of those start and end time values will be discarded.

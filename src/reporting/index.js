@@ -9,6 +9,7 @@ const { TimeStream } = require('../timeStream');
 const { validateConfig, validateRules } = require('../core/validation');
 const selectAggregateFunction = require('../analytics/aggregateSelector');
 const {
+    sortEventsForReports,
     sortAggregates,
     findEventsWithinXPercentOfValue,
     filterEventsByKeysAndValues,
@@ -82,6 +83,8 @@ const {
     DEFAULT_JSON_SPACING,
     UTC,
     LOCAL,
+    ASCENDING,
+    DEFAULT_SELECTION_LIMIT,
     getDefaultParamsForDecimalFormatter,
     getWeekdayString
 } = require('../constants');
@@ -820,8 +823,14 @@ const standardSubheader = ({ danielSan, reportingConfig, reportCharWidth, writeS
     lineSeparator({ loops: 2, reportCharWidth, writeStream });
 };
 
-const showRulesToRetire = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    const rulesToRetire = findRulesToRetire(danielSan);
+const showRulesToRetire = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    const preSortedRules = findRulesToRetire(danielSan);
+    const rulesToRetire = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedRules
+    });
     if (!reportingConfig.rawJson) {
         if (rulesToRetire && rulesToRetire.length > 0) {
             lineHeading({
@@ -843,7 +852,7 @@ const showRulesToRetire = ({ danielSan, reportingConfig, reportCharWidth, writeS
     }
 };
 
-const showIrrelevantRules = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
+const showIrrelevantRules = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
     // when executing in this context, there is a chance that the config/rules have not yet been validated (both are validated prior to calling findIrrelevantRules during the normal projection phase)
     validateConfig(danielSan);
     const timeStream = new TimeStream({
@@ -857,7 +866,13 @@ const showIrrelevantRules = ({ danielSan, reportingConfig, reportCharWidth, writ
     // we will pass false for skipTimeTravel for simplicity, since whether or not the time zones in the config are identical to the time zones in rules,
     // the performance overhead is minor in this case
     validateRules({ danielSan, date: timeStream.effectiveDateStart, skipTimeTravel: false });
-    const { irrelevantRules } = findIrrelevantRules(danielSan);
+    const { irrelevantRules: preSortedRules } = findIrrelevantRules(danielSan);
+    const irrelevantRules = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedRules
+    });
     if (!reportingConfig.rawJson) {
         if (irrelevantRules && irrelevantRules.length > 0) {
             lineHeading({
@@ -883,12 +898,18 @@ const showDiscardedEvents = ({
     danielSan,
     reportingConfig,
     showNothingToDisplaySwitch = true, // TODO: prob not needed anymore
+    rule,
     reportCharWidth,
     leadingLineSeparator = true, // TODO: prob not needed anymore
     trailingFooter = false, // TODO: prob not needed anymore
     writeStream
 }) => {
-    const discardedEvents = danielSan.discardedEvents;
+    const discardedEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: danielSan.discardedEvents
+    });
     if (!reportingConfig.rawJson) {
         if (discardedEvents && discardedEvents.length > 0) {
             if (leadingLineSeparator) {
@@ -934,9 +955,15 @@ const showCriticalSnapshots = ({
     leadingLineSeparator = true, // TODO: prob not needed anymore
     writeStream
 }) => {
-    const criticalSnapshots = findCriticalSnapshots({
+    const preSortedSnapshots = findCriticalSnapshots({
         events,
         criticalThreshold: rule.criticalThreshold
+    });
+    const criticalSnapshots = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedSnapshots
     });
     if (!reportingConfig.rawJson) {
         if (criticalSnapshots && criticalSnapshots.length > 0) {
@@ -1058,16 +1085,23 @@ const showSumOfAllNegativeEventAmounts = ({ danielSan, events, reportingConfig, 
     }
 };
 
-const getRulesToRetire = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    return showRulesToRetire({ danielSan, reportingConfig, reportCharWidth, writeStream });
+const getRulesToRetire = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    return showRulesToRetire({ danielSan, reportingConfig, rule, reportCharWidth, writeStream });
 };
 
-const getIrrelevantRules = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    return showIrrelevantRules({ danielSan, reportingConfig, reportCharWidth, writeStream });
+const getIrrelevantRules = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    return showIrrelevantRules({ danielSan, reportingConfig, rule, reportCharWidth, writeStream });
 };
 
-const getDiscardedEvents = ({ danielSan, reportingConfig, reportCharWidth, writeStream }) => {
-    return showDiscardedEvents({ danielSan, reportingConfig, reportCharWidth, trailingFooter: false, writeStream });
+const getDiscardedEvents = ({ danielSan, reportingConfig, rule, reportCharWidth, writeStream }) => {
+    return showDiscardedEvents({
+        danielSan,
+        reportingConfig,
+        rule,
+        reportCharWidth,
+        trailingFooter: false,
+        writeStream
+    });
 };
 
 const getCriticalSnapshots = ({ danielSan, events, reportingConfig, rule, reportCharWidth, writeStream }) => {
@@ -1092,12 +1126,17 @@ const getSnapshotsGreaterThanSupport = ({
     reportCharWidth,
     writeStream
 }) => {
-    const collection = findSnapshotsGreaterThanSupport({
+    const preSortedCollection = findSnapshotsGreaterThanSupport({
         events,
         amount: rule[boundaryField] || 0,
         propertyKey
     });
-    const relevantEvents = collection;
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedCollection
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1121,12 +1160,17 @@ const getSnapshotsLessThanResistance = ({
     reportCharWidth,
     writeStream
 }) => {
-    const collection = findSnapshotsLessThanResistance({
+    const preSortedCollection = findSnapshotsLessThanResistance({
         events,
         amount: rule[boundaryField] || 0,
         propertyKey
     });
-    const relevantEvents = collection;
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedCollection
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1150,14 +1194,19 @@ const getGreatestValueSnapshots = ({
     reportCharWidth,
     writeStream
 }) => {
-    const collection = findGreatestValueSnapshots({
+    const preSortedCollection = findGreatestValueSnapshots({
         events,
         propertyKey,
         flowDirection,
         selectionLimit: rule.selectionLimit || 7,
         reverse: false
     });
-    const relevantEvents = collection;
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedCollection
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1181,14 +1230,19 @@ const getLeastValueSnapshots = ({
     reportCharWidth,
     writeStream
 }) => {
-    const collection = findGreatestValueSnapshots({
+    const preSortedCollection = findGreatestValueSnapshots({
         events,
         propertyKey,
         flowDirection,
         selectionLimit: rule.selectionLimit || 7,
         reverse: true // used to reverse the results of findGreatestValueSnapshots
     });
-    const relevantEvents = collection;
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedCollection
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1204,6 +1258,7 @@ const getLeastValueSnapshots = ({
 
 const getEventsWithinXPercentOfValue = ({
     danielSan,
+    rule,
     events,
     reportingConfig,
     xPercentRange,
@@ -1212,13 +1267,18 @@ const getEventsWithinXPercentOfValue = ({
     reportCharWidth,
     writeStream
 }) => {
-    const collection = findEventsWithinXPercentOfValue({
+    const preSortedCollection = findEventsWithinXPercentOfValue({
         events,
         propertyKey,
         xPercentRange,
         xPercentTarget
     });
-    const relevantEvents = collection;
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedCollection
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1233,7 +1293,12 @@ const getEventsWithinXPercentOfValue = ({
 };
 
 const standardOutput = ({ danielSan, events, reportingConfig, rule, reportCharWidth, writeStream }) => {
-    const relevantEvents = events;
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1250,6 +1315,7 @@ const standardOutput = ({ danielSan, events, reportingConfig, rule, reportCharWi
 
 const getEventsWithProperty = ({
     danielSan,
+    rule,
     events,
     reportingConfig,
     propertyKey,
@@ -1257,7 +1323,13 @@ const getEventsWithProperty = ({
     reportCharWidth,
     writeStream
 }) => {
-    const relevantEvents = findFunction({ events, propertyKey });
+    const preSortedEvents = findFunction({ events, propertyKey });
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedEvents
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1272,12 +1344,18 @@ const getEventsWithProperty = ({
 };
 
 const getEventsByKeysAndValues = ({ danielSan, events, reportingConfig, rule, reportCharWidth, writeStream }) => {
-    const relevantEvents = filterEventsByKeysAndValues({
+    const preSortedEvents = filterEventsByKeysAndValues({
         events,
         filterKeys: rule.filterKeys,
         filterValues: rule.filterValues,
         filterType: rule.filterType,
         filterComparator: rule.filterComparator
+    });
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedEvents
     });
     if (!reportingConfig.rawJson) {
         eventsLogger({
@@ -1303,7 +1381,13 @@ const getEventsByPropertyKeyAndValues = ({
     writeStream
 }) => {
     const { searchValues } = rule;
-    const relevantEvents = findFunction({ events, propertyKey, searchValues });
+    const preSortedEvents = findFunction({ events, propertyKey, searchValues });
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedEvents
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1319,6 +1403,7 @@ const getEventsByPropertyKeyAndValues = ({
 
 const getEventsWithPropertyKeyContainingSubstring = ({
     danielSan,
+    rule,
     events,
     reportingConfig,
     propertyKey,
@@ -1327,7 +1412,13 @@ const getEventsWithPropertyKeyContainingSubstring = ({
     reportCharWidth,
     writeStream
 }) => {
-    const relevantEvents = findFunction({ events, propertyKey, substring });
+    const preSortedEvents = findFunction({ events, propertyKey, substring });
+    const relevantEvents = sortEventsForReports({
+        sortKey: rule.sortKey,
+        sortDirection: rule.sortDirection,
+        selectionLimit: rule.selectionLimit,
+        events: preSortedEvents
+    });
     if (!reportingConfig.rawJson) {
         eventsLogger({
             events: relevantEvents,
@@ -1339,6 +1430,34 @@ const getEventsWithPropertyKeyContainingSubstring = ({
     } else {
         return relevantEvents || [];
     }
+};
+
+const setDefaultsForAggregateRules = (rules) => {
+    rules.forEach((rule) => {
+        if (rule.sortKey && rule.aggregateRules) {
+            rule.aggregateRules.forEach((aggRule) => {
+                if (isUndefinedOrNull(aggRule.sortKey)) {
+                    aggRule.sortKey = rule.sortKey;
+                }
+                if (isUndefinedOrNull(aggRule.sortDirection)) {
+                    aggRule.sortDirection = rule.sortDirection || ASCENDING;
+                }
+                if (isUndefinedOrNull(aggRule.selectionLimit)) {
+                    aggRule.sortDirection = rule.selectionLimit || DEFAULT_SELECTION_LIMIT;
+                }
+            });
+        }
+        if (rule.flowKey && rule.aggregateRules) {
+            rule.aggregateRules.forEach((aggRule) => {
+                if (isUndefinedOrNull(aggRule.flowKey)) {
+                    aggRule.flowKey = rule.flowKey;
+                }
+                if (isUndefinedOrNull(aggRule.flowDirection)) {
+                    aggRule.flowDirection = rule.flowDirection || ASCENDING;
+                }
+            });
+        }
+    });
 };
 
 const createReport = ({ danielSan, controller = {}, error = null, originalDanielSan = null }) => {
@@ -1400,6 +1519,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
         }
     } else if (danielSan) {
         newDanielSan = deepCopy(danielSan);
+        setDefaultsForAggregateRules(rules); // setting default values for aggregateRules
         try {
             // begin validating controller
             if (!reportingConfig) reportingConfig = { type: STANDARD_OUTPUT, mode: CONCISE };
@@ -1584,6 +1704,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         reportResults = getDiscardedEvents({
                             danielSan: newDanielSan,
                             reportingConfig,
+                            rule,
                             reportCharWidth,
                             writeStream
                         });
@@ -1591,6 +1712,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case IMPORTANT_EVENTS:
                         reportResults = getEventsWithProperty({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             propertyKey: 'important',
@@ -1601,6 +1723,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case TIME_EVENTS:
                         reportResults = getEventsWithProperty({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             propertyKey: 'timeStart',
@@ -1611,6 +1734,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case ROUTINE_EVENTS:
                         reportResults = getEventsWithPropertyKeyContainingSubstring({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             propertyKey: 'type',
@@ -1622,6 +1746,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case REMINDER_EVENTS:
                         reportResults = getEventsWithPropertyKeyContainingSubstring({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             propertyKey: 'type',
@@ -1633,6 +1758,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case ROUTINE_AND_REMINDER_EVENTS:
                         reportResults = getEventsWithPropertyKeyContainingSubstring({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             propertyKey: 'type',
@@ -1644,6 +1770,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case RULES_TO_RETIRE:
                         reportResults = getRulesToRetire({
                             danielSan: originalDanielSan || newDanielSan,
+                            rule,
                             reportingConfig,
                             reportCharWidth,
                             writeStream
@@ -1652,6 +1779,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case IRRELEVANT_RULES:
                         reportResults = getIrrelevantRules({
                             danielSan: originalDanielSan || newDanielSan,
+                            rule,
                             reportingConfig,
                             reportCharWidth,
                             writeStream
@@ -1887,6 +2015,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET:
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             xPercentRange: rule.xPercentRange,
@@ -1902,6 +2031,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             xPercentRange: rule.xPercentRange,
@@ -1917,6 +2047,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                         });
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             xPercentRange: rule.xPercentRange,
@@ -1929,6 +2060,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     case BALANCE_ENDING_SNAPSHOTS_WITHIN_X_PERCENT_OF_TARGET:
                         reportResults = getEventsWithinXPercentOfValue({
                             danielSan: newDanielSan,
+                            rule,
                             events: transientEvents,
                             reportingConfig,
                             xPercentRange: rule.balanceEndingXPercent,

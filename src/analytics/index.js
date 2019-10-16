@@ -32,6 +32,34 @@ const {
     DEFAULT_SELECTION_LIMIT
 } = require('../constants');
 
+const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selectionLimit = null, events }) => {
+    if (isUndefinedOrNull(sortKey) || sortKey === DEFAULT || sortDirection === DEFAULT) {
+        return events;
+        // eslint-disable-next-line no-else-return
+    } else {
+        const sortingDirection = sortDirection === DESCENDING ? -1 : 1;
+
+        const newEvents = deepCopy(events).sort((aObj, bObj) => {
+            const a = aObj[sortKey];
+            const b = bObj[sortKey];
+            if (a > b) {
+                return 1 * sortingDirection;
+            } else if (a < b) {
+                return -1 * sortingDirection;
+                // eslint-disable-next-line no-else-return
+            } else {
+                return 0;
+            }
+        });
+        const selectLimit = selectionLimit || newEvents.length;
+        const finalCollection = newEvents.slice(
+            0,
+            !isUndefinedOrNull(selectLimit) && selectLimit <= newEvents.length ? selectLimit : newEvents.length
+        );
+        return finalCollection;
+    }
+};
+
 // TODO: consider adding the ability to use sortKey / sortDirection in all the same places as flowKey / flowDirection
 const sortAggregates = ({ aggregateConfig, aggregates }) => {
     let newAggregates;
@@ -47,34 +75,34 @@ const sortAggregates = ({ aggregateConfig, aggregates }) => {
     if (isUndefinedOrNull(aggregateConfig.sortDirection)) {
         sortDirection = 1; // defaults to ASCENDING order
     } else {
-        sortDirection = aggregateConfig.sortDirection === ASCENDING ? 1 : -1;
+        sortDirection = aggregateConfig.sortDirection === DESCENDING ? -1 : 1;
     }
     switch (configSortKey) {
-        case SUM:
-            sortKey = 'sum';
-            break;
-        case AVERAGE:
-            sortKey = 'average';
-            break;
-        case MEDIANS:
-            sortKey = 'medians';
-            break;
-        case MODES:
-            sortKey = 'modes';
-            break;
-        case MIN:
-            sortKey = 'min';
-            break;
-        case MAX:
-            sortKey = 'max';
-            break;
-        case DEFAULT:
-            return aggregates;
-        default:
-            sortKey = aggregateConfig.sortKey;
+    case SUM:
+        sortKey = 'sum';
+        break;
+    case AVERAGE:
+        sortKey = 'average';
+        break;
+    case MEDIANS:
+        sortKey = 'medians';
+        break;
+    case MODES:
+        sortKey = 'modes';
+        break;
+    case MIN:
+        sortKey = 'min';
+        break;
+    case MAX:
+        sortKey = 'max';
+        break;
+    case DEFAULT:
+        return aggregates;
+    default:
+        sortKey = aggregateConfig.sortKey;
     }
     if (sortKey === 'medians' || sortKey === 'modes') {
-        newAggregates = aggregates.sort((aObj, bObj) => {
+        newAggregates = deepCopy(aggregates).sort((aObj, bObj) => {
             const aList = aObj[sortKey];
             const bList = bObj[sortKey];
             let sortResult = -1;
@@ -95,7 +123,7 @@ const sortAggregates = ({ aggregateConfig, aggregates }) => {
             return sortResult;
         });
     } else {
-        newAggregates = aggregates.sort((aObj, bObj) => {
+        newAggregates = deepCopy(aggregates).sort((aObj, bObj) => {
             const a = aObj[sortKey];
             const b = bObj[sortKey];
             if (a > b) {
@@ -716,6 +744,7 @@ const sumAllNegativeEventAmounts = (events) => {
 };
 
 module.exports = {
+    sortEventsForReports,
     sortAggregates,
     isThisWithinXPercentOfThat,
     findEventsWithinXPercentOfValue,
