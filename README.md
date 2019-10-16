@@ -536,6 +536,7 @@ const reportController = {
                         LEAST_VALUES,
                     frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
                     propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
+                    // note: flowKey/flowDirection filter the events prior to running computations
                     flowKey: 'balanceEnding', // when using flowDirection, this is the key that it checks against
                     flowDirection: POSITIVE || NEGATIVE || BOTH, // note: flowDirection/flowKey can be used on the reportController's config object and also in any particular report rule object, where the effects will be made  in each respective scope
                     sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate

@@ -60,7 +60,6 @@ const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selec
     }
 };
 
-// TODO: consider adding the ability to use sortKey / sortDirection in all the same places as flowKey / flowDirection
 const sortAggregates = ({ aggregateConfig, aggregates }) => {
     let newAggregates;
     let configSortKey = aggregateConfig.sortKey;
