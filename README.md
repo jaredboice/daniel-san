@@ -557,8 +557,7 @@ const reportController = {
 
 **Additional Rule Options**
 
-After aggregates were added as a reporting type, a few of the following aggregateRule options were added as options to the primary rules of the report controller.  
-Refer to the aggregate section as well.  
+After aggregates were added as a reporting type, a few of the following aggregateRule options were added as options to the primary rules of the report controller. Refer to the aggregate section as well.  
 
 -   `sortKey: 'balanceEnding` _(any property key to sort on)_  
 -   `sortDirection: ASCENDING || DESCENDING`  
