@@ -685,14 +685,14 @@ createReport({ danielSan, controller: reportController, error, originalDanielSan
 -   `type: 'POSITIVE_EVENT_FLOWS_LESS_THAN_TARGET'` _(pass target: 100 to display all positive amount values greater than 1000)_
 -   `type: 'BALANCE_ENDING_SNAPSHOTS_GREATER_THAN_TARGET'` _(pass target: 1000 to display all the balanceEnding values greater than 1000)_
 -   `type: 'BALANCE_ENDING_SNAPSHOTS_LESS_THAN_TARGET'` _(pass target: 100 to display all the balanceEnding values less than 100)_
--   `type: 'GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionLimit: 10 to display the top 10 highest balanceEnding values, ordered by value)_
--   `type: 'LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionLimit: 10 to display the 10 lowest balanceEnding values, ordered by value)_
--   `type: 'GREATEST_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest amount values, ordered by value)_
--   `type: 'LEAST_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest amount values, ordered by value)_
--   `type: 'GREATEST_NEGATIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest absolute-value amounts, ordered by value)_
--   `type: 'LEAST_NEGATIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest absolute-value amounts, ordered by value)_
--   `type: 'GREATEST_POSITIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest positive amount values, ordered by value)_
--   `type: 'LEAST_POSITIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest positive amount values, ordered by value)_
+-   `type: 'GREATEST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionLimit: 10 to display the top 10 highest balanceEnding values, ordered by value; pass null for no limit)_
+-   `type: 'LEAST_BALANCE_ENDING_SNAPSHOTS'` _(pass selectionLimit: 10 to display the 10 lowest balanceEnding values, ordered by value; pass null for no limit)_
+-   `type: 'GREATEST_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest amount values, ordered by value; pass null for no limit)_
+-   `type: 'LEAST_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest amount values, ordered by value; pass null for no limit)_
+-   `type: 'GREATEST_NEGATIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest absolute-value amounts, ordered by value; pass null for no limit)_
+-   `type: 'LEAST_NEGATIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest absolute-value amounts, ordered by value; pass null for no limit)_
+-   `type: 'GREATEST_POSITIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the top 10 highest positive amount values, ordered by value; pass null for no limit)_
+-   `type: 'LEAST_POSITIVE_EVENT_FLOWS'` _(pass selectionLimit: 10 to display the 10 lowest positive amount values, ordered by value; pass null for no limit)_
 -   `type: 'EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET'` _(pass xPercentRange: 0.1 and xPercentTarget: -1000 to find all event flows within 10 percent of -1000)_
 -   `type: 'NEGATIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET'` _(pass xPercentRange: 0.1 and xPercentTarget: -1000 to find all event flows within 10 percent of -1000)_
 -   `type: 'POSITIVE_EVENT_FLOWS_WITHIN_X_PERCENT_OF_TARGET'` _(pass xPercentRange: 0.1 and xPercentTarget: -1000 to find all event flows within 10 percent of -1000)_
