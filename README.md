@@ -541,7 +541,7 @@ const reportController = {
                     flowDirection: POSITIVE || NEGATIVE || BOTH, // note: flowDirection/flowKey can be used on the reportController's config object and also in any particular report rule object, where the effects will be made  in each respective scope
                     sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
                     sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
-                    selectionLimit: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES
+                    selectionLimit: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES; pass null for no selectionLimit
                     dateSets: ['2020-01-01', '2020-03-19', '2020-06-20', '2020-09-17'], // this property is required for DATE_SETS; this example will find aggregates between 2020-01-01 and 2020-03-19 and then between 2020-06-20 and 2020-09-17
                     modeMax: 3, // this property sets the limit for the amount of modes returned by MEDIANS_AND_MODES
                     xPercentRange: 0.1, // sets the percentage difference allowed for mode matches, specifically. Defaults to 0 which is 0% difference (exact match); 0.1 indicates 10%
@@ -654,7 +654,7 @@ const reportController = {
         {
             name: 'Largest Expenses',
             type: GREATEST_NEGATIVE_EVENT_FLOWS,
-            selectionLimit: 10
+            selectionLimit: 10 // pass null for no selectionLimit
         }
     ]
 };

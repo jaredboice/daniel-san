@@ -1198,7 +1198,7 @@ const getGreatestValueSnapshots = ({
         events,
         propertyKey,
         flowDirection,
-        selectionLimit: rule.selectionLimit || 7,
+        selectionLimit: rule.selectionLimit,
         reverse: false
     });
     const relevantEvents = sortEventsForReports({
@@ -1234,7 +1234,7 @@ const getLeastValueSnapshots = ({
         events,
         propertyKey,
         flowDirection,
-        selectionLimit: rule.selectionLimit || 7,
+        selectionLimit: rule.selectionLimit,
         reverse: true // used to reverse the results of findGreatestValueSnapshots
     });
     const relevantEvents = sortEventsForReports({
@@ -1441,9 +1441,6 @@ const setDefaultsForAggregateRules = (rules) => {
                 }
                 if (isUndefinedOrNull(aggRule.sortDirection)) {
                     aggRule.sortDirection = rule.sortDirection || ASCENDING;
-                }
-                if (isUndefinedOrNull(aggRule.selectionLimit)) {
-                    aggRule.sortDirection = rule.selectionLimit || DEFAULT_SELECTION_LIMIT;
                 }
             });
         }

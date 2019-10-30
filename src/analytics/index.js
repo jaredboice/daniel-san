@@ -635,7 +635,7 @@ const findGreatestValueSnapshots = ({
     }
     const finalCollection = sortedCollection.slice(
         0,
-        selectionLimit <= sortedCollection.length ? selectionLimit : sortedCollection.length
+        (!isUndefinedOrNull(selectionLimit) && selectionLimit <= sortedCollection.length) ? selectionLimit : sortedCollection.length
     );
     return finalCollection;
 };
@@ -672,7 +672,7 @@ const findGreatestPositiveValueSnapshots = ({
     }
     const finalCollection = sortedCollection.slice(
         0,
-        selectionLimit <= sortedCollection.length ? selectionLimit : sortedCollection.length
+        (!isUndefinedOrNull(selectionLimit) && selectionLimit <= sortedCollection.length) ? selectionLimit : sortedCollection.length
     );
     return finalCollection;
 };
@@ -709,7 +709,7 @@ const findGreatestNegativeValueSnapshots = ({
     }
     const finalCollection = sortedCollection.slice(
         0,
-        selectionLimit <= sortedCollection.length ? selectionLimit : sortedCollection.length
+        (!isUndefinedOrNull(selectionLimit) && selectionLimit <= sortedCollection.length) ? selectionLimit : sortedCollection.length
     );
     return finalCollection;
 };
