@@ -1,11 +1,42 @@
-let { createTimeZone } = require('../timeZone');
+
+const moment = require('moment');
+const { errorDisc } = require('../utility/errorHandling');
 const {
+    UTC,
     DATE_FORMAT_STRING,
     MODIFIED,
     DATE_TIME_DELIMITER,
     TIME_FORMAT_STRING,
     EVENT
 } = require('../constants');
+
+/* TODO: for some reason, npm was throwing the following warning when attempting
+    to require createTimeZone from the timeZone directory, so it had to be redefined here:
+
+    warning message as follows:
+
+    Warning: Accessing non-existent property 'createTimeZone' of module exports inside circular dependency
+*/
+let createTimeZone = ({ timeZone, timeZoneType, date = null, dateString = null, timeString = null }) => {
+    try {
+        const DATE_TIME_FORMAT_STRING = timeString
+            ? `${DATE_FORMAT_STRING}${DATE_TIME_DELIMITER}${TIME_FORMAT_STRING}`
+            : DATE_FORMAT_STRING;
+        const dateTimeString = timeString ? `${dateString}${DATE_TIME_DELIMITER}${timeString}` : dateString;
+        let outputDate = date; // default value
+        const thisMoment = timeZoneType === UTC ? moment.utc : moment.tz;
+
+        // process date
+        if (date) {
+            outputDate = thisMoment(date, timeZone);
+        } else {
+            outputDate = thisMoment(dateTimeString, DATE_TIME_FORMAT_STRING, timeZone);
+        }
+        return outputDate;
+    } catch (err) {
+        throw errorDisc({ err, data: { date, timeZone, timeZoneType, dateString, timeString } });
+    }
+};
 
 const generateTimeSpan = ({ event, date, weekday }) => {
     event.weekdayStart = weekday;

@@ -29,6 +29,13 @@ const initializeTimeZoneData = (obj) => {
     }
 };
 
+/* TODO: for some reason, npm was throwing the following warning when attempting
+    to require createTimeZone from the timeZone directory, so it had to be redefined in core/eventGeneration:
+
+    warning message as follows:
+
+    Warning: Accessing non-existent property 'createTimeZone' of module exports inside circular dependency
+*/
 const createTimeZone = ({ timeZone, timeZoneType, date = null, dateString = null, timeString = null }) => {
     try {
         const DATE_TIME_FORMAT_STRING = timeString
