@@ -124,7 +124,7 @@ const buildEvents = ({ danielSan, date, options = {} }) => {
                             break;
                         case ADJUST_AMOUNT_ON_THESE_DATES:
                         case ADJUST_AMOUNT:
-                            if (danielSan.events[danielSan.events.length - 1].amount) {
+                            if (!isUndefinedOrNull(danielSan.events[danielSan.events.length - 1].amount)) {
                                 adjustAmountOnTheseDates({
                                     danielSan,
                                     event: danielSan.events[danielSan.events.length - 1],

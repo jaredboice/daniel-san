@@ -638,7 +638,7 @@ const reportController = {
     config: {
         mode: CONCISE,
         file: {
-            path: path.resolve(__dirname), // a pah string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
+            path: path.resolve(__dirname), // a path string; defaults to a "reports" directory four levels up from fileIo.js, but make sure that this reports directory exists!
             name: 'MyReport.txt',
             onFinish: () => {}, // optional
             onError: (err) => {}, // optional
