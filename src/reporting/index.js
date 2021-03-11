@@ -1503,10 +1503,10 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
         if (!reportingConfig.rawJson) {
             lineHeading({ heading: ' something bad happened and a lot of robots died ', reportCharWidth, writeStream });
             // eslint-disable-next-line no-console
-            writeStream(`${error}\n`, true);
+            writeStream(`${JSON.stringify(error)}\n`, true);
             lineHeading({ heading: ' !@#$%^& ', reportCharWidth, writeStream });
         } else {
-            writeStream(error, true);
+            writeStream(JSON.stringify(error), true);
         }
         if (reportingConfig.outputRelay) {
             reportingConfig.outputRelay(null);
@@ -1514,7 +1514,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
         if (reportingConfig.file) {
             closeStream(fileStream);
         }
-    } else if (danielSan) {
+    } else if (!isUndefinedOrNull(danielSan) && (typeof danielSan === 'object' && !Array.isArray(danielSan) && danielSan.length)) {
         newDanielSan = deepCopy(danielSan);
         setDefaultsForAggregateRules(rules); // setting default values for aggregateRules
         try {
@@ -2189,14 +2189,14 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
                     writeStream
                 });
                 // eslint-disable-next-line no-console
-                writeStream(`${err}\n`, true);
+                writeStream(`${JSON.stringify(err)}\n`, true);
             } else {
                 // eslint-disable-next-line no-lonely-if
                 if (reportingConfig.file) {
                     fileStream.write(']');
                     fileStream.write(', "error": true }');
                 } else {
-                    writeStream(err, true);
+                    writeStream(JSON.stringify(err), true);
                 }
             }
         } finally {
@@ -2211,7 +2211,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
             }
         }
     } else {
-        const errorMsg = 'the danielSan bonsai tree is likely null or undefined';
+        const errorMsg = 'the danielSan bonsai tree is either null, undefined, an invalid object, or an empty object';
         if (!reportingConfig.rawJson) {
             lineHeading({
                 heading: ` ${errorMsg} `,
