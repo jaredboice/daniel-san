@@ -1514,7 +1514,7 @@ const createReport = ({ danielSan, controller = {}, error = null, originalDaniel
         if (reportingConfig.file) {
             closeStream(fileStream);
         }
-    } else if (!isUndefinedOrNull(danielSan) && (typeof danielSan === 'object' && !Array.isArray(danielSan) && danielSan.length)) {
+    } else if (!isUndefinedOrNull(danielSan) && (typeof danielSan === 'object' && !Array.isArray(danielSan) && Object.keys(danielSan).length)) {
         newDanielSan = deepCopy(danielSan);
         setDefaultsForAggregateRules(rules); // setting default values for aggregateRules
         try {
