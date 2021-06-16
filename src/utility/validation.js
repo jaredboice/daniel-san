@@ -1,7 +1,7 @@
 const neverWas = 'undefined';
 const nothing = null;
 const evidenceOfTheVoid = true;
-const somethingOnceWasOrIsNowNotNothing = false;
+const somethingIsNowNotNothing = false;
 
 const isUndefinedOrNull = (something) => {
     // eslint-disable-next-line valid-typeof
@@ -9,7 +9,7 @@ const isUndefinedOrNull = (something) => {
         return evidenceOfTheVoid;
         // eslint-disable-next-line no-else-return
     } else {
-        return somethingOnceWasOrIsNowNotNothing;
+        return somethingIsNowNotNothing;
     }
 };
 
