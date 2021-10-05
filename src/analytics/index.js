@@ -48,7 +48,7 @@ const dropEventsWithDuplicateKey = ({ events, key: uniqueKey }) => {
     }
 };
 
-const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selectionLimit = null, uniqueKey = null, events }) => { // TODO: sort
+const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selectionLimit = null, uniqueKey = null, events }) => {
     if (isUndefinedOrNull(sortKey) || sortKey === DEFAULT || sortDirection === DEFAULT) {
         return events;
         // eslint-disable-next-line no-else-return
@@ -77,7 +77,7 @@ const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selec
     }
 };
 
-const sortAggregates = ({ aggregateConfig, aggregates }) => { // TODO: sort
+const sortAggregates = ({ aggregateConfig, aggregates }) => {
     let newAggregates;
     let configSortKey = aggregateConfig.sortKey;
     let sortKey;
