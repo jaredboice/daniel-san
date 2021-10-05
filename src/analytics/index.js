@@ -53,7 +53,7 @@ const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selec
     if (isUndefinedOrNull(sortKey) || sortKey === DEFAULT || sortDirection === DEFAULT) {
         const finalResult = eventsWithUniqueKeyCheck.slice(
             0,
-            !isUndefinedOrNull(selectLimit) && selectLimit <= eventsWithUniqueKeyCheck.length ? selectLimit : eventsWithUniqueKeyCheck.length
+            !isUndefinedOrNull(selectionLimit) && selectionLimit <= eventsWithUniqueKeyCheck.length ? selectionLimit : eventsWithUniqueKeyCheck.length
         );
         return finalResult;
         // eslint-disable-next-line no-else-return
@@ -71,10 +71,9 @@ const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selec
                 return 0;
             }
         });
-        const selectLimit = selectionLimit || sortedEvents.length;
         const finalCollection = sortedEvents.slice(
             0,
-            !isUndefinedOrNull(selectLimit) && selectLimit <= sortedEvents.length ? selectLimit : sortedEvents.length
+            !isUndefinedOrNull(selectionLimit) && selectionLimit <= sortedEvents.length ? selectionLimit : sortedEvents.length
         );
         return finalCollection;
     }
