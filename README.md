@@ -568,7 +568,7 @@ After aggregates were added as a reporting type, a few of the following aggregat
 -   `flowKey: 'balanceEnding' || 'amount`  _(you can restrict this property to positive or negative values)_  
 -   `flowDirection: POSITIVE || NEGATIVE`  
   
-In addition, **uniqueKey** can be used on the primary rules of the report controller to remove events that have a value for a specific parameter that is already present in another event. An example of this use case would be on LEAST_BALANCE_ENDING_SNAPSHOTS if you wanted to restrict the least _balanceEnding_ values for a specific _dateStart_ value. This would ensure that you get the minimum value for any particular date throughout that collection report. This particular functionality takes place AFTER any sorting.
+In addition, **uniqueKey** can be used on the primary rules of the report controller to remove events that have a value for a specific parameter that is already present in another event. An example of this use case would be on LEAST_BALANCE_ENDING_SNAPSHOTS if you wanted to restrict the least _balanceEnding_ values for a specific _dateStart_ value. This would ensure that you get the minimum value for any particular date throughout that collection report. This particular functionality takes place before any custom sorting.
   
 -   `uniqueKey: 'dateStart'` _(any property key with a primitive data type value that should be unique)_  
   

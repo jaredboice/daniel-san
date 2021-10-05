@@ -53,9 +53,9 @@ const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selec
         return events;
         // eslint-disable-next-line no-else-return
     } else {
+        const eventsWithUniqueKeyCheck = dropEventsWithDuplicateKey({ events, key: uniqueKey }); // if uniqueKey was defined on reporting rule, then remove duplicates
         const sortingDirection = sortDirection === DESCENDING ? -1 : 1;
-
-        const newEvents = deepCopy(events).sort((aObj, bObj) => {
+        const sortedEvents = deepCopy(eventsWithUniqueKeyCheck).sort((aObj, bObj) => {
             const a = aObj[sortKey];
             const b = bObj[sortKey];
             if (a > b) {
@@ -67,11 +67,10 @@ const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selec
                 return 0;
             }
         });
-        const selectLimit = selectionLimit || newEvents.length;
-        const listWithUniqueKeyCheck = dropEventsWithDuplicateKey({ events: newEvents, key: uniqueKey }); // if uniqueKey was defined on reporting rule, then remove duplicates
-        const finalCollection = listWithUniqueKeyCheck.slice(
+        const selectLimit = selectionLimit || sortedEvents.length;
+        const finalCollection = sortedEvents.slice(
             0,
-            !isUndefinedOrNull(selectLimit) && selectLimit <= listWithUniqueKeyCheck.length ? selectLimit : listWithUniqueKeyCheck.length
+            !isUndefinedOrNull(selectLimit) && selectLimit <= sortedEvents.length ? selectLimit : sortedEvents.length
         );
         return finalCollection;
     }
