@@ -51,7 +51,11 @@ const dropEventsWithDuplicateKey = ({ events, key: uniqueKey }) => {
 const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selectionLimit = null, uniqueKey = null, events }) => {
     const eventsWithUniqueKeyCheck = dropEventsWithDuplicateKey({ events, key: uniqueKey }); // if uniqueKey was defined on reporting rule, then remove duplicates
     if (isUndefinedOrNull(sortKey) || sortKey === DEFAULT || sortDirection === DEFAULT) {
-        return eventsWithUniqueKeyCheck;
+        const finalResult = eventsWithUniqueKeyCheck.slice(
+            0,
+            !isUndefinedOrNull(selectLimit) && selectLimit <= eventsWithUniqueKeyCheck.length ? selectLimit : eventsWithUniqueKeyCheck.length
+        );
+        return finalResult;
         // eslint-disable-next-line no-else-return
     } else {
         const sortingDirection = sortDirection === DESCENDING ? -1 : 1;
