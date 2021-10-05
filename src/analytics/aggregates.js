@@ -54,7 +54,7 @@ const aggregateGreatestValuesListProcess = ({
     let collection = [];
     switch (flowDirection) {
         case POSITIVE:
-            collection = findGreatestPositiveValueSnapshots({ // TODO JJB: no slice
+            collection = findGreatestPositiveValueSnapshots({
                 events: newList,
                 propertyKey,
                 selectionLimit,
@@ -62,7 +62,7 @@ const aggregateGreatestValuesListProcess = ({
             });
             break;
         case NEGATIVE:
-            collection = findGreatestNegativeValueSnapshots({ // TODO JJB: no slice
+            collection = findGreatestNegativeValueSnapshots({
                 events: newList,
                 propertyKey,
                 selectionLimit,
