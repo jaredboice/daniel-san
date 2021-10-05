@@ -49,11 +49,11 @@ const dropEventsWithDuplicateKey = ({ events, key: uniqueKey }) => {
 };
 
 const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selectionLimit = null, uniqueKey = null, events }) => {
+    const eventsWithUniqueKeyCheck = dropEventsWithDuplicateKey({ events, key: uniqueKey }); // if uniqueKey was defined on reporting rule, then remove duplicates
     if (isUndefinedOrNull(sortKey) || sortKey === DEFAULT || sortDirection === DEFAULT) {
-        return events;
+        return eventsWithUniqueKeyCheck;
         // eslint-disable-next-line no-else-return
     } else {
-        const eventsWithUniqueKeyCheck = dropEventsWithDuplicateKey({ events, key: uniqueKey }); // if uniqueKey was defined on reporting rule, then remove duplicates
         const sortingDirection = sortDirection === DESCENDING ? -1 : 1;
         const sortedEvents = deepCopy(eventsWithUniqueKeyCheck).sort((aObj, bObj) => {
             const a = aObj[sortKey];
@@ -646,14 +646,12 @@ const findGreatestValueSnapshots = ({
             return 0;
         }
     });
+
     if (reverse) {
         sortedCollection = sortedCollection.reverse();
     }
-    const finalCollection = sortedCollection.slice(
-        0,
-        (!isUndefinedOrNull(selectionLimit) && selectionLimit <= sortedCollection.length) ? selectionLimit : sortedCollection.length
-    );
-    return finalCollection;
+
+    return sortedCollection;
 };
 
 const findGreatestPositiveValueSnapshots = ({
@@ -683,17 +681,15 @@ const findGreatestPositiveValueSnapshots = ({
                 return 0;
             }
         });
+
     if (reverse) {
         sortedCollection = sortedCollection.reverse();
     }
-    const finalCollection = sortedCollection.slice(
-        0,
-        (!isUndefinedOrNull(selectionLimit) && selectionLimit <= sortedCollection.length) ? selectionLimit : sortedCollection.length
-    );
-    return finalCollection;
+
+    return sortedCollection;
 };
 
-const findGreatestNegativeValueSnapshots = ({
+const findGreatestNegativeValueSnapshots = ({ // TODO JJB: no slice
     events = [],
     propertyKey = 'balanceEnding',
     selectionLimit = DEFAULT_SELECTION_LIMIT,
@@ -720,14 +716,12 @@ const findGreatestNegativeValueSnapshots = ({
                 return 0;
             }
         });
+
     if (reverse) {
         sortedCollection = sortedCollection.reverse();
     }
-    const finalCollection = sortedCollection.slice(
-        0,
-        (!isUndefinedOrNull(selectionLimit) && selectionLimit <= sortedCollection.length) ? selectionLimit : sortedCollection.length
-    );
-    return finalCollection;
+
+    return sortedCollection;
 };
 
 const sumAllPositiveEventAmounts = (events) => {

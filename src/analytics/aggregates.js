@@ -54,7 +54,7 @@ const aggregateGreatestValuesListProcess = ({
     let collection = [];
     switch (flowDirection) {
         case POSITIVE:
-            collection = findGreatestPositiveValueSnapshots({
+            collection = findGreatestPositiveValueSnapshots({ // TODO JJB: no slice
                 events: newList,
                 propertyKey,
                 selectionLimit,
@@ -62,7 +62,7 @@ const aggregateGreatestValuesListProcess = ({
             });
             break;
         case NEGATIVE:
-            collection = findGreatestNegativeValueSnapshots({
+            collection = findGreatestNegativeValueSnapshots({ // TODO JJB: no slice
                 events: newList,
                 propertyKey,
                 selectionLimit,
@@ -86,10 +86,14 @@ const aggregateGreatestValuesListProcess = ({
             });
             break;
     }
+    const finalCollection = collection.slice(
+        0,
+        (!isUndefinedOrNull(selectionLimit) && selectionLimit <= collection.length) ? selectionLimit : collection.length
+    );
     if (reverse) {
-        aggregate.leastValues = collection.map((obj) => obj[propertyKey]);
+        aggregate.leastValues = finalCollection.map((obj) => obj[propertyKey]);
     } else {
-        aggregate.greatestValues = collection.map((obj) => obj[propertyKey]);
+        aggregate.greatestValues = finalCollection.map((obj) => obj[propertyKey]);
     }
 };
 
