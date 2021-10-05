@@ -692,7 +692,7 @@ const findGreatestPositiveValueSnapshots = ({
     return sortedCollection;
 };
 
-const findGreatestNegativeValueSnapshots = ({ // TODO JJB: no slice
+const findGreatestNegativeValueSnapshots = ({
     events = [],
     propertyKey = 'balanceEnding',
     selectionLimit = DEFAULT_SELECTION_LIMIT,
