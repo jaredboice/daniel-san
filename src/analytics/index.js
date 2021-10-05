@@ -32,7 +32,23 @@ const {
     DEFAULT_SELECTION_LIMIT
 } = require('../constants');
 
-const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selectionLimit = null, events }) => {
+const dropEventsWithDuplicateKey = ({ events, key: uniqueKey }) => {
+    if (isUndefinedOrNull(uniqueKey)) {
+        return events;
+    } else {
+        const set = new Set();
+        const newEvents = [];
+        events.forEach((event) => {
+            if (!set.has(event[uniqueKey])) {
+                set.add(event[uniqueKey]);
+                newEvents.push(event);
+            }
+        });
+        return newEvents;
+    }
+};
+
+const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selectionLimit = null, uniqueKey = null, events }) => { // TODO: sort
     if (isUndefinedOrNull(sortKey) || sortKey === DEFAULT || sortDirection === DEFAULT) {
         return events;
         // eslint-disable-next-line no-else-return
@@ -52,15 +68,16 @@ const sortEventsForReports = ({ sortKey = null, sortDirection = ASCENDING, selec
             }
         });
         const selectLimit = selectionLimit || newEvents.length;
-        const finalCollection = newEvents.slice(
+        const listWithUniqueKeyCheck = dropEventsWithDuplicateKey({ events: newEvents, key: uniqueKey }); // if uniqueKey was defined on reporting rule, then remove duplicates
+        const finalCollection = listWithUniqueKeyCheck.slice(
             0,
-            !isUndefinedOrNull(selectLimit) && selectLimit <= newEvents.length ? selectLimit : newEvents.length
+            !isUndefinedOrNull(selectLimit) && selectLimit <= listWithUniqueKeyCheck.length ? selectLimit : listWithUniqueKeyCheck.length
         );
         return finalCollection;
     }
 };
 
-const sortAggregates = ({ aggregateConfig, aggregates }) => {
+const sortAggregates = ({ aggregateConfig, aggregates }) => { // TODO: sort
     let newAggregates;
     let configSortKey = aggregateConfig.sortKey;
     let sortKey;
@@ -77,28 +94,28 @@ const sortAggregates = ({ aggregateConfig, aggregates }) => {
         sortDirection = aggregateConfig.sortDirection === DESCENDING ? -1 : 1;
     }
     switch (configSortKey) {
-    case SUM:
-        sortKey = 'sum';
-        break;
-    case AVERAGE:
-        sortKey = 'average';
-        break;
-    case MEDIANS:
-        sortKey = 'medians';
-        break;
-    case MODES:
-        sortKey = 'modes';
-        break;
-    case MIN:
-        sortKey = 'min';
-        break;
-    case MAX:
-        sortKey = 'max';
-        break;
-    case DEFAULT:
-        return aggregates;
-    default:
-        sortKey = aggregateConfig.sortKey;
+        case SUM:
+            sortKey = 'sum';
+            break;
+        case AVERAGE:
+            sortKey = 'average';
+            break;
+        case MEDIANS:
+            sortKey = 'medians';
+            break;
+        case MODES:
+            sortKey = 'modes';
+            break;
+        case MIN:
+            sortKey = 'min';
+            break;
+        case MAX:
+            sortKey = 'max';
+            break;
+        case DEFAULT:
+            return aggregates;
+        default:
+            sortKey = aggregateConfig.sortKey;
     }
     if (sortKey === 'medians' || sortKey === 'modes') {
         newAggregates = deepCopy(aggregates).sort((aObj, bObj) => {

@@ -537,8 +537,9 @@ const reportController = {
                     frequency: ANNUALLY || MONTHLY || WEEKLY || DAY_CYCLES || DATE_SETS,
                     propertyKey: 'balanceEnding' || 'amount', // determines the field that this aggregate will execute against
                     // note: flowKey/flowDirection filter the events prior to running computations
-                    flowKey: 'balanceEnding', // when using flowDirection, this is the key that it checks against
-                    flowDirection: POSITIVE || NEGATIVE || BOTH, // note: flowDirection/flowKey can be used on the reportController's config object and also in any particular report rule object, where the effects will be made  in each respective scope
+                    flowKey: 'balanceEnding', // when using flowDirection (below), this is the key that it checks against
+                    flowDirection: POSITIVE || NEGATIVE || BOTH, // filters events that are either greater than or less than 0
+                    // note: flowDirection/flowKey can be used on the reportController's config object and also in any particular report rule object, where the effects will be made  in each respective scope
                     sortKey: DEFAULT || SUM || AVERAGE || MEDIANS || MODES || MIN || MAX || 'any property key', // optional: be aware that medians and modes will not always sort accurately since there could be more than 1 median/mode for each aggregate
                     sortDirection: ASCENDING || DESCENDING, // optional: defaults to ASCENDING
                     selectionLimit: 5, // this property is only for GREATEST_VALUES || LEAST_VALUES; pass null for no selectionLimit
@@ -547,6 +548,7 @@ const reportController = {
                     xPercentRange: 0.1, // sets the percentage difference allowed for mode matches, specifically. Defaults to 0 which is 0% difference (exact match); 0.1 indicates 10%
                     // while xPercentRange defaults to 0, it is probably necessary to boost it to at least 0.01 or so as it might be common for you to otherwise get no mode matches at all
                     weekdayStart: SUNDAY, // this optional property allows you to adjust the starting weekday for WEEKLY aggregate types
+                    dayCycles: 10, // when using the DAY_CYCLES type, you can choose how many cycles of days to aggregate against for each collection
                     cycleDateStart: '2020-09-17', // this optional property allows you to change the starting date for the DAY_CYCLES type
                     fiscalYearStart: '12-25' // this optional property allows you to change the starting date for the ANNUALLY type; the default value is the first of january
                 }
@@ -562,9 +564,13 @@ After aggregates were added as a reporting type, a few of the following aggregat
 
 -   `sortKey: 'balanceEnding` _(any property key to sort on)_  
 -   `sortDirection: ASCENDING || DESCENDING`  
--   `selectionAmount: 10` _(max amount of events returned)_  
+-   `selectionLimit: 10` _(max amount of events returned)_  
 -   `flowKey: 'balanceEnding' || 'amount`  _(you can restrict this property to positive or negative values)_  
 -   `flowDirection: POSITIVE || NEGATIVE`  
+  
+In addition, **uniqueKey** can be used on the primary rules of the report controller to remove events that have a value for a specific parameter that is already present in another event. An example of this use case would be on LEAST_BALANCE_ENDING_SNAPSHOTS if you wanted to restrict the least _balanceEnding_ values for a specific _dateStart_ value. This would ensure that you get the minimum value for any particular date throughout that collection report. This particular functionality takes place AFTER any sorting.
+  
+-   `uniqueKey: 'dateStart` _(any property key with a primitive data type value that should be unique)_  
   
 ## Time
 
