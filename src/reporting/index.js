@@ -827,7 +827,7 @@ const standardSubheader = ({ danielSan, reportingConfig, reportCharWidth, writeS
 
 const filterOutRoutinesAndReminders = (events) => {
     return events.filter((event) => {
-        !event.type.includes(ROUTINE) && !event.type.includes(REMINDER);
+        return !event.type.includes(ROUTINE) && !event.type.includes(REMINDER);
     });
 };
 
