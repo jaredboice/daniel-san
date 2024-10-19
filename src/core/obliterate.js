@@ -33,13 +33,15 @@ const retireRules = (danielSan) => {
     let looper;
     try {
         // retire obsolete rules
-        let indexOffset = 0;
         if (danielSan.retiredRuleIndices.length > 0) {
-            for (looper = 0; looper < danielSan.retiredRuleIndices.length; looper++) {
-                const looperIndex = looper - indexOffset;
-                danielSan.rules.splice(danielSan.retiredRuleIndices[looperIndex], 1);
-                indexOffset++;
-            }
+            // optimize later - but this works
+            const newRules = [];
+            danielSan.rules.forEach((rule, index) => {
+                if(!danielSan.retiredRuleIndices.includes(index)){
+                    newRules.push(rule);
+                }
+            });
+            danielSan.rules = [...newRules];
             danielSan.retiredRuleIndices = []; // reset retiredRuleIndices
         }
     } catch (err) {
