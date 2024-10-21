@@ -290,8 +290,9 @@ const findRulesToRetire = (danielSan) => {
     const {
         config: { effectiveDateStart }
     } = danielSan;
+    const newRulesToRetire = [];
     // eslint-disable-next-line array-callback-return
-    const rulesToRetire = danielSan.rules.filter((rule, index) => {
+    danielSan.rules.forEach((rule, index) => {
         const dateToStartConfig = initializeTimeZoneData(danielSan);
         const dateToStart = createTimeZone({
             timeZone: dateToStartConfig.timeZone,
@@ -307,24 +308,25 @@ const findRulesToRetire = (danielSan) => {
         const convertedDateStartString = convertedDateToStart.format(DATE_FORMAT_STRING);
         if (!isUndefinedOrNull(rule.effectiveDateEnd) && rule.effectiveDateEnd < convertedDateStartString) {
             rule.ruleIndex = index;
-            return rule;
+            newRulesToRetire.push(rule);
         } else if (
             rule.frequency === ONCE &&
-            typeof rule.EventProcessDate === 'string' &&
-            rule.EventProcessDate < convertedDateStartString
+            typeof rule.processDate === 'string' &&
+            rule.processDate < convertedDateStartString
         ) {
             rule.ruleIndex = index;
-            return rule;
+            newRulesToRetire.push(rule);
         }
     });
-    if (rulesToRetire.length > 0) {
-        return rulesToRetire;
+    // TODO: below - couldn't we simply return newToRetire?
+    if (newRulesToRetire.length > 0) {
+        return newRulesToRetire;
         // eslint-disable-next-line no-else-return
     } else {
-        return null;
+        return [];
     }
     // eslint-disable-next-line no-unreachable
-    return null; // this line satisfies another linting error
+    return []; // this line satisfies another linting error
 };
 
 // you should probably run the validation functions in core/validation.js prior to using this
